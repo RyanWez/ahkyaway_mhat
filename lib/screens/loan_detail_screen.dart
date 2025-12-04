@@ -68,15 +68,12 @@ class LoanDetailScreen extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        if (loan.status == LoanStatus.active)
-                          TextButton.icon(
-                            onPressed: () =>
-                                _markAsCompleted(context, loan, storage),
-                            icon: const Icon(
-                              Icons.check_circle_outline_rounded,
-                            ),
-                            label: const Text('Mark Complete'),
-                          ),
+                        TextButton.icon(
+                          onPressed: () =>
+                              _showEditLoanDialog(context, loan, storage),
+                          icon: const Icon(Icons.edit_rounded),
+                          label: const Text('Edit'),
+                        ),
                         IconButton(
                           onPressed: () =>
                               _showDeleteConfirmation(context, storage),
@@ -569,18 +566,310 @@ class LoanDetailScreen extends StatelessWidget {
     }
   }
 
-  void _markAsCompleted(
+  void _showEditLoanDialog(
     BuildContext context,
     Loan loan,
     StorageService storage,
   ) {
-    loan.status = LoanStatus.completed;
-    loan.updatedAt = DateTime.now();
-    storage.updateLoan(loan);
+    final principalController = TextEditingController(
+      text: loan.principal.toInt().toString(),
+    );
+    final interestController = TextEditingController(
+      text: loan.interestRate.toString(),
+    );
+    final notesController = TextEditingController(text: loan.notes);
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDark = themeProvider.isDarkMode;
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Loan marked as completed')));
+    DateTime startDate = loan.startDate;
+    DateTime dueDate = loan.dueDate;
+    LoanStatus status = loan.status;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          decoration: BoxDecoration(
+            color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.grey[700] : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Edit Loan',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: principalController,
+                  decoration: const InputDecoration(
+                    labelText: 'Principal Amount (MMK) *',
+                    prefixIcon: Icon(Icons.attach_money_rounded),
+                    helperText: 'Maximum: 99,999,999 MMK',
+                  ),
+                  keyboardType: TextInputType.number,
+                  maxLength: 8,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: interestController,
+                  decoration: const InputDecoration(
+                    labelText: 'Interest Rate (% per year)',
+                    prefixIcon: Icon(Icons.percent_rounded),
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Status Dropdown
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.darkCard : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<LoanStatus>(
+                      value: status,
+                      isExpanded: true,
+                      dropdownColor: isDark
+                          ? AppTheme.darkCard
+                          : Colors.grey[100],
+                      items: LoanStatus.values.map((s) {
+                        return DropdownMenuItem(
+                          value: s,
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  color: _getStatusColor(s),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                s.name.toUpperCase(),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF1A1A2E),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => status = value);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: startDate,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      setState(() => startDate = picked);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppTheme.darkCard : Colors.grey[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today_rounded,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Start Date',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? Colors.grey[500]
+                                    : Colors.grey[600],
+                              ),
+                            ),
+                            Text(
+                              DateFormat('MMM d, y').format(startDate),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF1A1A2E),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: dueDate,
+                      firstDate: startDate,
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      setState(() => dueDate = picked);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppTheme.darkCard : Colors.grey[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.event_rounded,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Due Date',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? Colors.grey[500]
+                                    : Colors.grey[600],
+                              ),
+                            ),
+                            Text(
+                              DateFormat('MMM d, y').format(dueDate),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF1A1A2E),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: notesController,
+                  decoration: const InputDecoration(
+                    labelText: 'Notes',
+                    prefixIcon: Icon(Icons.note_rounded),
+                  ),
+                  maxLines: 2,
+                  textCapitalization: TextCapitalization.sentences,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final principal = double.tryParse(
+                        principalController.text,
+                      );
+                      if (principal == null || principal <= 0) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enter a valid amount'),
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (principal > 99999999) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Maximum amount is 99,999,999 MMK'),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                        return;
+                      }
+
+                      final interest =
+                          double.tryParse(interestController.text) ?? 0.0;
+
+                      loan.principal = principal;
+                      loan.interestRate = interest;
+                      loan.startDate = startDate;
+                      loan.dueDate = dueDate;
+                      loan.status = status;
+                      loan.notes = notesController.text.trim();
+                      loan.updatedAt = DateTime.now();
+
+                      storage.updateLoan(loan);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Save Changes'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _showDeleteConfirmation(BuildContext context, StorageService storage) {
@@ -769,6 +1058,18 @@ class LoanDetailScreen extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Please enter a valid amount'),
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (amount > remaining) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Payment cannot exceed remaining amount (${currencyFormat.format(remaining)})',
+                            ),
+                            backgroundColor: Colors.orange,
                           ),
                         );
                         return;

@@ -664,8 +664,10 @@ class CustomerDetailScreen extends StatelessWidget {
                   decoration: const InputDecoration(
                     labelText: 'Principal Amount (MMK) *',
                     prefixIcon: Icon(Icons.attach_money_rounded),
+                    helperText: 'Maximum: 99,999,999 MMK',
                   ),
                   keyboardType: TextInputType.number,
+                  maxLength: 8,
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -812,6 +814,16 @@ class CustomerDetailScreen extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Please enter a valid amount'),
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (principal > 99999999) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Maximum amount is 99,999,999 MMK'),
+                            backgroundColor: Colors.orange,
                           ),
                         );
                         return;

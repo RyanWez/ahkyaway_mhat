@@ -345,9 +345,26 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    if (nameController.text.trim().isEmpty) {
+                    final name = nameController.text.trim();
+                    if (name.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Name is required')),
+                      );
+                      return;
+                    }
+
+                    // Check for duplicate customer name
+                    final existingCustomer = storage.customers.any(
+                      (c) => c.name.toLowerCase() == name.toLowerCase(),
+                    );
+                    if (existingCustomer) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Customer with this name already exists',
+                          ),
+                          backgroundColor: Colors.orange,
+                        ),
                       );
                       return;
                     }
@@ -355,7 +372,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                     final now = DateTime.now();
                     final customer = Customer(
                       id: const Uuid().v4(),
-                      name: nameController.text.trim(),
+                      name: name,
                       phone: phoneController.text.trim(),
                       address: addressController.text.trim(),
                       notes: notesController.text.trim(),
