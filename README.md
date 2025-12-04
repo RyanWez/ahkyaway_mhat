@@ -97,7 +97,7 @@ lib/
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/loan_tracking.git
+git clone https://github.com/RyanWez/loan_tracking.git
 cd loan_tracking
 ```
 
