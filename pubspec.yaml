@@ -46,6 +46,7 @@ dependencies:
   
   # Unique ID generation
   uuid: ^4.5.1
+  package_info_plus: ^9.0.0
 
 dev_dependencies:
   flutter_test:

@@ -39,13 +39,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onTabTapped(int index) {
-    HapticFeedback.lightImpact(); // Haptic feedback for touch
+    HapticFeedback.lightImpact();
     setState(() => _currentIndex = index);
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 350),
-      curve: Curves.easeOutCubic,
-    );
+    _pageController.jumpToPage(index);
   }
 
   @override
@@ -56,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: PageView(
         controller: _pageController,
-        physics: const BouncingScrollPhysics(), // Smooth scrolling physics
+        physics: const NeverScrollableScrollPhysics(), // Smooth scrolling physics
         onPageChanged: (index) {
           HapticFeedback.selectionClick();
           setState(() => _currentIndex = index);

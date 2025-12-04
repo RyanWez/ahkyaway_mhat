@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 import '../theme/app_theme.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -97,12 +98,20 @@ class AccountScreen extends StatelessWidget {
                 decoration: AppTheme.cardDecoration(isDark),
                 child: Column(
                   children: [
-                    _buildInfoItem(
-                      'Version',
-                      '1.0.0',
-                      Icons.info_outline_rounded,
-                      AppTheme.accentColor,
-                      isDark,
+                    FutureBuilder<PackageInfo>(
+                      future: PackageInfo.fromPlatform(),
+                      builder: (context, snapshot) {
+                        final version = snapshot.hasData
+                            ? snapshot.data!.version
+                            : '...';
+                        return _buildInfoItem(
+                          'Version',
+                          version,
+                          Icons.info_outline_rounded,
+                          AppTheme.accentColor,
+                          isDark,
+                        );
+                      },
                     ),
                     Divider(
                       height: 1,
