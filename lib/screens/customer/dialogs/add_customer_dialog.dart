@@ -6,6 +6,7 @@ import '../../../models/customer.dart';
 import '../../../services/storage_service.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_toast.dart';
 
 /// Shows a bottom sheet dialog for adding a new customer
 void showAddCustomerDialog(BuildContext context) {
@@ -111,9 +112,7 @@ void showAddCustomerDialog(BuildContext context) {
                 onPressed: () {
                   final name = nameController.text.trim();
                   if (name.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Name is required')),
-                    );
+                    AppToast.showError(context, 'Name is required');
                     return;
                   }
 
@@ -122,11 +121,9 @@ void showAddCustomerDialog(BuildContext context) {
                     (c) => c.name.toLowerCase() == name.toLowerCase(),
                   );
                   if (existingCustomer) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Customer with this name already exists'),
-                        backgroundColor: Colors.orange,
-                      ),
+                    AppToast.showWarning(
+                      context,
+                      'Customer with this name already exists',
                     );
                     return;
                   }

@@ -8,6 +8,7 @@ import '../../../services/storage_service.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../utils/currency_input_formatter.dart';
+import '../../../widgets/app_toast.dart';
 
 /// Shows a bottom sheet dialog for adding a new loan to a customer
 void showAddLoanDialog(
@@ -150,20 +151,17 @@ void showAddLoanDialog(
                       principalController.text,
                     );
                     if (principal == null || principal <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please enter a valid amount'),
-                        ),
+                      AppToast.showError(
+                        context,
+                        'Please enter a valid amount',
                       );
                       return;
                     }
 
                     if (principal > 99999999) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Maximum amount is 99,999,999 MMK'),
-                          backgroundColor: Colors.orange,
-                        ),
+                      AppToast.showWarning(
+                        context,
+                        'Maximum amount is 99,999,999 MMK',
                       );
                       return;
                     }

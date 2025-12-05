@@ -9,6 +9,7 @@ import '../../../services/storage_service.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../utils/currency_input_formatter.dart';
+import '../../../widgets/app_toast.dart';
 
 /// Shows a bottom sheet dialog for adding a payment
 void showAddPaymentDialog(
@@ -164,22 +165,17 @@ void showAddPaymentDialog(
                       amountController.text,
                     );
                     if (amount == null || amount <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please enter a valid amount'),
-                        ),
+                      AppToast.showError(
+                        context,
+                        'Please enter a valid amount',
                       );
                       return;
                     }
 
                     if (amount > remaining) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Payment cannot exceed remaining amount (${currencyFormat.format(remaining)})',
-                          ),
-                          backgroundColor: Colors.orange,
-                        ),
+                      AppToast.showWarning(
+                        context,
+                        'Payment cannot exceed remaining amount (${currencyFormat.format(remaining)})',
                       );
                       return;
                     }

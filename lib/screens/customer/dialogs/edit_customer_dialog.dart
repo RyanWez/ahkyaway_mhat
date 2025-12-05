@@ -5,6 +5,7 @@ import '../../../models/customer.dart';
 import '../../../services/storage_service.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_toast.dart';
 
 /// Shows a bottom sheet dialog for editing an existing customer
 void showEditCustomerDialog(
@@ -112,9 +113,7 @@ void showEditCustomerDialog(
               child: ElevatedButton(
                 onPressed: () {
                   if (nameController.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Name is required')),
-                    );
+                    AppToast.showError(context, 'Name is required');
                     return;
                   }
 
