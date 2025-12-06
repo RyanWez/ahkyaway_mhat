@@ -24,7 +24,7 @@
         "title": "Customers",
         "add": "Add Customer",
         "edit": "Edit Customer",
-        "delete": "⚠️Delete Customer",
+        "delete": "Delete Customer",
         "name": "Name",
         "name_required": "Name *",
         "phone": "Phone",

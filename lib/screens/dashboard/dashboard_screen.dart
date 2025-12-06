@@ -78,38 +78,65 @@ class _DashboardScreenState extends State<DashboardScreen>
           parent: AlwaysScrollableScrollPhysics(),
         ),
         slivers: [
-          // Sticky App Bar
+          // Collapsing App Bar
           SliverAppBar(
             pinned: true,
             floating: false,
+            expandedHeight: 115,
             backgroundColor: backgroundColor,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
-            toolbarHeight: 60,
-            title: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+            centerTitle: false,
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                // Calculate how collapsed the header is
+                final expanderPercentage =
+                    (constraints.maxHeight - kToolbarHeight) /
+                    (115 - kToolbarHeight);
+                final isCollapsed = expanderPercentage < 0.3;
+
+                return FlexibleSpaceBar(
+                  titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+                  title: Text(
                     'dashboard.title'.tr(),
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: isCollapsed ? 18 : 26,
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white : const Color(0xFF1A1A2E),
                     ),
                   ),
-                  Text(
-                    DateFormat('MMM d, y').format(DateTime.now()),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  collapseMode: CollapseMode.pin,
+                  background: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AnimatedOpacity(
+                              duration: const Duration(milliseconds: 200),
+                              opacity: isCollapsed ? 0.0 : 1.0,
+                              child: Text(
+                                DateFormat(
+                                  'EEEE, MMMM d, y',
+                                ).format(DateTime.now()),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ],
-              ),
+                );
+              },
             ),
-            centerTitle: false,
           ),
           // Content
           SliverToBoxAdapter(

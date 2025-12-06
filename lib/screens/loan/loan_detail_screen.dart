@@ -32,6 +32,7 @@ class LoanDetailScreen extends StatelessWidget {
       symbol: 'MMK ',
       decimalDigits: 0,
     );
+    final backgroundColor = isDark ? const Color(0xFF121212) : Colors.white;
 
     if (loan == null) {
       return Scaffold(
@@ -50,14 +51,54 @@ class LoanDetailScreen extends StatelessWidget {
       ..sort((a, b) => b.paymentDate.compareTo(a.paymentDate));
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Fixed Header with Back button, Edit, Delete
-            _buildHeader(context, isDark, loan, storage),
-            const SizedBox(height: 16),
-            // Fixed Total Amount Card
-            Padding(
+      backgroundColor: backgroundColor,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        slivers: [
+          // SliverAppBar with back button
+          SliverAppBar(
+            pinned: true,
+            floating: false,
+            backgroundColor: backgroundColor,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_rounded,
+                color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              'loan.title'.tr(),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+              ),
+            ),
+            centerTitle: false,
+            actions: [
+              TextButton.icon(
+                onPressed: () => showEditLoanDialog(context, loan, storage),
+                icon: const Icon(Icons.edit_rounded),
+                label: Text('actions.edit'.tr()),
+              ),
+              IconButton(
+                onPressed: () =>
+                    showDeleteLoanConfirmation(context, storage, loan, loanId),
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: AppTheme.errorColor,
+                ),
+              ),
+            ],
+          ),
+          // Loan Info Card
+          SliverToBoxAdapter(
+            child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: LoanInfoCard(
                 loan: loan,
@@ -65,24 +106,77 @@ class LoanDetailScreen extends StatelessWidget {
                 currencyFormat: currencyFormat,
               ),
             ),
-            const SizedBox(height: 16),
-            // Scrollable content
-            Expanded(
-              child: _buildScrollableContent(
-                context,
+          ),
+          // Payment Progress Card
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: _buildProgressCard(
                 isDark,
-                loan,
-                storage,
                 currencyFormat,
                 totalPaid,
                 remaining,
                 progress,
-                sortedPayments,
-                payments.length,
               ),
             ),
-          ],
-        ),
+          ),
+          // Notes Card (if any)
+          if (loan.notes.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: _buildNotesCard(isDark, loan.notes),
+              ),
+            ),
+          // Payment History Header
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'payment.title'.tr(),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                    ),
+                  ),
+                  Text(
+                    '${payments.length}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.grey[500] : Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Payment History List or Empty State
+          if (sortedPayments.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: _buildEmptyState(isDark),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final payment = sortedPayments[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: PaymentListTile(
+                    payment: payment,
+                    isDark: isDark,
+                    currencyFormat: currencyFormat,
+                    onDismissed: () => storage.deletePayment(payment.id),
+                  ),
+                );
+              }, childCount: sortedPayments.length),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
       ),
       floatingActionButton: loan.status == LoanStatus.active
           ? FloatingActionButton.extended(
@@ -97,133 +191,6 @@ class LoanDetailScreen extends StatelessWidget {
               label: Text('payment.add'.tr()),
             )
           : null,
-    );
-  }
-
-  Widget _buildHeader(
-    BuildContext context,
-    bool isDark,
-    Loan loan,
-    StorageService storage,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isDark ? AppTheme.darkCard : Colors.grey[100],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                Icons.arrow_back_rounded,
-                color: isDark ? Colors.white : const Color(0xFF1A1A2E),
-              ),
-            ),
-          ),
-          const Spacer(),
-          TextButton.icon(
-            onPressed: () => showEditLoanDialog(context, loan, storage),
-            icon: const Icon(Icons.edit_rounded),
-            label: Text('actions.edit'.tr()),
-          ),
-          IconButton(
-            onPressed: () =>
-                showDeleteLoanConfirmation(context, storage, loan, loanId),
-            icon: const Icon(
-              Icons.delete_outline_rounded,
-              color: AppTheme.errorColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScrollableContent(
-    BuildContext context,
-    bool isDark,
-    Loan loan,
-    StorageService storage,
-    NumberFormat currencyFormat,
-    double totalPaid,
-    double remaining,
-    double progress,
-    List<Payment> sortedPayments,
-    int paymentCount,
-  ) {
-    return CustomScrollView(
-      slivers: [
-        // Payment Progress Card
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: _buildProgressCard(
-              isDark,
-              currencyFormat,
-              totalPaid,
-              remaining,
-              progress,
-            ),
-          ),
-        ),
-        // Notes Card (if any)
-        if (loan.notes.isNotEmpty)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: _buildNotesCard(isDark, loan.notes),
-            ),
-          ),
-        // Payment History Header
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'payment.title'.tr(),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : const Color(0xFF1A1A2E),
-                  ),
-                ),
-                Text(
-                  '$paymentCount',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDark ? Colors.grey[500] : Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        // Payment History List or Empty State
-        if (sortedPayments.isEmpty)
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: _buildEmptyState(isDark),
-          )
-        else
-          SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final payment = sortedPayments[index];
-              return PaymentListTile(
-                payment: payment,
-                isDark: isDark,
-                currencyFormat: currencyFormat,
-                onDismissed: () => storage.deletePayment(payment.id),
-              );
-            }, childCount: sortedPayments.length),
-          ),
-        const SliverToBoxAdapter(child: SizedBox(height: 100)),
-      ],
     );
   }
 
