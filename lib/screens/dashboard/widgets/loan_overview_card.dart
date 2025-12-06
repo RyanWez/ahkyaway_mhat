@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
-import '../../../widgets/animated_circular_chart.dart';
 import 'chart_legend.dart';
 
-/// Widget for displaying the loan overview card with circular chart
+/// Widget for displaying the loan overview card without circular chart
 class LoanOverviewCard extends StatelessWidget {
   final double totalDebt;
   final double totalPaid;
@@ -21,7 +20,7 @@ class LoanOverviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -37,56 +36,18 @@ class LoanOverviewCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.pie_chart_rounded,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Loan Overview',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          ChartLegend(
+            label: 'Outstanding',
+            value: outstandingFormatted,
+            color: const Color(0xFFFF6B6B),
           ),
-          const SizedBox(height: 24),
-          // Circular Chart
-          AnimatedCircularChart(
-            totalDebt: totalDebt - totalPaid, // Outstanding
-            totalPaid: totalPaid,
-            isDark: true, // Always light text on gradient
-          ),
-          const SizedBox(height: 24),
-          // Legend
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ChartLegend(
-                label: 'Outstanding',
-                value: outstandingFormatted,
-                color: const Color(0xFFFF6B6B),
-              ),
-              ChartLegend(
-                label: 'Repaid',
-                value: paidFormatted,
-                color: const Color(0xFF00E676),
-              ),
-            ],
+          ChartLegend(
+            label: 'Repaid',
+            value: paidFormatted,
+            color: const Color(0xFF00E676),
           ),
         ],
       ),

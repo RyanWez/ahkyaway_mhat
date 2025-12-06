@@ -18,7 +18,8 @@
         "loan_overview": "Loan Overview",
         "outstanding": "Outstanding",
         "paid": "Paid",
-        "progress": "Progress"
+        "progress": "Progress",
+        "top_borrowers": "Top Borrowers"
     },
     "customer": {
         "title": "Customers",
