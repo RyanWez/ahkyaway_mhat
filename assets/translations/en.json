@@ -41,7 +41,10 @@
         "name_required_msg": "Name is required",
         "duplicate": "Customer with this name already exists",
         "not_found": "Customer not found",
-        "add_loan_hint": "Tap Add to create a loan"
+        "add_loan_hint": "Tap Add to create a loan",
+        "total_remaining": "Total Remaining Balance",
+        "from_loans": "From",
+        "loan_count": "loans"
     },
     "loan": {
         "title": "Loan Details",
