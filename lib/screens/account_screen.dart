@@ -149,7 +149,7 @@ class _AccountScreenState extends State<AccountScreen>
             padding: const EdgeInsets.symmetric(horizontal: 20),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
 
                 // About Section
                 _buildAnimatedSection(

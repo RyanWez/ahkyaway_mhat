@@ -82,7 +82,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           SliverAppBar(
             pinned: true,
             floating: false,
-            expandedHeight: 115,
+            expandedHeight: 130,
             backgroundColor: backgroundColor,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
@@ -92,7 +92,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 // Calculate how collapsed the header is
                 final expanderPercentage =
                     (constraints.maxHeight - kToolbarHeight) /
-                    (115 - kToolbarHeight);
+                    (130 - kToolbarHeight);
                 final isCollapsed = expanderPercentage < 0.3;
 
                 return FlexibleSpaceBar(
