@@ -69,74 +69,71 @@ class _DashboardScreenState extends State<DashboardScreen>
       totalPaid += storage.getTotalPaidForLoan(loan.id);
     }
 
+    final backgroundColor = isDark ? const Color(0xFF121212) : Colors.white;
+
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
-          slivers: [
-            // Header
-            SliverToBoxAdapter(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: _buildHeader(isDark),
-                ),
+      backgroundColor: backgroundColor,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        slivers: [
+          // Sticky App Bar
+          SliverAppBar(
+            pinned: true,
+            floating: false,
+            backgroundColor: backgroundColor,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            toolbarHeight: 60,
+            title: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'dashboard.title'.tr(),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                    ),
+                  ),
+                  Text(
+                    DateFormat('MMM d, y').format(DateTime.now()),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                  ),
+                ],
               ),
             ),
-            // Loan Overview Card
-            SliverToBoxAdapter(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: LoanOverviewCard(
-                      totalDebt: totalDebt,
-                      totalPaid: totalPaid,
-                      outstandingFormatted: currencyFormat.format(
-                        totalDebt - totalPaid,
-                      ),
-                      paidFormatted: currencyFormat.format(totalPaid),
+            centerTitle: false,
+          ),
+          // Content
+          SliverToBoxAdapter(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: LoanOverviewCard(
+                    totalDebt: totalDebt,
+                    totalPaid: totalPaid,
+                    outstandingFormatted: currencyFormat.format(
+                      totalDebt - totalPaid,
                     ),
+                    paidFormatted: currencyFormat.format(totalPaid),
                   ),
                 ),
               ),
             ),
-            // Stats Grid
-            SliverToBoxAdapter(child: _buildStatsGrid(storage, isDark)),
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'dashboard.title'.tr(),
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF1A1A2E),
-            ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            DateFormat('EEEE, MMMM d, y').format(DateTime.now()),
-            style: TextStyle(
-              fontSize: 14,
-              color: isDark ? Colors.grey[400] : Colors.grey[600],
-            ),
-          ),
+          // Stats Grid
+          SliverToBoxAdapter(child: _buildStatsGrid(storage, isDark)),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );
