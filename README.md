@@ -1,89 +1,58 @@
 # 💰 Loan Tracker App
 
-A beautiful and modern Flutter application for managing customer loans and payments. Track debts, record payments, and monitor loan statuses with an intuitive user interface.
+A refined and modern Flutter application for managing customer loans and payments. Designed with a premium "Glassmorphism" aesthetic, it supports both English and Myanmar languages.
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.10+-02569B?logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?logo=dart&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-## ✨ Features
+## ✨ Key Features
 
-### 📊 Dashboard
+### 🌍 Multi-Language Support
 
-- Overview of total loans, active loans, and completed loans
-- Beautiful animated circular chart showing loan distribution
-- Quick stats with real-time updates
+- Full support for **English** and **Myanmar** languages.
+- Seamless language switching within the app settings.
+- Proper font rendering for Myanmar text using Google Fonts.
+
+### 📊 Interactive Dashboard
+
+- Real-time overview of active and completed loans.
+- Beautiful animated charts visualizing loan distribution.
+- **Sticky Headers**: Advanced collapsing headers that adapt as you scroll for a premium feel.
 
 ### 👥 Customer Management
 
-- Add, edit, and delete customers
-- View customer details with their loan history
-- Search and filter customers
-- Character limits for input fields (Name: 32, Phone: 11, Address/Notes: 50)
+- **Smart Search**: Quickly find customers by name.
+- Detailed customer profiles with borrowing history.
+- Validation for inputs (Phone numbers, Names) to ensure data integrity.
+- **Safety**: Prevents deletion of customers with active loans to avoid data loss.
 
-### 💳 Loan Management
+### 💳 Loan & Payment Tracking
 
-- Create new loans for customers
-- Track loan amounts with comma-formatted currency display
-- View loan progress with visual progress bars
-- Payment history tracking
-- Auto-complete loans when fully paid
+- Create, manage, and track loans with ease.
+- Visual progress bars for repayment status.
+- **Payment History**: Detailed record of every payment made.
+- Currency formatting tailored for easy reading (e.g., 1,000,000).
 
-### 💵 Payment Tracking
+### 🎨 Modern UI/UX
 
-- Record payments against loans
-- Date picker for payment dates
-- Notes support for each payment
-- Swipe to delete payments
-
-### 🔒 Smart Restrictions
-
-- Cannot delete customers with active loans
-- Cannot delete loans until fully repaid
-- Auto status update: ACTIVE → COMPLETED when loan is paid off
-
-### 🎨 UI/UX
-
-- Dark and Light theme support
-- Modern glassmorphism design
-- Smooth animations and transitions
-- Currency formatting with comma separators (1,000,000)
-- Responsive layout
+- **Glassmorphism Design**: Sleek, modern interface with blur effects and gradients.
+- **Dark/Light Theme**: Fully supported system-aware theming.
+- **Smooth Animations**: Transitions and micro-interactions for a polished experience.
 
 ## 🛠️ Tech Stack
 
 | Package | Purpose |
 |---------|---------|
-| `provider` | State management |
-| `shared_preferences` | Local data persistence |
-| `intl` | Date and number formatting |
-| `uuid` | Unique ID generation |
+| `provider` | State Management |
+| `shared_preferences` | Local Data Persistence (Offline support) |
+| `easy_localization` | Internationalization (i18n) |
+| `google_fonts` | Custom Typography |
+| `intl` | Currency & Date Formatting |
+| `package_info_plus` | App Version Display |
+| `url_launcher` | External Interaction (Phone/SMS) |
 
-## 📁 Project Structure
 
-```
-lib/
-├── main.dart              # App entry point
-├── models/
-│   ├── customer.dart      # Customer data model
-│   ├── loan.dart          # Loan data model
-│   └── payment.dart       # Payment data model
-├── providers/
-│   └── theme_provider.dart # Theme state management
-├── screens/
-│   ├── dashboard_screen.dart    # Main dashboard
-│   ├── customers_screen.dart    # Customer list
-│   ├── customer_detail_screen.dart # Customer details
-│   └── loan_detail_screen.dart  # Loan details
-├── services/
-│   └── storage_service.dart     # Data persistence
-├── theme/
-│   └── app_theme.dart           # App theming
-├── utils/
-│   └── currency_input_formatter.dart # Currency formatting
-└── widgets/
-    └── animated_circular_chart.dart  # Animated chart
-```
 
 ## 🚀 Getting Started
 
@@ -94,42 +63,32 @@ lib/
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository:**
 
-```bash
-git clone https://github.com/RyanWez/loan_tracking.git
-cd loan_tracking
-```
+   ```bash
+   git clone https://github.com/RyanWez/loan_tracking.git
+   cd loan_tracking
+   ```
 
-2. Install dependencies:
+2. **Install dependencies:**
 
-```bash
-flutter pub get
-```
+   ```bash
+   flutter pub get
+   ```
 
-3. Run the app:
+3. **Run the app:**
 
-```bash
-flutter run
-```
+   ```bash
+   flutter run
+   ```
 
 ## 🔧 Configuration
 
-The app uses local storage (SharedPreferences) for data persistence. No external database or backend required.
+**Storage**: The app uses `shared_preferences` to store all data locally on the device in JSON format. Uninstalling the app *will* clear this data as no remote database is used.
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ---
 
