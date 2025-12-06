@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
 import 'chart_legend.dart';
 
-/// Widget for displaying the loan overview card without circular chart
-class LoanOverviewCard extends StatelessWidget {
+/// Widget for displaying the debt overview card without circular chart
+class DebtOverviewCard extends StatelessWidget {
   final double totalDebt;
   final double totalPaid;
   final String outstandingFormatted;
   final String paidFormatted;
 
-  const LoanOverviewCard({
+  const DebtOverviewCard({
     super.key,
     required this.totalDebt,
     required this.totalPaid,

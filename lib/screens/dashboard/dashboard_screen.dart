@@ -4,13 +4,13 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../services/storage_service.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
-import '../../models/loan.dart';
+import '../../models/debt.dart';
 import '../customer/customer_detail_screen.dart';
 
 // Import widgets
 import 'widgets/compact_stat_card.dart';
-import 'widgets/loan_overview_card.dart';
-import 'widgets/top_borrowers_section.dart';
+import 'widgets/debt_overview_card.dart';
+import 'widgets/top_debtors_section.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -54,27 +54,24 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.dispose();
   }
 
-  /// Get top borrowers with their outstanding balances
-  List<TopBorrowerData> _getTopBorrowers(
-    StorageService storage, {
-    int limit = 10,
-  }) {
-    final borrowerData = <TopBorrowerData>[];
+  /// Get top debtors with their outstanding balances
+  List<TopDebtorData> _getTopDebtors(StorageService storage, {int limit = 10}) {
+    final debtorData = <TopDebtorData>[];
 
     for (final customer in storage.customers) {
       double outstandingBalance = 0;
-      final loans = storage.getLoansForCustomer(customer.id);
+      final debts = storage.getDebtsForCustomer(customer.id);
 
-      for (final loan in loans) {
-        if (loan.status == LoanStatus.active) {
-          final paid = storage.getTotalPaidForLoan(loan.id);
-          outstandingBalance += loan.totalAmount - paid;
+      for (final debt in debts) {
+        if (debt.status == DebtStatus.active) {
+          final paid = storage.getTotalPaidForDebt(debt.id);
+          outstandingBalance += debt.totalAmount - paid;
         }
       }
 
       if (outstandingBalance > 0) {
-        borrowerData.add(
-          TopBorrowerData(
+        debtorData.add(
+          TopDebtorData(
             customer: customer,
             outstandingBalance: outstandingBalance,
           ),
@@ -83,12 +80,12 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
 
     // Sort by outstanding balance descending
-    borrowerData.sort(
+    debtorData.sort(
       (a, b) => b.outstandingBalance.compareTo(a.outstandingBalance),
     );
 
     // Return top N
-    return borrowerData.take(limit).toList();
+    return debtorData.take(limit).toList();
   }
 
   @override
@@ -101,16 +98,16 @@ class _DashboardScreenState extends State<DashboardScreen>
       decimalDigits: 0,
     );
 
-    // Calculate total debt and total paid across all loans
+    // Calculate total debt and total paid across all debts
     double totalDebt = 0;
     double totalPaid = 0;
-    for (final loan in storage.loans) {
-      totalDebt += loan.totalAmount;
-      totalPaid += storage.getTotalPaidForLoan(loan.id);
+    for (final debt in storage.debts) {
+      totalDebt += debt.totalAmount;
+      totalPaid += storage.getTotalPaidForDebt(debt.id);
     }
 
-    // Get top borrowers
-    final topBorrowers = _getTopBorrowers(storage, limit: 10);
+    // Get top debtors
+    final topDebtors = _getTopDebtors(storage, limit: 10);
 
     final backgroundColor = isDark ? const Color(0xFF121212) : Colors.white;
 
@@ -189,7 +186,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 position: _slideAnimation,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: LoanOverviewCard(
+                  child: DebtOverviewCard(
                     totalDebt: totalDebt,
                     totalPaid: totalPaid,
                     outstandingFormatted: currencyFormat.format(
@@ -203,12 +200,12 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
           // Compact Stats Grid
           SliverToBoxAdapter(child: _buildCompactStatsGrid(storage, isDark)),
-          // Top Borrowers Section
+          // Top Debtors Section
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: TopBorrowersSection(
-                topBorrowers: topBorrowers,
+              child: TopDebtorsSection(
+                topDebtors: topDebtors,
                 isDark: isDark,
                 formatCurrency: (amount) => currencyFormat.format(amount),
                 onCustomerTap: (customer) {
@@ -250,8 +247,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               const SizedBox(width: 12),
               Expanded(
                 child: CompactStatCard(
-                  title: 'dashboard.active_loans'.tr(),
-                  value: storage.activeLoansCount.toString(),
+                  title: 'dashboard.active_debts'.tr(),
+                  value: storage.activeDebtsCount.toString(),
                   icon: Icons.receipt_long_rounded,
                   color: AppTheme.successColor,
                   isDark: isDark,
@@ -265,8 +262,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             children: [
               Expanded(
                 child: CompactStatCard(
-                  title: 'dashboard.completed_loans'.tr(),
-                  value: storage.completedLoansCount.toString(),
+                  title: 'dashboard.completed_debts'.tr(),
+                  value: storage.completedDebtsCount.toString(),
                   icon: Icons.check_circle_rounded,
                   color: AppTheme.successColor,
                   isDark: isDark,
@@ -276,8 +273,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               const SizedBox(width: 12),
               Expanded(
                 child: CompactStatCard(
-                  title: 'dashboard.total_loans'.tr(),
-                  value: storage.loans.length.toString(),
+                  title: 'dashboard.total_debts'.tr(),
+                  value: storage.debts.length.toString(),
                   icon: Icons.analytics_rounded,
                   color: AppTheme.primaryDark,
                   isDark: isDark,

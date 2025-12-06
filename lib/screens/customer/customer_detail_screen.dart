@@ -7,15 +7,15 @@ import '../../theme/app_theme.dart';
 
 // Import widgets
 import 'widgets/customer_profile_header.dart';
-import 'widgets/loan_list_item.dart';
+import 'widgets/debt_list_item.dart';
 
 // Import dialogs
 import 'dialogs/edit_customer_dialog.dart';
 import 'dialogs/delete_customer_dialog.dart';
-import 'dialogs/add_loan_dialog.dart';
+import 'dialogs/add_debt_dialog.dart';
 
-// Import loan screen
-import '../loan/loan_detail_screen.dart';
+// Import debt screen
+import '../debt/debt_detail_screen.dart';
 
 class CustomerDetailScreen extends StatelessWidget {
   final String customerId;
@@ -28,15 +28,15 @@ class CustomerDetailScreen extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
     final customer = storage.getCustomerById(customerId);
-    final loans = storage.getLoansForCustomer(customerId);
-    // Sort loans by creation date descending (newest first)
-    final sortedLoans = List.from(loans)
+    final debts = storage.getDebtsForCustomer(customerId);
+    // Sort debts by creation date descending (newest first)
+    final sortedDebts = List.from(debts)
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    // Calculate total remaining balance across all loans
+    // Calculate total remaining balance across all debts
     double totalRemaining = 0;
-    for (final loan in loans) {
-      final paid = storage.getTotalPaidForLoan(loan.id);
-      totalRemaining += (loan.totalAmount - paid);
+    for (final debt in debts) {
+      final paid = storage.getTotalPaidForDebt(debt.id);
+      totalRemaining += (debt.totalAmount - paid);
     }
     final currencyFormat = NumberFormat.currency(
       symbol: 'MMK ',
@@ -158,10 +158,10 @@ class CustomerDetailScreen extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-                  if (loans.isNotEmpty) ...[
+                  if (debts.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Text(
-                      '${'customer.from_loans'.tr()} ${loans.length} ${'customer.loan_count'.tr()}',
+                      '${'customer.from_debts'.tr()} ${debts.length} ${'customer.debt_count'.tr()}',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.white.withValues(alpha: 0.8),
@@ -172,14 +172,14 @@ class CustomerDetailScreen extends StatelessWidget {
               ),
             ),
           ),
-          // Loans Header with Add button
+          // Debts Header with Add button
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'customer.loans'.tr(),
+                  'customer.debts'.tr(),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -189,7 +189,7 @@ class CustomerDetailScreen extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      '${loans.length}',
+                      '${debts.length}',
                       style: TextStyle(
                         fontSize: 14,
                         color: isDark ? Colors.grey[500] : Colors.grey[600],
@@ -201,7 +201,7 @@ class CustomerDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       child: InkWell(
                         onTap: () =>
-                            showAddLoanDialog(context, storage, customerId),
+                            showAddDebtDialog(context, storage, customerId),
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -235,9 +235,9 @@ class CustomerDetailScreen extends StatelessWidget {
               ],
             ),
           ),
-          // Scrollable Loans List
+          // Scrollable Debts List
           Expanded(
-            child: loans.isEmpty
+            child: debts.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -249,7 +249,7 @@ class CustomerDetailScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'customer.no_loans'.tr(),
+                          'customer.no_debts'.tr(),
                           style: TextStyle(
                             fontSize: 16,
                             color: isDark ? Colors.grey[500] : Colors.grey[600],
@@ -257,7 +257,7 @@ class CustomerDetailScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'customer.add_loan_hint'.tr(),
+                          'customer.add_debt_hint'.tr(),
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark ? Colors.grey[600] : Colors.grey[400],
@@ -271,20 +271,20 @@ class CustomerDetailScreen extends StatelessWidget {
                     physics: const BouncingScrollPhysics(
                       parent: AlwaysScrollableScrollPhysics(),
                     ),
-                    itemCount: sortedLoans.length + 1,
+                    itemCount: sortedDebts.length + 1,
                     itemBuilder: (context, index) {
-                      if (index == sortedLoans.length) {
+                      if (index == sortedDebts.length) {
                         return const SizedBox(height: 100);
                       }
-                      final loan = sortedLoans[index];
-                      final paid = storage.getTotalPaidForLoan(loan.id);
-                      final remaining = loan.totalAmount - paid;
-                      final progress = loan.totalAmount > 0
-                          ? paid / loan.totalAmount
+                      final debt = sortedDebts[index];
+                      final paid = storage.getTotalPaidForDebt(debt.id);
+                      final remaining = debt.totalAmount - paid;
+                      final progress = debt.totalAmount > 0
+                          ? paid / debt.totalAmount
                           : 0.0;
 
-                      return LoanListItem(
-                        loan: loan,
+                      return DebtListItem(
+                        debt: debt,
                         paid: paid,
                         remaining: remaining,
                         progress: progress,
@@ -295,7 +295,7 @@ class CustomerDetailScreen extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  LoanDetailScreen(loanId: loan.id),
+                                  DebtDetailScreen(debtId: debt.id),
                             ),
                           );
                         },

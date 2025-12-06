@@ -1,50 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../models/loan.dart';
+import '../../models/debt.dart';
 import '../../models/payment.dart';
 import '../../services/storage_service.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
 
 // Import widgets
-import 'widgets/loan_info_card.dart';
+import 'widgets/debt_info_card.dart';
 import 'widgets/payment_list_tile.dart';
 
 // Import dialogs
-import 'dialogs/edit_loan_dialog.dart';
-import 'dialogs/delete_loan_dialog.dart';
+import 'dialogs/edit_debt_dialog.dart';
+import 'dialogs/delete_debt_dialog.dart';
 import 'dialogs/add_payment_dialog.dart';
 
-class LoanDetailScreen extends StatelessWidget {
-  final String loanId;
+class DebtDetailScreen extends StatelessWidget {
+  final String debtId;
 
-  const LoanDetailScreen({super.key, required this.loanId});
+  const DebtDetailScreen({super.key, required this.debtId});
 
   @override
   Widget build(BuildContext context) {
     final storage = Provider.of<StorageService>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
-    final loan = storage.getLoanById(loanId);
-    final payments = storage.getPaymentsForLoan(loanId);
+    final debt = storage.getDebtById(debtId);
+    final payments = storage.getPaymentsForDebt(debtId);
     final currencyFormat = NumberFormat.currency(
       symbol: 'MMK ',
       decimalDigits: 0,
     );
     final backgroundColor = isDark ? const Color(0xFF121212) : Colors.white;
 
-    if (loan == null) {
+    if (debt == null) {
       return Scaffold(
-        appBar: AppBar(title: Text('loan.title'.tr())),
-        body: Center(child: Text('loan.not_found'.tr())),
+        appBar: AppBar(title: Text('debt.title'.tr())),
+        body: Center(child: Text('debt.not_found'.tr())),
       );
     }
 
-    final customer = storage.getCustomerById(loan.customerId);
-    final totalPaid = storage.getTotalPaidForLoan(loanId);
-    final remaining = loan.totalAmount - totalPaid;
-    final progress = loan.totalAmount > 0 ? totalPaid / loan.totalAmount : 0.0;
+    final customer = storage.getCustomerById(debt.customerId);
+    final totalPaid = storage.getTotalPaidForDebt(debtId);
+    final remaining = debt.totalAmount - totalPaid;
+    final progress = debt.totalAmount > 0 ? totalPaid / debt.totalAmount : 0.0;
 
     // Sort payments by date (newest first)
     final sortedPayments = List<Payment>.from(payments)
@@ -72,7 +72,7 @@ class LoanDetailScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'loan.title'.tr(),
+              'debt.title'.tr(),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -82,13 +82,13 @@ class LoanDetailScreen extends StatelessWidget {
             centerTitle: false,
             actions: [
               TextButton.icon(
-                onPressed: () => showEditLoanDialog(context, loan, storage),
+                onPressed: () => showEditDebtDialog(context, debt, storage),
                 icon: const Icon(Icons.edit_rounded),
                 label: Text('actions.edit'.tr()),
               ),
               IconButton(
                 onPressed: () =>
-                    showDeleteLoanConfirmation(context, storage, loan, loanId),
+                    showDeleteDebtConfirmation(context, storage, debt, debtId),
                 icon: const Icon(
                   Icons.delete_outline_rounded,
                   color: AppTheme.errorColor,
@@ -96,12 +96,12 @@ class LoanDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-          // Loan Info Card
+          // Debt Info Card
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: LoanInfoCard(
-                loan: loan,
+              child: DebtInfoCard(
+                debt: debt,
                 customer: customer,
                 currencyFormat: currencyFormat,
               ),
@@ -121,11 +121,11 @@ class LoanDetailScreen extends StatelessWidget {
             ),
           ),
           // Notes Card (if any)
-          if (loan.notes.isNotEmpty)
+          if (debt.notes.isNotEmpty)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: _buildNotesCard(isDark, loan.notes),
+                child: _buildNotesCard(isDark, debt.notes),
               ),
             ),
           // Payment History Header
@@ -178,13 +178,13 @@ class LoanDetailScreen extends StatelessWidget {
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
-      floatingActionButton: loan.status == LoanStatus.active
+      floatingActionButton: debt.status == DebtStatus.active
           ? FloatingActionButton.extended(
               onPressed: () => showAddPaymentDialog(
                 context,
                 storage,
-                loan,
-                loanId,
+                debt,
+                debtId,
                 remaining,
               ),
               icon: const Icon(Icons.add_rounded),
@@ -211,7 +211,7 @@ class LoanDetailScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'loan.payment_progress'.tr(),
+                'debt.payment_progress'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -275,7 +275,7 @@ class LoanDetailScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      'loan.remaining'.tr(),
+                      'debt.remaining'.tr(),
                       style: TextStyle(
                         fontSize: 12,
                         color: isDark ? Colors.grey[500] : Colors.grey[600],
@@ -309,7 +309,7 @@ class LoanDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'loan.notes'.tr(),
+            'debt.notes'.tr(),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,

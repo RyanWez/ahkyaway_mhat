@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../models/customer.dart';
-import '../../../models/loan.dart';
-import 'loan_status_badge.dart';
+import '../../../models/debt.dart';
+import 'debt_status_badge.dart';
 
-/// The main loan info card showing total amount and status
-class LoanInfoCard extends StatelessWidget {
-  final Loan loan;
+/// The main debt info card showing total amount and status
+class DebtInfoCard extends StatelessWidget {
+  final Debt debt;
   final Customer? customer;
   final NumberFormat currencyFormat;
 
-  const LoanInfoCard({
+  const DebtInfoCard({
     super.key,
-    required this.loan,
+    required this.debt,
     this.customer,
     required this.currencyFormat,
   });
@@ -27,14 +27,14 @@ class LoanInfoCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            getStatusColor(loan.status),
-            getStatusColor(loan.status).withValues(alpha: 0.7),
+            getStatusColor(debt.status),
+            getStatusColor(debt.status).withValues(alpha: 0.7),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: getStatusColor(loan.status).withValues(alpha: 0.4),
+            color: getStatusColor(debt.status).withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -42,10 +42,10 @@ class LoanInfoCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          LoanStatusBadge(status: loan.status),
+          DebtStatusBadge(status: debt.status),
           const SizedBox(height: 16),
           Text(
-            currencyFormat.format(loan.totalAmount),
+            currencyFormat.format(debt.totalAmount),
             style: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -54,7 +54,7 @@ class LoanInfoCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'loan.total_amount'.tr(),
+            'debt.total_amount'.tr(),
             style: TextStyle(
               fontSize: 14,
               color: Colors.white.withValues(alpha: 0.8),

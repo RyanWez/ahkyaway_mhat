@@ -1,34 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../models/loan.dart';
-import '../../../models/payment.dart';
+import '../../../models/debt.dart';
 import '../../../services/storage_service.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../utils/currency_input_formatter.dart';
 import '../../../widgets/app_toast.dart';
 
-/// Shows a bottom sheet dialog for adding a payment
-void showAddPaymentDialog(
+/// Shows a bottom sheet dialog for editing a debt
+void showEditDebtDialog(
   BuildContext context,
+  Debt debt,
   StorageService storage,
-  Loan loan,
-  String loanId,
-  double remaining,
 ) {
-  final amountController = TextEditingController();
-  final notesController = TextEditingController();
+  final principalController = TextEditingController(
+    text: NumberFormat('#,###', 'en_US').format(debt.principal.toInt()),
+  );
+  final notesController = TextEditingController(text: debt.notes);
   final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
   final isDark = themeProvider.isDarkMode;
-  final currencyFormat = NumberFormat.currency(
-    symbol: 'MMK ',
-    decimalDigits: 0,
-  );
 
-  DateTime paymentDate = DateTime.now();
+  DateTime debtDate = debt.startDate;
 
   showModalBottomSheet(
     context: context,
@@ -61,26 +55,18 @@ void showAddPaymentDialog(
               ),
               const SizedBox(height: 24),
               Text(
-                'payment.add'.tr(),
+                'debt.edit'.tr(),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white : const Color(0xFF1A1A2E),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                '${'loan.remaining'.tr()}: ${currencyFormat.format(remaining)}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                ),
-              ),
               const SizedBox(height: 24),
               TextField(
-                controller: amountController,
+                controller: principalController,
                 decoration: InputDecoration(
-                  labelText: 'payment.amount_required'.tr(),
+                  labelText: 'debt.amount_required'.tr(),
                   prefixIcon: const Icon(Icons.attach_money_rounded),
                 ),
                 keyboardType: TextInputType.number,
@@ -95,12 +81,12 @@ void showAddPaymentDialog(
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: context,
-                    initialDate: paymentDate,
+                    initialDate: debtDate,
                     firstDate: DateTime(2020),
-                    lastDate: DateTime.now(),
+                    lastDate: DateTime(2100),
                   );
                   if (picked != null) {
-                    setState(() => paymentDate = picked);
+                    setState(() => debtDate = picked);
                   }
                 },
                 child: Container(
@@ -123,7 +109,7 @@ void showAddPaymentDialog(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'payment.date'.tr(),
+                            'debt.start_date'.tr(),
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark
@@ -132,7 +118,7 @@ void showAddPaymentDialog(
                             ),
                           ),
                           Text(
-                            DateFormat('MMM d, y').format(paymentDate),
+                            DateFormat('MMM d, y').format(debtDate),
                             style: TextStyle(
                               fontSize: 16,
                               color: isDark
@@ -150,64 +136,44 @@ void showAddPaymentDialog(
               TextField(
                 controller: notesController,
                 decoration: InputDecoration(
-                  labelText: 'payment.notes'.tr(),
+                  labelText: 'debt.notes'.tr(),
                   prefixIcon: const Icon(Icons.note_rounded),
                 ),
-                textCapitalization: TextCapitalization.sentences,
+                maxLines: 2,
                 maxLength: 50,
+                textCapitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    final amount = CurrencyInputFormatter.parse(
-                      amountController.text,
+                    final principal = CurrencyInputFormatter.parse(
+                      principalController.text,
                     );
-                    if (amount == null || amount <= 0) {
+                    if (principal == null || principal <= 0) {
                       AppToast.showError(
                         context,
-                        'payment.amount_required_msg'.tr(),
+                        'debt.amount_required_msg'.tr(),
                       );
                       return;
                     }
 
-                    if (amount > remaining) {
-                      AppToast.showWarning(
-                        context,
-                        'payment.exceed_warning'.tr(),
-                      );
+                    if (principal > 99999999) {
+                      AppToast.showWarning(context, 'messages.max_amount'.tr());
                       return;
                     }
 
-                    final now = DateTime.now();
-                    final payment = Payment(
-                      id: const Uuid().v4(),
-                      loanId: loanId,
-                      amount: amount,
-                      paymentDate: paymentDate,
-                      notes: notesController.text.trim(),
-                      createdAt: now,
-                    );
+                    debt.principal = principal;
+                    debt.startDate = debtDate;
+                    debt.dueDate = debtDate;
+                    debt.notes = notesController.text.trim();
+                    debt.updatedAt = DateTime.now();
 
-                    // Get total paid BEFORE adding new payment to avoid double counting
-                    final currentTotalPaid = storage.getTotalPaidForLoan(
-                      loanId,
-                    );
-
-                    storage.addPayment(payment);
-
-                    // Auto-complete loan if fully paid (remaining balance is exactly 0)
-                    final newTotalPaid = currentTotalPaid + amount;
-                    if (newTotalPaid >= loan.totalAmount) {
-                      loan.status = LoanStatus.completed;
-                      loan.updatedAt = DateTime.now();
-                      storage.updateLoan(loan);
-                    }
-
+                    storage.updateDebt(debt);
                     Navigator.pop(context);
                   },
-                  child: Text('payment.add'.tr()),
+                  child: Text('actions.save'.tr()),
                 ),
               ),
               const SizedBox(height: 16),

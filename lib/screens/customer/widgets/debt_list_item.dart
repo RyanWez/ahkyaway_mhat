@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../models/loan.dart';
+import '../../../models/debt.dart';
 import '../../../theme/app_theme.dart';
 
-/// Returns the color for the given loan status
-Color getCustomerLoanStatusColor(LoanStatus status) {
+/// Returns the color for the given debt status
+Color getCustomerDebtStatusColor(DebtStatus status) {
   switch (status) {
-    case LoanStatus.active:
+    case DebtStatus.active:
       return AppTheme.accentColor;
-    case LoanStatus.completed:
+    case DebtStatus.completed:
       return AppTheme.successColor;
   }
 }
 
-/// Returns the localized status text for a loan status
-String getLocalizedLoanStatus(LoanStatus status) {
+/// Returns the localized status text for a debt status
+String getLocalizedDebtStatus(DebtStatus status) {
   switch (status) {
-    case LoanStatus.active:
-      return 'loan.active'.tr();
-    case LoanStatus.completed:
-      return 'loan.completed'.tr();
+    case DebtStatus.active:
+      return 'debt.active'.tr();
+    case DebtStatus.completed:
+      return 'debt.completed'.tr();
   }
 }
 
-/// A widget for displaying loan items in customer detail screen
-class LoanListItem extends StatelessWidget {
-  final Loan loan;
+/// A widget for displaying debt items in customer detail screen
+class DebtListItem extends StatelessWidget {
+  final Debt debt;
   final double paid;
   final double remaining;
   final double progress;
@@ -33,9 +33,9 @@ class LoanListItem extends StatelessWidget {
   final NumberFormat currencyFormat;
   final VoidCallback onTap;
 
-  const LoanListItem({
+  const DebtListItem({
     super.key,
-    required this.loan,
+    required this.debt,
     required this.paid,
     required this.remaining,
     required this.progress,
@@ -64,23 +64,23 @@ class LoanListItem extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: getCustomerLoanStatusColor(
-                        loan.status,
+                      color: getCustomerDebtStatusColor(
+                        debt.status,
                       ).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      getLocalizedLoanStatus(loan.status).toUpperCase(),
+                      getLocalizedDebtStatus(debt.status).toUpperCase(),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: getCustomerLoanStatusColor(loan.status),
+                        color: getCustomerDebtStatusColor(debt.status),
                       ),
                     ),
                   ),
                   const Spacer(),
                   Text(
-                    currencyFormat.format(loan.principal),
+                    currencyFormat.format(debt.principal),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -99,7 +99,7 @@ class LoanListItem extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    DateFormat('MMM d, y').format(loan.startDate),
+                    DateFormat('MMM d, y').format(debt.startDate),
                     style: TextStyle(
                       fontSize: 13,
                       color: isDark ? Colors.grey[400] : Colors.grey[600],
@@ -128,14 +128,14 @@ class LoanListItem extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${'loan.total_paid'.tr()}: ${currencyFormat.format(paid)}',
+                    '${'debt.total_paid'.tr()}: ${currencyFormat.format(paid)}',
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppTheme.successColor,
                     ),
                   ),
                   Text(
-                    '${'loan.remaining'.tr()}: ${currencyFormat.format(remaining)}',
+                    '${'debt.remaining'.tr()}: ${currencyFormat.format(remaining)}',
                     style: TextStyle(
                       fontSize: 12,
                       color: isDark ? Colors.grey[400] : Colors.grey[600],

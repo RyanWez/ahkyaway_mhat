@@ -118,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen>
                     const SizedBox(height: 32),
                     // App Name
                     const Text(
-                      'Loan Tracker',
+                      'AhKyaway Mhat',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -128,7 +128,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'For Small Communities',
+                      'For Small Businesses',
                       style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                     ),
                     const SizedBox(height: 48),

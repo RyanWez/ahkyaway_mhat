@@ -3,15 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../models/loan.dart';
+import '../../../models/debt.dart';
 import '../../../services/storage_service.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../utils/currency_input_formatter.dart';
 import '../../../widgets/app_toast.dart';
 
-/// Shows a bottom sheet dialog for adding a new loan to a customer
-void showAddLoanDialog(
+/// Shows a bottom sheet dialog for adding a new debt to a customer
+void showAddDebtDialog(
   BuildContext context,
   StorageService storage,
   String customerId,
@@ -21,7 +21,7 @@ void showAddLoanDialog(
   final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
   final isDark = themeProvider.isDarkMode;
 
-  DateTime loanDate = DateTime.now();
+  DateTime debtDate = DateTime.now();
 
   showModalBottomSheet(
     context: context,
@@ -54,7 +54,7 @@ void showAddLoanDialog(
               ),
               const SizedBox(height: 24),
               Text(
-                'loan.add'.tr(),
+                'debt.add'.tr(),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -65,7 +65,7 @@ void showAddLoanDialog(
               TextField(
                 controller: principalController,
                 decoration: InputDecoration(
-                  labelText: 'loan.amount_required'.tr(),
+                  labelText: 'debt.amount_required'.tr(),
                   prefixIcon: const Icon(Icons.attach_money_rounded),
                 ),
                 keyboardType: TextInputType.number,
@@ -80,12 +80,12 @@ void showAddLoanDialog(
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: context,
-                    initialDate: loanDate,
+                    initialDate: debtDate,
                     firstDate: DateTime(2020),
                     lastDate: DateTime(2100),
                   );
                   if (picked != null) {
-                    setState(() => loanDate = picked);
+                    setState(() => debtDate = picked);
                   }
                 },
                 child: Container(
@@ -108,7 +108,7 @@ void showAddLoanDialog(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'loan.start_date'.tr(),
+                            'debt.start_date'.tr(),
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark
@@ -117,7 +117,7 @@ void showAddLoanDialog(
                             ),
                           ),
                           Text(
-                            DateFormat('MMM d, y').format(loanDate),
+                            DateFormat('MMM d, y').format(debtDate),
                             style: TextStyle(
                               fontSize: 16,
                               color: isDark
@@ -135,7 +135,7 @@ void showAddLoanDialog(
               TextField(
                 controller: notesController,
                 decoration: InputDecoration(
-                  labelText: 'loan.notes'.tr(),
+                  labelText: 'debt.notes'.tr(),
                   prefixIcon: const Icon(Icons.note_rounded),
                 ),
                 maxLines: 2,
@@ -153,7 +153,7 @@ void showAddLoanDialog(
                     if (principal == null || principal <= 0) {
                       AppToast.showError(
                         context,
-                        'loan.amount_required_msg'.tr(),
+                        'debt.amount_required_msg'.tr(),
                       );
                       return;
                     }
@@ -165,22 +165,21 @@ void showAddLoanDialog(
 
                     final now = DateTime.now();
 
-                    final loan = Loan(
+                    final debt = Debt(
                       id: const Uuid().v4(),
                       customerId: customerId,
                       principal: principal,
-                      interestRate: 0.0, // No interest
-                      startDate: loanDate,
-                      dueDate: loanDate, // Same as loan date (simplified)
+                      startDate: debtDate,
+                      dueDate: debtDate, // Same as debt date (simplified)
                       notes: notesController.text.trim(),
                       createdAt: now,
                       updatedAt: now,
                     );
 
-                    storage.addLoan(loan);
+                    storage.addDebt(debt);
                     Navigator.pop(context);
                   },
-                  child: Text('loan.add'.tr()),
+                  child: Text('debt.add'.tr()),
                 ),
               ),
               const SizedBox(height: 16),

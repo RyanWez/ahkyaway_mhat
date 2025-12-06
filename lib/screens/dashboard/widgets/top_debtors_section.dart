@@ -3,25 +3,25 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../models/customer.dart';
 import '../../../theme/app_theme.dart';
 
-/// Data class for top borrower information
-class TopBorrowerData {
+/// Data class for top debtor information
+class TopDebtorData {
   final Customer customer;
   final double outstandingBalance;
 
-  TopBorrowerData({required this.customer, required this.outstandingBalance});
+  TopDebtorData({required this.customer, required this.outstandingBalance});
 }
 
-/// Widget for displaying top borrowers section with scrollable list
-class TopBorrowersSection extends StatelessWidget {
-  final List<TopBorrowerData> topBorrowers;
+/// Widget for displaying top debtors section with scrollable list
+class TopDebtorsSection extends StatelessWidget {
+  final List<TopDebtorData> topDebtors;
   final bool isDark;
   final String Function(double) formatCurrency;
   final void Function(Customer)? onCustomerTap;
   final int visibleCount;
 
-  const TopBorrowersSection({
+  const TopDebtorsSection({
     super.key,
-    required this.topBorrowers,
+    required this.topDebtors,
     required this.isDark,
     required this.formatCurrency,
     this.onCustomerTap,
@@ -30,14 +30,14 @@ class TopBorrowersSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (topBorrowers.isEmpty) {
+    if (topDebtors.isEmpty) {
       return const SizedBox.shrink();
     }
 
     // Calculate height for visible items (approximately 64 per item + padding)
     final double listHeight = (visibleCount * 64.0).clamp(
       0,
-      topBorrowers.length * 64.0,
+      topDebtors.length * 64.0,
     );
 
     return Container(
@@ -64,7 +64,7 @@ class TopBorrowersSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  'dashboard.top_borrowers'.tr(),
+                  'dashboard.top_debtors'.tr(),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -73,7 +73,7 @@ class TopBorrowersSection extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '${topBorrowers.length}',
+                  '${topDebtors.length}',
                   style: TextStyle(
                     fontSize: 14,
                     color: isDark ? Colors.grey[400] : Colors.grey[600],
@@ -88,16 +88,16 @@ class TopBorrowersSection extends StatelessWidget {
             child: ListView.builder(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              itemCount: topBorrowers.length,
+              itemCount: topDebtors.length,
               itemBuilder: (context, index) {
-                final borrower = topBorrowers[index];
-                return _BorrowerTile(
+                final debtor = topDebtors[index];
+                return _DebtorTile(
                   rank: index + 1,
-                  borrower: borrower,
+                  debtor: debtor,
                   isDark: isDark,
                   formatCurrency: formatCurrency,
                   onTap: onCustomerTap != null
-                      ? () => onCustomerTap!(borrower.customer)
+                      ? () => onCustomerTap!(debtor.customer)
                       : null,
                 );
               },
@@ -110,16 +110,16 @@ class TopBorrowersSection extends StatelessWidget {
   }
 }
 
-class _BorrowerTile extends StatelessWidget {
+class _DebtorTile extends StatelessWidget {
   final int rank;
-  final TopBorrowerData borrower;
+  final TopDebtorData debtor;
   final bool isDark;
   final String Function(double) formatCurrency;
   final VoidCallback? onTap;
 
-  const _BorrowerTile({
+  const _DebtorTile({
     required this.rank,
-    required this.borrower,
+    required this.debtor,
     required this.isDark,
     required this.formatCurrency,
     this.onTap,
@@ -180,7 +180,7 @@ class _BorrowerTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    borrower.customer.name,
+                    debtor.customer.name,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -188,9 +188,9 @@ class _BorrowerTile extends StatelessWidget {
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (borrower.customer.phone.isNotEmpty)
+                  if (debtor.customer.phone.isNotEmpty)
                     Text(
-                      borrower.customer.phone,
+                      debtor.customer.phone,
                       style: TextStyle(
                         fontSize: 13,
                         color: isDark ? Colors.grey[500] : Colors.grey[600],
@@ -201,7 +201,7 @@ class _BorrowerTile extends StatelessWidget {
             ),
             // Outstanding balance
             Text(
-              formatCurrency(borrower.outstandingBalance),
+              formatCurrency(debtor.outstandingBalance),
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,

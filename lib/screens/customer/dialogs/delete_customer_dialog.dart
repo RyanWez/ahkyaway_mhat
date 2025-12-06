@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../models/loan.dart';
+import '../../../models/debt.dart';
 import '../../../services/storage_service.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../theme/app_theme.dart';
@@ -14,14 +14,14 @@ void showDeleteCustomerConfirmation(
 ) {
   final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
   final isDark = themeProvider.isDarkMode;
-  final loans = storage.getLoansForCustomer(customerId);
-  final hasActiveLoans = loans.any((loan) => loan.status == LoanStatus.active);
+  final debts = storage.getDebtsForCustomer(customerId);
+  final hasActiveDebts = debts.any((debt) => debt.status == DebtStatus.active);
 
   // Capture the parent navigator before showing dialog
   final parentNavigator = Navigator.of(context);
 
-  if (hasActiveLoans) {
-    // Show warning that customer has active loans - cannot delete
+  if (hasActiveDebts) {
+    // Show warning that customer has active debts - cannot delete
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -43,7 +43,7 @@ void showDeleteCustomerConfirmation(
           ],
         ),
         content: Text(
-          'customer.has_active_loans'.tr(),
+          'customer.has_active_debts'.tr(),
           style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600]),
         ),
         actions: [

@@ -28,8 +28,8 @@ class CustomerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loans = storage.getLoansForCustomer(customer.id);
-    final activeLoans = loans.where((l) => l.status.name == 'active').length;
+    final debts = storage.getDebtsForCustomer(customer.id);
+    final activeDebts = debts.where((d) => d.status.name == 'active').length;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -92,7 +92,7 @@ class CustomerCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (activeLoans > 0)
+              if (activeDebts > 0)
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -103,7 +103,7 @@ class CustomerCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '$activeLoans ${'loan.active'.tr()}',
+                    '$activeDebts ${'debt.active'.tr()}',
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,

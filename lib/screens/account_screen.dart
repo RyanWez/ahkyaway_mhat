@@ -114,15 +114,15 @@ class _AccountScreenState extends State<AccountScreen>
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Icon(
-                              Icons.store_rounded,
+                              Icons.receipt_long_rounded,
                               size: 40,
                               color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text(
-                            'Loan Tracker',
-                            style: TextStyle(
+                          Text(
+                            'app.name'.tr(),
+                            style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -230,7 +230,7 @@ class _AccountScreenState extends State<AccountScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'FEATURES',
+                        'account.features'.tr(),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -244,8 +244,8 @@ class _AccountScreenState extends State<AccountScreen>
                         child: Column(
                           children: [
                             _buildFeatureItem(
-                              'Customer Management',
-                              'Add and manage customers',
+                              'account.customer_mgmt'.tr(),
+                              'account.customer_mgmt_desc'.tr(),
                               Icons.people_rounded,
                               isDark,
                             ),
@@ -256,8 +256,8 @@ class _AccountScreenState extends State<AccountScreen>
                                   : Colors.black.withValues(alpha: 0.05),
                             ),
                             _buildFeatureItem(
-                              'Loan Tracking',
-                              'Track loans and interest',
+                              'account.debt_tracking'.tr(),
+                              'account.debt_tracking_desc'.tr(),
                               Icons.receipt_long_rounded,
                               isDark,
                             ),
@@ -268,8 +268,8 @@ class _AccountScreenState extends State<AccountScreen>
                                   : Colors.black.withValues(alpha: 0.05),
                             ),
                             _buildFeatureItem(
-                              'Payment History',
-                              'Record all repayments',
+                              'account.payment_history'.tr(),
+                              'account.payment_history_desc'.tr(),
                               Icons.payments_rounded,
                               isDark,
                             ),
@@ -280,8 +280,8 @@ class _AccountScreenState extends State<AccountScreen>
                                   : Colors.black.withValues(alpha: 0.05),
                             ),
                             _buildFeatureItem(
-                              'Offline Storage',
-                              'Data stored locally',
+                              'account.offline_storage'.tr(),
+                              'account.offline_storage_desc'.tr(),
                               Icons.cloud_off_rounded,
                               isDark,
                             ),

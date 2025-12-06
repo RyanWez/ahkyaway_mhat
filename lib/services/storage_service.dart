@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/customer.dart';
-import '../models/loan.dart';
+import '../models/debt.dart';
 import '../models/payment.dart';
 
 class StorageService extends ChangeNotifier {
   static const String _customersKey = 'customers';
-  static const String _loansKey = 'loans';
+  static const String _debtsKey =
+      'loans'; // Keep same key for backward compatibility
   static const String _paymentsKey = 'payments';
 
   List<Customer> _customers = [];
-  List<Loan> _loans = [];
+  List<Debt> _debts = [];
   List<Payment> _payments = [];
 
   List<Customer> get customers => _customers;
-  List<Loan> get loans => _loans;
+  List<Debt> get debts => _debts;
   List<Payment> get payments => _payments;
 
   Future<void> init() async {
@@ -25,9 +26,9 @@ class StorageService extends ChangeNotifier {
       _customers = Customer.decode(customersData);
     }
 
-    final loansData = prefs.getString(_loansKey);
-    if (loansData != null && loansData.isNotEmpty) {
-      _loans = Loan.decode(loansData);
+    final debtsData = prefs.getString(_debtsKey);
+    if (debtsData != null && debtsData.isNotEmpty) {
+      _debts = Debt.decode(debtsData);
     }
 
     final paymentsData = prefs.getString(_paymentsKey);
@@ -43,9 +44,9 @@ class StorageService extends ChangeNotifier {
     await prefs.setString(_customersKey, Customer.encode(_customers));
   }
 
-  Future<void> _saveLoans() async {
+  Future<void> _saveDebts() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_loansKey, Loan.encode(_loans));
+    await prefs.setString(_debtsKey, Debt.encode(_debts));
   }
 
   Future<void> _savePayments() async {
@@ -71,14 +72,14 @@ class StorageService extends ChangeNotifier {
 
   Future<void> deleteCustomer(String customerId) async {
     _customers.removeWhere((c) => c.id == customerId);
-    _loans.removeWhere((l) => l.customerId == customerId);
-    final loanIds = _loans
-        .where((l) => l.customerId == customerId)
-        .map((l) => l.id)
+    _debts.removeWhere((d) => d.customerId == customerId);
+    final debtIds = _debts
+        .where((d) => d.customerId == customerId)
+        .map((d) => d.id)
         .toSet();
-    _payments.removeWhere((p) => loanIds.contains(p.loanId));
+    _payments.removeWhere((p) => debtIds.contains(p.loanId));
     await _saveCustomers();
-    await _saveLoans();
+    await _saveDebts();
     await _savePayments();
     notifyListeners();
   }
@@ -91,37 +92,37 @@ class StorageService extends ChangeNotifier {
     }
   }
 
-  // Loan operations
-  Future<void> addLoan(Loan loan) async {
-    _loans.add(loan);
-    await _saveLoans();
+  // Debt operations
+  Future<void> addDebt(Debt debt) async {
+    _debts.add(debt);
+    await _saveDebts();
     notifyListeners();
   }
 
-  Future<void> updateLoan(Loan loan) async {
-    final index = _loans.indexWhere((l) => l.id == loan.id);
+  Future<void> updateDebt(Debt debt) async {
+    final index = _debts.indexWhere((d) => d.id == debt.id);
     if (index != -1) {
-      _loans[index] = loan;
-      await _saveLoans();
+      _debts[index] = debt;
+      await _saveDebts();
       notifyListeners();
     }
   }
 
-  Future<void> deleteLoan(String loanId) async {
-    _loans.removeWhere((l) => l.id == loanId);
-    _payments.removeWhere((p) => p.loanId == loanId);
-    await _saveLoans();
+  Future<void> deleteDebt(String debtId) async {
+    _debts.removeWhere((d) => d.id == debtId);
+    _payments.removeWhere((p) => p.loanId == debtId);
+    await _saveDebts();
     await _savePayments();
     notifyListeners();
   }
 
-  List<Loan> getLoansForCustomer(String customerId) {
-    return _loans.where((l) => l.customerId == customerId).toList();
+  List<Debt> getDebtsForCustomer(String customerId) {
+    return _debts.where((d) => d.customerId == customerId).toList();
   }
 
-  Loan? getLoanById(String id) {
+  Debt? getDebtById(String id) {
     try {
-      return _loans.firstWhere((l) => l.id == id);
+      return _debts.firstWhere((d) => d.id == id);
     } catch (e) {
       return null;
     }
@@ -140,28 +141,28 @@ class StorageService extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<Payment> getPaymentsForLoan(String loanId) {
-    return _payments.where((p) => p.loanId == loanId).toList();
+  List<Payment> getPaymentsForDebt(String debtId) {
+    return _payments.where((p) => p.loanId == debtId).toList();
   }
 
-  double getTotalPaidForLoan(String loanId) {
+  double getTotalPaidForDebt(String debtId) {
     return _payments
-        .where((p) => p.loanId == loanId)
+        .where((p) => p.loanId == debtId)
         .fold(0.0, (sum, p) => sum + p.amount);
   }
 
   // Summary stats
-  double get totalOutstandingLoans {
+  double get totalOutstandingDebts {
     double total = 0;
-    for (final loan in _loans.where((l) => l.status == LoanStatus.active)) {
-      total += loan.totalAmount - getTotalPaidForLoan(loan.id);
+    for (final debt in _debts.where((d) => d.status == DebtStatus.active)) {
+      total += debt.totalAmount - getTotalPaidForDebt(debt.id);
     }
     return total;
   }
 
-  int get activeLoansCount =>
-      _loans.where((l) => l.status == LoanStatus.active).length;
+  int get activeDebtsCount =>
+      _debts.where((d) => d.status == DebtStatus.active).length;
 
-  int get completedLoansCount =>
-      _loans.where((l) => l.status == LoanStatus.completed).length;
+  int get completedDebtsCount =>
+      _debts.where((d) => d.status == DebtStatus.completed).length;
 }

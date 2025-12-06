@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../models/loan.dart';
+import '../../../models/debt.dart';
 import '../../../theme/app_theme.dart';
 
-/// Returns the color for the given loan status
-Color getStatusColor(LoanStatus status) {
+/// Returns the color for the given debt status
+Color getStatusColor(DebtStatus status) {
   switch (status) {
-    case LoanStatus.active:
+    case DebtStatus.active:
       return AppTheme.primaryDark;
-    case LoanStatus.completed:
+    case DebtStatus.completed:
       return AppTheme.successColor;
   }
 }
 
-/// Returns the localized status text for a loan status
-String getLocalizedStatus(LoanStatus status) {
+/// Returns the localized status text for a debt status
+String getLocalizedStatus(DebtStatus status) {
   switch (status) {
-    case LoanStatus.active:
-      return 'loan.active'.tr();
-    case LoanStatus.completed:
-      return 'loan.completed'.tr();
+    case DebtStatus.active:
+      return 'debt.active'.tr();
+    case DebtStatus.completed:
+      return 'debt.completed'.tr();
   }
 }
 
-/// A badge widget that displays the loan status
-class LoanStatusBadge extends StatelessWidget {
-  final LoanStatus status;
+/// A badge widget that displays the debt status
+class DebtStatusBadge extends StatelessWidget {
+  final DebtStatus status;
 
-  const LoanStatusBadge({super.key, required this.status});
+  const DebtStatusBadge({super.key, required this.status});
 
   @override
   Widget build(BuildContext context) {
