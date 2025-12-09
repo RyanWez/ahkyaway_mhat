@@ -11,21 +11,79 @@ import '../../../widgets/app_toast.dart';
 
 /// Shows a bottom sheet dialog for adding a new customer
 void showAddCustomerDialog(BuildContext context) {
-  final nameController = TextEditingController();
-  final phoneController = TextEditingController();
-  final addressController = TextEditingController();
-  final notesController = TextEditingController();
-  final storage = Provider.of<StorageService>(context, listen: false);
-  final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-  final isDark = themeProvider.isDarkMode;
-
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => Container(
+    builder: (context) => const AddCustomerSheet(),
+  );
+}
+
+class AddCustomerSheet extends StatefulWidget {
+  const AddCustomerSheet({super.key});
+
+  @override
+  State<AddCustomerSheet> createState() => _AddCustomerSheetState();
+}
+
+class _AddCustomerSheetState extends State<AddCustomerSheet> {
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _notesController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  void _handleAddCustomer() {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      AppToast.showError(context, 'customer.name_required_msg'.tr());
+      return;
+    }
+
+    final storage = Provider.of<StorageService>(context, listen: false);
+
+    // Check for duplicate customer name
+    final existingCustomer = storage.customers.any(
+      (c) => c.name.toLowerCase() == name.toLowerCase(),
+    );
+    if (existingCustomer) {
+      AppToast.showWarning(context, 'customer.duplicate'.tr());
+      return;
+    }
+
+    final now = DateTime.now();
+    final customer = Customer(
+      id: const Uuid().v4(),
+      name: name,
+      phone: _phoneController.text.trim(),
+      address: _addressController.text.trim(),
+      notes: _notesController.text.trim(),
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    storage.addCustomer(customer);
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+
+    return Container(
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+        bottom: MediaQuery.of(
+          context,
+        ).viewInsets.bottom, // Handle keyboard padding
       ),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
@@ -58,7 +116,7 @@ void showAddCustomerDialog(BuildContext context) {
             ),
             const SizedBox(height: 24),
             TextField(
-              controller: nameController,
+              controller: _nameController,
               decoration: InputDecoration(
                 labelText: 'customer.name_required'.tr(),
                 prefixIcon: const Icon(Icons.person_rounded),
@@ -70,7 +128,7 @@ void showAddCustomerDialog(BuildContext context) {
             ),
             const SizedBox(height: 16),
             TextField(
-              controller: phoneController,
+              controller: _phoneController,
               decoration: InputDecoration(
                 labelText: 'customer.phone'.tr(),
                 prefixIcon: const Icon(Icons.phone_rounded),
@@ -85,7 +143,7 @@ void showAddCustomerDialog(BuildContext context) {
             ),
             const SizedBox(height: 16),
             TextField(
-              controller: addressController,
+              controller: _addressController,
               decoration: InputDecoration(
                 labelText: 'customer.address'.tr(),
                 prefixIcon: const Icon(Icons.location_on_rounded),
@@ -97,7 +155,7 @@ void showAddCustomerDialog(BuildContext context) {
             ),
             const SizedBox(height: 16),
             TextField(
-              controller: notesController,
+              controller: _notesController,
               decoration: InputDecoration(
                 labelText: 'customer.notes'.tr(),
                 prefixIcon: const Icon(Icons.note_rounded),
@@ -110,39 +168,7 @@ void showAddCustomerDialog(BuildContext context) {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  final name = nameController.text.trim();
-                  if (name.isEmpty) {
-                    AppToast.showError(
-                      context,
-                      'customer.name_required_msg'.tr(),
-                    );
-                    return;
-                  }
-
-                  // Check for duplicate customer name
-                  final existingCustomer = storage.customers.any(
-                    (c) => c.name.toLowerCase() == name.toLowerCase(),
-                  );
-                  if (existingCustomer) {
-                    AppToast.showWarning(context, 'customer.duplicate'.tr());
-                    return;
-                  }
-
-                  final now = DateTime.now();
-                  final customer = Customer(
-                    id: const Uuid().v4(),
-                    name: name,
-                    phone: phoneController.text.trim(),
-                    address: addressController.text.trim(),
-                    notes: notesController.text.trim(),
-                    createdAt: now,
-                    updatedAt: now,
-                  );
-
-                  storage.addCustomer(customer);
-                  Navigator.pop(context);
-                },
+                onPressed: _handleAddCustomer,
                 child: Text('customer.add'.tr()),
               ),
             ),
@@ -150,6 +176,6 @@ void showAddCustomerDialog(BuildContext context) {
           ],
         ),
       ),
-    ),
-  );
+    );
+  }
 }
