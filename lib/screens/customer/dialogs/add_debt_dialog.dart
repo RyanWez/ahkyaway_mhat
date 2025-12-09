@@ -85,10 +85,21 @@ void showAddDebtDialog(
                     context: context,
                     initialDate: debtDate,
                     firstDate: DateTime(2020),
-                    lastDate: DateTime(2100),
+                    lastDate: DateTime.now(), // Only allow today and past dates
                   );
                   if (picked != null) {
-                    setState(() => debtDate = picked);
+                    setState(() {
+                      debtDate = picked;
+                      // Auto-adjust due date if it's now before the new start date
+                      if (dueDate.isBefore(picked)) {
+                        // Set due date to end of month of the new start date
+                        dueDate = DateTime(picked.year, picked.month + 1, 0);
+                        AppToast.showInfo(
+                          context,
+                          'debt.due_date_adjusted'.tr(),
+                        );
+                      }
+                    });
                   }
                 },
                 child: Container(

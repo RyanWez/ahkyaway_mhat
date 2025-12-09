@@ -80,7 +80,8 @@
         "amount_required_msg": "Please enter debt amount",
         "not_found": "Debt not found",
         "payment_progress": "Payment Progress",
-        "cannot_delete": "Cannot delete this debt. There is still remaining balance."
+        "cannot_delete": "Cannot delete this debt. There is still remaining balance.",
+        "due_date_adjusted": "Due date was adjusted to match new start date"
     },
     "payment": {
         "title": "Payment History",

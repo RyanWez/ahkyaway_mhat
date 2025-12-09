@@ -245,10 +245,12 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ),
           ),
-          // Due Date Warnings Section
+          // Compact Stats Grid
+          SliverToBoxAdapter(child: _buildCompactStatsGrid(storage, isDark)),
+          // Due Date Warnings Section (above Top Debtors)
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
               child: DueDateWarningsSection(
                 warnings: dueDateWarnings,
                 isDark: isDark,
@@ -265,8 +267,6 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ),
           ),
-          // Compact Stats Grid
-          SliverToBoxAdapter(child: _buildCompactStatsGrid(storage, isDark)),
           // Top Debtors Section
           SliverToBoxAdapter(
             child: Padding(

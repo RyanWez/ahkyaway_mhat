@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 /// Toast notification types
-enum ToastType { success, error, warning }
+enum ToastType { success, error, warning, info }
 
 /// Professional toast notification widget with animations
 /// Shows from the top of the screen with slide-down animation
@@ -22,6 +22,11 @@ class AppToast {
   /// Shows a warning toast with a warning icon
   static void showWarning(BuildContext context, String message) {
     _show(context, message, ToastType.warning);
+  }
+
+  /// Shows an info toast with an info icon
+  static void showInfo(BuildContext context, String message) {
+    _show(context, message, ToastType.info);
   }
 
   /// Internal method to show toast
@@ -123,6 +128,8 @@ class _ToastWidgetState extends State<_ToastWidget>
         return AppTheme.errorColor;
       case ToastType.warning:
         return AppTheme.warningColor;
+      case ToastType.info:
+        return AppTheme.accentColor;
     }
   }
 
@@ -134,6 +141,8 @@ class _ToastWidgetState extends State<_ToastWidget>
         return Icons.cancel_rounded;
       case ToastType.warning:
         return Icons.warning_rounded;
+      case ToastType.info:
+        return Icons.info_rounded;
     }
   }
 

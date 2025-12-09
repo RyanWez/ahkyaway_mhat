@@ -218,11 +218,11 @@ class _WarningTile extends StatelessWidget {
 
   String _getStatusText() {
     if (warning.isOverdue) {
-      return 'dashboard.overdue_days'.tr(args: ['${-warning.daysUntilDue}']);
+      return 'dashboard.overdue_days'.tr(namedArgs: {'days': '${-warning.daysUntilDue}'});
     } else if (warning.isDueToday) {
       return 'dashboard.due_today'.tr();
     } else {
-      return 'dashboard.due_in_days'.tr(args: ['${warning.daysUntilDue}']);
+      return 'dashboard.due_in_days'.tr(namedArgs: {'days': '${warning.daysUntilDue}'});
     }
   }
 
