@@ -16,7 +16,6 @@ void showEditCustomerDialog(
 ) {
   final nameController = TextEditingController(text: customer.name);
   final phoneController = TextEditingController(text: customer.phone);
-  final notesController = TextEditingController(text: customer.notes);
   final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
   final isDark = themeProvider.isDarkMode;
 
@@ -84,18 +83,6 @@ void showEditCustomerDialog(
                 FilteringTextInputFormatter.digitsOnly,
               ],
             ),
-            const SizedBox(height: 16),
-            const SizedBox(height: 16),
-            TextField(
-              controller: notesController,
-              decoration: InputDecoration(
-                labelText: 'customer.notes'.tr(),
-                prefixIcon: const Icon(Icons.note_rounded),
-              ),
-              maxLines: 2,
-              maxLength: 50,
-              textCapitalization: TextCapitalization.sentences,
-            ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
@@ -111,7 +98,6 @@ void showEditCustomerDialog(
 
                   customer.name = nameController.text.trim();
                   customer.phone = phoneController.text.trim();
-                  customer.notes = notesController.text.trim();
                   customer.updatedAt = DateTime.now();
 
                   storage.updateCustomer(customer);

@@ -29,13 +29,11 @@ class AddCustomerSheet extends StatefulWidget {
 class _AddCustomerSheetState extends State<AddCustomerSheet> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _notesController = TextEditingController();
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
-    _notesController.dispose();
     super.dispose();
   }
 
@@ -63,7 +61,7 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
       name: name,
       phone: _phoneController.text.trim(),
       address: '',
-      notes: _notesController.text.trim(),
+      notes: '',
       createdAt: now,
       updatedAt: now,
     );
@@ -138,18 +136,6 @@ class _AddCustomerSheetState extends State<AddCustomerSheet> {
                 LengthLimitingTextInputFormatter(11),
                 FilteringTextInputFormatter.digitsOnly,
               ],
-            ),
-            const SizedBox(height: 16),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _notesController,
-              decoration: InputDecoration(
-                labelText: 'customer.notes'.tr(),
-                prefixIcon: const Icon(Icons.note_rounded),
-              ),
-              maxLines: 2,
-              maxLength: 50,
-              textCapitalization: TextCapitalization.sentences,
             ),
             const SizedBox(height: 24),
             SizedBox(
