@@ -16,7 +16,6 @@ void showEditCustomerDialog(
 ) {
   final nameController = TextEditingController(text: customer.name);
   final phoneController = TextEditingController(text: customer.phone);
-  final addressController = TextEditingController(text: customer.address);
   final notesController = TextEditingController(text: customer.notes);
   final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
   final isDark = themeProvider.isDarkMode;
@@ -86,17 +85,6 @@ void showEditCustomerDialog(
               ],
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: addressController,
-              decoration: InputDecoration(
-                labelText: 'customer.address'.tr(),
-                prefixIcon: const Icon(Icons.location_on_rounded),
-                counterText: '',
-              ),
-              textCapitalization: TextCapitalization.sentences,
-              maxLength: 50,
-              maxLines: 2,
-            ),
             const SizedBox(height: 16),
             TextField(
               controller: notesController,
@@ -123,7 +111,6 @@ void showEditCustomerDialog(
 
                   customer.name = nameController.text.trim();
                   customer.phone = phoneController.text.trim();
-                  customer.address = addressController.text.trim();
                   customer.notes = notesController.text.trim();
                   customer.updatedAt = DateTime.now();
 
