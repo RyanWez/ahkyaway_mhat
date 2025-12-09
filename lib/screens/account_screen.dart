@@ -194,7 +194,7 @@ class _AccountScreenState extends State<AccountScreen>
                             ),
                             _buildClickableInfoItem(
                               context,
-                              'Developer',
+                              'Source Code',
                               'Ryan Wez',
                               Icons.code_rounded,
                               AppTheme.primaryDark,
