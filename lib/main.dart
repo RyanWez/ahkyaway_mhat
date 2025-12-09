@@ -119,7 +119,7 @@ class _SplashWrapperState extends State<SplashWrapper>
         child: Consumer<ThemeProvider>(
           builder: (context, themeProvider, _) {
             return MaterialApp(
-              title: 'Loan Tracker',
+              title: 'AhKyaway Mhat',
               debugShowCheckedModeBanner: false,
               localizationsDelegates: context.localizationDelegates,
               supportedLocales: context.supportedLocales,
@@ -173,7 +173,7 @@ class _SplashWrapperState extends State<SplashWrapper>
                 const SizedBox(height: 32),
                 // App Name
                 const Text(
-                  'Loan Tracker',
+                  'AhKyaway Mhat',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
