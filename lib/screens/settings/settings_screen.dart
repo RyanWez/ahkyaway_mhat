@@ -142,6 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                               locale: AppLocales.en,
                               isSelected: context.locale == AppLocales.en,
                               onTap: () => context.setLocale(AppLocales.en),
+                              flagEmoji: '🇺🇸',
                             ),
                             _buildDivider(isDark),
                             LanguageOptionTile(
@@ -150,6 +151,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                               locale: AppLocales.my,
                               isSelected: context.locale == AppLocales.my,
                               onTap: () => context.setLocale(AppLocales.my),
+                              flagEmoji: '🇲🇲',
                             ),
                           ],
                         ),

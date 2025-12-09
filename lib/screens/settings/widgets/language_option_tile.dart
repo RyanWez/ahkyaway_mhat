@@ -7,6 +7,7 @@ class LanguageOptionTile extends StatelessWidget {
   final Locale locale;
   final bool isSelected;
   final VoidCallback onTap;
+  final String? flagEmoji; // Optional flag emoji (e.g., "🇺🇸", "🇲🇲")
 
   const LanguageOptionTile({
     super.key,
@@ -15,6 +16,7 @@ class LanguageOptionTile extends StatelessWidget {
     required this.locale,
     required this.isSelected,
     required this.onTap,
+    this.flagEmoji,
   });
 
   @override
@@ -38,12 +40,27 @@ class LanguageOptionTile extends StatelessWidget {
                     : (isDark ? Colors.grey[800] : Colors.grey[100]),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: isSelected
-                    ? AppTheme.primaryDark
-                    : (isDark ? Colors.grey[400] : Colors.grey[600]),
-              ),
+              child: flagEmoji != null
+                  ? Center(
+                      child: Text(
+                        flagEmoji!,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontFamily: 'Apple Color Emoji',
+                          fontFamilyFallback: [
+                            'Noto Color Emoji',
+                            'Segoe UI Emoji', 
+                            'Android Emoji',
+                          ],
+                        ),
+                      ),
+                    )
+                  : Icon(
+                      icon,
+                      color: isSelected
+                          ? AppTheme.primaryDark
+                          : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                    ),
             ),
             const SizedBox(width: 16),
             Expanded(
