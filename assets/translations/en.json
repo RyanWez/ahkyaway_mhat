@@ -19,7 +19,15 @@
         "outstanding": "Outstanding",
         "paid": "Paid",
         "progress": "Progress",
-        "top_debtors": "Top Debtors"
+        "top_debtors": "Top Debtors",
+        "due_date_warnings": "Due Date Alerts",
+        "overdue": "Overdue",
+        "overdue_days": "Overdue {days} days",
+        "due_in_days": "Due in {days} days",
+        "due_today": "Due today",
+        "no_upcoming": "No upcoming due dates",
+        "total_debt": "Total Debt",
+        "repayment_rate": "Repayment Rate"
     },
     "customer": {
         "title": "Customers",
@@ -58,6 +66,7 @@
         "total_amount": "Total Amount",
         "due_date": "Due Date",
         "start_date": "Start Date",
+        "end_of_month": "End of Month",
         "status": "Status",
         "active": "Active",
         "completed": "Completed",
@@ -139,5 +148,11 @@
         "required": "This field is required",
         "invalid_amount": "Please enter a valid amount",
         "max_amount": "Maximum amount is 99,999,999 MMK"
+    },
+    "empty": {
+        "no_debts_title": "No Active Debts",
+        "no_debts_subtitle": "Your dashboard will show insights once you start tracking",
+        "no_warnings_title": "All Clear!",
+        "no_warnings_subtitle": "No overdue or upcoming debts"
     }
 }

@@ -6,11 +6,13 @@ import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../models/debt.dart';
 import '../customer/customer_detail_screen.dart';
+import '../debt/debt_detail_screen.dart';
 
 // Import widgets
 import 'widgets/compact_stat_card.dart';
 import 'widgets/debt_overview_card.dart';
 import 'widgets/top_debtors_section.dart';
+import 'widgets/due_date_warnings_section.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -88,6 +90,48 @@ class _DashboardScreenState extends State<DashboardScreen>
     return debtorData.take(limit).toList();
   }
 
+  /// Get due date warnings for active debts
+  List<DueDateWarningData> _getDueDateWarnings(StorageService storage) {
+    final warnings = <DueDateWarningData>[];
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    for (final debt in storage.debts) {
+      if (debt.status != DebtStatus.active) continue;
+
+      final customer = storage.getCustomerById(debt.customerId);
+      if (customer == null) continue;
+
+      final paid = storage.getTotalPaidForDebt(debt.id);
+      final outstanding = debt.totalAmount - paid;
+      if (outstanding <= 0) continue;
+
+      final dueDate = DateTime(
+        debt.dueDate.year,
+        debt.dueDate.month,
+        debt.dueDate.day,
+      );
+      final daysUntilDue = dueDate.difference(today).inDays;
+
+      // Only include overdue or due within 14 days
+      if (daysUntilDue <= 14) {
+        warnings.add(
+          DueDateWarningData(
+            debt: debt,
+            customer: customer,
+            outstandingBalance: outstanding,
+            daysUntilDue: daysUntilDue,
+          ),
+        );
+      }
+    }
+
+    // Sort by days until due (overdue first, then soon)
+    warnings.sort((a, b) => a.daysUntilDue.compareTo(b.daysUntilDue));
+
+    return warnings;
+  }
+
   @override
   Widget build(BuildContext context) {
     final storage = Provider.of<StorageService>(context);
@@ -108,6 +152,9 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     // Get top debtors
     final topDebtors = _getTopDebtors(storage, limit: 10);
+
+    // Get due date warnings
+    final dueDateWarnings = _getDueDateWarnings(storage);
 
     final backgroundColor = isDark ? const Color(0xFF121212) : Colors.white;
 
@@ -178,7 +225,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               },
             ),
           ),
-          // Content
+          // Debt Overview Card
           SliverToBoxAdapter(
             child: FadeTransition(
               opacity: _fadeAnimation,
@@ -195,6 +242,26 @@ class _DashboardScreenState extends State<DashboardScreen>
                     paidFormatted: currencyFormat.format(totalPaid),
                   ),
                 ),
+              ),
+            ),
+          ),
+          // Due Date Warnings Section
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              child: DueDateWarningsSection(
+                warnings: dueDateWarnings,
+                isDark: isDark,
+                formatCurrency: (amount) => currencyFormat.format(amount),
+                onDebtTap: (debt) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DebtDetailScreen(debtId: debt.id),
+                    ),
+                  );
+                },
+                visibleCount: 4,
               ),
             ),
           ),

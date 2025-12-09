@@ -22,6 +22,8 @@ void showAddDebtDialog(
   final isDark = themeProvider.isDarkMode;
 
   DateTime debtDate = DateTime.now();
+  // Default due date to end of current month
+  DateTime dueDate = DateTime(DateTime.now().year, DateTime.now().month + 1, 0);
 
   showModalBottomSheet(
     context: context,
@@ -76,6 +78,7 @@ void showAddDebtDialog(
                 ],
               ),
               const SizedBox(height: 16),
+              // Start Date Picker
               GestureDetector(
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -131,6 +134,86 @@ void showAddDebtDialog(
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              // Due Date Picker
+              GestureDetector(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: dueDate,
+                    firstDate: debtDate,
+                    lastDate: DateTime(2100),
+                  );
+                  if (picked != null) {
+                    setState(() => dueDate = picked);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.darkCard : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppTheme.warningColor.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.event_rounded,
+                        color: AppTheme.warningColor,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'debt.due_date'.tr(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? Colors.grey[500]
+                                    : Colors.grey[600],
+                              ),
+                            ),
+                            Text(
+                              DateFormat('MMM d, y').format(dueDate),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.warningColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Show hint for end of month default
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.warningColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          'debt.end_of_month'.tr(),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppTheme.warningColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: notesController,
@@ -170,7 +253,7 @@ void showAddDebtDialog(
                       customerId: customerId,
                       principal: principal,
                       startDate: debtDate,
-                      dueDate: debtDate, // Same as debt date (simplified)
+                      dueDate: dueDate, // Use selected due date (defaults to end of month)
                       notes: notesController.text.trim(),
                       createdAt: now,
                       updatedAt: now,

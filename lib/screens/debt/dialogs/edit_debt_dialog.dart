@@ -23,6 +23,7 @@ void showEditDebtDialog(
   final isDark = themeProvider.isDarkMode;
 
   DateTime debtDate = debt.startDate;
+  DateTime dueDate = debt.dueDate;
 
   showModalBottomSheet(
     context: context,
@@ -77,6 +78,7 @@ void showEditDebtDialog(
                 ],
               ),
               const SizedBox(height: 16),
+              // Start Date Picker
               GestureDetector(
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -132,6 +134,68 @@ void showEditDebtDialog(
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              // Due Date Picker
+              GestureDetector(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: dueDate,
+                    firstDate: debtDate,
+                    lastDate: DateTime(2100),
+                  );
+                  if (picked != null) {
+                    setState(() => dueDate = picked);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.darkCard : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppTheme.warningColor.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.event_rounded,
+                        color: AppTheme.warningColor,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'debt.due_date'.tr(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? Colors.grey[500]
+                                    : Colors.grey[600],
+                              ),
+                            ),
+                            Text(
+                              DateFormat('MMM d, y').format(dueDate),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.warningColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: notesController,
@@ -166,7 +230,7 @@ void showEditDebtDialog(
 
                     debt.principal = principal;
                     debt.startDate = debtDate;
-                    debt.dueDate = debtDate;
+                    debt.dueDate = dueDate;
                     debt.notes = notesController.text.trim();
                     debt.updatedAt = DateTime.now();
 
