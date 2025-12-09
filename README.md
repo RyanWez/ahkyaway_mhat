@@ -1,4 +1,4 @@
-# 💰 Loan Tracker App
+# 💰 AhKyaway Mhat App
 
 A refined and modern Flutter application for managing customer loans and payments. Designed with a premium "Glassmorphism" aesthetic, it supports both English and Myanmar languages.
 
