@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../models/customer.dart';
 import '../../../theme/app_theme.dart';
+import '../../../utils/responsive.dart';
 
 /// Data class for top debtor information
 class TopDebtorData {
@@ -30,6 +31,8 @@ class TopDebtorsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Responsive.init(context);
+    
     if (topDebtors.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -47,35 +50,43 @@ class TopDebtorsSection extends StatelessWidget {
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: EdgeInsets.fromLTRB(
+              Responsive.w(16),
+              Responsive.h(16),
+              Responsive.w(16),
+              Responsive.h(8),
+            ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(Responsive.w(8)),
                   decoration: BoxDecoration(
                     color: AppTheme.warningColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(Responsive.r(8)),
                   ),
                   child: Icon(
                     Icons.leaderboard_rounded,
                     color: AppTheme.warningColor,
-                    size: 20,
+                    size: Responsive.iconMedium,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  'dashboard.top_debtors'.tr(),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                SizedBox(width: Responsive.w(10)),
+                Expanded(
+                  child: Text(
+                    'dashboard.top_debtors'.tr(),
+                    style: TextStyle(
+                      fontSize: Responsive.sp(15),
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Spacer(),
+                SizedBox(width: Responsive.w(8)),
                 Text(
                   '${topDebtors.length}',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: Responsive.sp(14),
                     color: isDark ? Colors.grey[400] : Colors.grey[600],
                   ),
                 ),

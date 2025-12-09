@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../models/debt.dart';
 import '../../../theme/app_theme.dart';
+import '../../../utils/responsive.dart';
 
 /// Returns the color for the given debt status
 Color getCustomerDebtStatusColor(DebtStatus status) {
@@ -46,6 +47,7 @@ class DebtListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Responsive.init(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: GestureDetector(
@@ -125,20 +127,27 @@ class DebtListItem extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${'debt.total_paid'.tr()}: ${currencyFormat.format(paid)}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.successColor,
+                  Flexible(
+                    child: Text(
+                      '${'debt.total_paid'.tr()}: ${currencyFormat.format(paid)}',
+                      style: TextStyle(
+                        fontSize: Responsive.sp(12),
+                        color: AppTheme.successColor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Text(
-                    '${'debt.remaining'.tr()}: ${currencyFormat.format(remaining)}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  SizedBox(width: Responsive.w(8)),
+                  Flexible(
+                    child: Text(
+                      '${'debt.remaining'.tr()}: ${currencyFormat.format(remaining)}',
+                      style: TextStyle(
+                        fontSize: Responsive.sp(12),
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.end,
                     ),
                   ),
                 ],

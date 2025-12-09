@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../models/customer.dart';
 import '../../../models/debt.dart';
 import '../../../theme/app_theme.dart';
+import '../../../utils/responsive.dart';
 
 /// Data class for due date warning information
 class DueDateWarningData {
@@ -42,14 +43,18 @@ class DueDateWarningsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Initialize responsive values
+    Responsive.init(context);
+    
     if (warnings.isEmpty) {
       return _buildEmptyState();
     }
 
-    // Calculate height for visible items
-    final double listHeight = (visibleCount * 72.0).clamp(
+    // Calculate height for visible items - scale based on screen size
+    final itemHeight = Responsive.isSmallPhone ? 64.0 : 72.0;
+    final double listHeight = (visibleCount * itemHeight).clamp(
       0,
-      warnings.length * 72.0,
+      warnings.length * itemHeight,
     );
 
     return Container(
@@ -59,44 +64,52 @@ class DueDateWarningsSection extends StatelessWidget {
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: EdgeInsets.fromLTRB(
+              Responsive.w(16),
+              Responsive.h(16),
+              Responsive.w(16),
+              Responsive.h(8),
+            ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(Responsive.w(8)),
                   decoration: BoxDecoration(
                     color: AppTheme.errorColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(Responsive.r(8)),
                   ),
                   child: Icon(
                     Icons.notification_important_rounded,
                     color: AppTheme.errorColor,
-                    size: 20,
+                    size: Responsive.iconMedium,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  'dashboard.due_date_warnings'.tr(),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                SizedBox(width: Responsive.w(10)),
+                Expanded(
+                  child: Text(
+                    'dashboard.due_date_warnings'.tr(),
+                    style: TextStyle(
+                      fontSize: Responsive.sp(15),
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Spacer(),
+                SizedBox(width: Responsive.w(8)),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Responsive.w(8),
+                    vertical: Responsive.h(4),
                   ),
                   decoration: BoxDecoration(
                     color: AppTheme.errorColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(Responsive.r(12)),
                   ),
                   child: Text(
                     '${warnings.length}',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: Responsive.sp(12),
                       fontWeight: FontWeight.w600,
                       color: AppTheme.errorColor,
                     ),
@@ -228,31 +241,41 @@ class _WarningTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Initialize responsive values
+    Responsive.init(context);
     final statusColor = _getStatusColor();
+
+    // Determine layout based on screen size
+    final isSmall = Responsive.isSmallPhone;
+    final iconSize = isSmall ? Responsive.w(32) : Responsive.w(36);
+    final iconPadding = isSmall ? Responsive.w(8) : Responsive.w(10);
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(Responsive.r(10)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: Responsive.w(8),
+          vertical: Responsive.h(10),
+        ),
         child: Row(
           children: [
             // Status icon
             Container(
-              width: 36,
-              height: 36,
+              width: iconSize,
+              height: iconSize,
               decoration: BoxDecoration(
                 color: statusColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(Responsive.r(10)),
               ),
               child: Icon(
                 _getStatusIcon(),
                 color: statusColor,
-                size: 20,
+                size: Responsive.w(18),
               ),
             ),
-            const SizedBox(width: 12),
-            // Customer info
+            SizedBox(width: iconPadding),
+            // Customer info - takes remaining space
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,62 +284,85 @@ class _WarningTile extends StatelessWidget {
                   Text(
                     warning.customer.name,
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: Responsive.sp(14),
                       fontWeight: FontWeight.w500,
                       color: isDark ? Colors.white : const Color(0xFF1A1A2E),
                     ),
                     overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Text(
-                        formatCurrency(warning.outstandingBalance),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: statusColor,
-                        ),
-                      ),
-                      Text(
-                        ' · ',
-                        style: TextStyle(
-                          color: isDark ? Colors.grey[600] : Colors.grey[400],
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          _getStatusText(),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: statusColor,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
+                  SizedBox(height: Responsive.h(2)),
+                  // Use Wrap for small screens, Row for larger
+                  isSmall
+                      ? _buildCompactInfo(statusColor)
+                      : _buildExpandedInfo(statusColor),
                 ],
               ),
             ),
+            SizedBox(width: Responsive.w(8)),
             // Due date
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  DateFormat('MMM d').format(warning.debt.dueDate),
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.grey[300] : Colors.grey[700],
-                  ),
-                ),
-              ],
+            Text(
+              DateFormat('MMM d').format(warning.debt.dueDate),
+              style: TextStyle(
+                fontSize: Responsive.sp(12),
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.grey[300] : Colors.grey[700],
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  /// Compact layout for small screens - currency only
+  Widget _buildCompactInfo(Color statusColor) {
+    return Text(
+      formatCurrency(warning.outstandingBalance),
+      style: TextStyle(
+        fontSize: Responsive.sp(12),
+        fontWeight: FontWeight.w500,
+        color: statusColor,
+      ),
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  /// Expanded layout for larger screens - currency + status text
+  Widget _buildExpandedInfo(Color statusColor) {
+    return Row(
+      children: [
+        Flexible(
+          flex: 2,
+          child: Text(
+            formatCurrency(warning.outstandingBalance),
+            style: TextStyle(
+              fontSize: Responsive.sp(12),
+              fontWeight: FontWeight.w500,
+              color: statusColor,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        Text(
+          ' · ',
+          style: TextStyle(
+            fontSize: Responsive.sp(12),
+            color: isDark ? Colors.grey[600] : Colors.grey[400],
+          ),
+        ),
+        Flexible(
+          flex: 2,
+          child: Text(
+            _getStatusText(),
+            style: TextStyle(
+              fontSize: Responsive.sp(11),
+              color: statusColor,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

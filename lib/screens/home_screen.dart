@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/theme_provider.dart';
 import '../theme/app_theme.dart';
+import '../utils/responsive.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'customer/customers_screen.dart';
 import 'settings/settings_screen.dart';
@@ -47,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Responsive.init(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
 
@@ -76,31 +78,39 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildNavItem(
-                  0,
-                  Icons.dashboard_rounded,
-                  'nav.dashboard'.tr(),
-                  isDark,
+                Expanded(
+                  child: _buildNavItem(
+                    0,
+                    Icons.dashboard_rounded,
+                    'nav.dashboard'.tr(),
+                    isDark,
+                  ),
                 ),
-                _buildNavItem(
-                  1,
-                  Icons.people_rounded,
-                  'nav.customers'.tr(),
-                  isDark,
+                Expanded(
+                  child: _buildNavItem(
+                    1,
+                    Icons.people_rounded,
+                    'nav.customers'.tr(),
+                    isDark,
+                  ),
                 ),
-                _buildNavItem(
-                  2,
-                  Icons.settings_rounded,
-                  'nav.settings'.tr(),
-                  isDark,
+                Expanded(
+                  child: _buildNavItem(
+                    2,
+                    Icons.settings_rounded,
+                    'nav.settings'.tr(),
+                    isDark,
+                  ),
                 ),
-                _buildNavItem(
-                  3,
-                  Icons.person_rounded,
-                  'nav.account'.tr(),
-                  isDark,
+                Expanded(
+                  child: _buildNavItem(
+                    3,
+                    Icons.person_rounded,
+                    'nav.account'.tr(),
+                    isDark,
+                  ),
                 ),
               ],
             ),
@@ -112,6 +122,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildNavItem(int index, IconData icon, String label, bool isDark) {
     final isSelected = _currentIndex == index;
+    // Scale padding based on screen size
+    final horizontalPad = Responsive.isSmallPhone ? 8.0 : 12.0;
+    final iconSize = Responsive.isSmallPhone ? 22.0 : 24.0;
 
     return GestureDetector(
       onTap: () => _onTabTapped(index),
@@ -119,7 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPad,
+          vertical: 10,
+        ),
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.primaryDark.withValues(alpha: 0.15)
@@ -127,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(12),
         ),
         child: AnimatedScale(
-          scale: isSelected ? 1.2 : 1.0,
+          scale: isSelected ? 1.15 : 1.0,
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutBack,
           child: Icon(
@@ -135,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
             color: isSelected
                 ? AppTheme.primaryDark
                 : (isDark ? Colors.grey[500] : Colors.grey[600]),
-            size: 26,
+            size: iconSize,
           ),
         ),
       ),
