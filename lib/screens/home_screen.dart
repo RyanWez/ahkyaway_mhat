@@ -142,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
         behavior: HitTestBehavior.opaque,
         child: Center(
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 100),
             curve: Curves.easeOutCubic,
             width: isSelected ? 52 : 44,
             height: isSelected ? 52 : 44,
