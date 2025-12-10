@@ -174,7 +174,7 @@ class UpdateDialog extends StatelessWidget {
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  'Update ရရှိနိုင်ပါပြီ!',
+                  'Update ရရှိနိုင်ပါပြီ!🚀',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
