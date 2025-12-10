@@ -77,19 +77,36 @@ void showDeleteCustomerConfirmation(
           onPressed: () => Navigator.pop(dialogContext),
           child: Text('actions.cancel'.tr()),
         ),
-        ElevatedButton(
-          onPressed: () async {
-            // Close dialog first
-            Navigator.pop(dialogContext);
-            // Delete the customer
-            await storage.deleteCustomer(customerId);
-            // Navigate back to previous screen using parent navigator
-            if (context.mounted) {
-              parentNavigator.pop();
-            }
-          },
-          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
-          child: Text('actions.delete'.tr()),
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppTheme.errorColor, AppTheme.errorColor.withValues(alpha: 0.85)],
+            ),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.errorColor.withValues(alpha: 0.4),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await storage.deleteCustomer(customerId);
+              if (context.mounted) {
+                parentNavigator.pop();
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            icon: const Icon(Icons.delete_rounded, size: 18),
+            label: Text('actions.delete'.tr()),
+          ),
         ),
       ],
     ),

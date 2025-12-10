@@ -82,8 +82,9 @@ class AppTheme {
         backgroundColor: primaryDark,
         foregroundColor: Colors.white,
         elevation: 0,
+        shadowColor: primaryDark.withValues(alpha: 0.4),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -158,8 +159,9 @@ class AppTheme {
         backgroundColor: primaryLight,
         foregroundColor: Colors.white,
         elevation: 2,
+        shadowColor: primaryLight.withValues(alpha: 0.3),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
