@@ -115,7 +115,10 @@
         "export_desc": "ဒေတာအားလုံးကို JSON ဖြင့်ထုတ်ရန်",
         "import": "ဒေတာသွင်းရန်",
         "import_desc": "Backup မှ ဒေတာသွင်းရန်",
-        "coming_soon": "မကြာမီ ရရှိနိုင်ပါမည်"
+        "coming_soon": "မကြာမီ ရရှိနိုင်ပါမည်",
+        "about": "အကြောင်းအရာ",
+        "about_app": "App အကြောင်း",
+        "about_app_desc": "ဗားရှင်းနှင့် developer အချက်အလက်"
     },
     "account": {
         "title": "အကောင့်",
@@ -155,5 +158,8 @@
         "no_debts_subtitle": "အကြွေးစတင်မှတ်တမ်းတင်ပါ",
         "no_warnings_title": "All Clear!",
         "no_warnings_subtitle": "ရက်လွန် သို့မဟုတ် မကြာမီပေးရမည့် အကြွေးမရှိပါ"
+    },
+    "common": {
+        "close": "ပိတ်ရန်"
     }
 }

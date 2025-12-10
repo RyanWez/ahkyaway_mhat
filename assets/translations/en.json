@@ -115,7 +115,10 @@
         "export_desc": "Export all data as JSON",
         "import": "Import Data",
         "import_desc": "Import data from backup",
-        "coming_soon": "Coming soon"
+        "coming_soon": "Coming soon",
+        "about": "ABOUT",
+        "about_app": "About App",
+        "about_app_desc": "Version and developer info"
     },
     "account": {
         "title": "Account",
@@ -155,5 +158,8 @@
         "no_debts_subtitle": "Your dashboard will show insights once you start tracking",
         "no_warnings_title": "All Clear!",
         "no_warnings_subtitle": "No overdue or upcoming debts"
+    },
+    "common": {
+        "close": "Close"
     }
 }
