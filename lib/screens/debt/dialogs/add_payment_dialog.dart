@@ -96,7 +96,7 @@ void showAddPaymentDialog(
                   final picked = await showDatePicker(
                     context: context,
                     initialDate: paymentDate,
-                    firstDate: DateTime(2020),
+                    firstDate: debt.startDate,
                     lastDate: DateTime.now(),
                   );
                   if (picked != null) {
