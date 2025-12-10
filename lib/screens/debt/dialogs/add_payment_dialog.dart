@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -19,202 +20,400 @@ void showAddPaymentDialog(
   String debtId,
   double remaining,
 ) {
-  final amountController = TextEditingController();
-  final notesController = TextEditingController();
-  final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-  final isDark = themeProvider.isDarkMode;
-  final currencyFormat = NumberFormat.currency(
-    symbol: 'MMK ',
-    decimalDigits: 0,
-  );
-
-  DateTime paymentDate = DateTime.now();
-
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setState) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        decoration: BoxDecoration(
-          color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[700] : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
+    barrierColor: Colors.black.withValues(alpha: 0.5),
+    builder: (context) => AddPaymentSheet(
+      storage: storage,
+      debt: debt,
+      debtId: debtId,
+      remaining: remaining,
+    ),
+  );
+}
+
+class AddPaymentSheet extends StatefulWidget {
+  final StorageService storage;
+  final Debt debt;
+  final String debtId;
+  final double remaining;
+
+  const AddPaymentSheet({
+    super.key,
+    required this.storage,
+    required this.debt,
+    required this.debtId,
+    required this.remaining,
+  });
+
+  @override
+  State<AddPaymentSheet> createState() => _AddPaymentSheetState();
+}
+
+class _AddPaymentSheetState extends State<AddPaymentSheet>
+    with SingleTickerProviderStateMixin {
+  final _amountController = TextEditingController();
+  final _notesController = TextEditingController();
+  late AnimationController _animController;
+  late Animation<double> _slideAnimation;
+  
+  DateTime _paymentDate = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _slideAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+    );
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    _amountController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  void _handleAddPayment() {
+    final amount = CurrencyInputFormatter.parse(_amountController.text);
+    if (amount == null || amount <= 0) {
+      AppToast.showError(context, 'payment.amount_required_msg'.tr());
+      return;
+    }
+
+    if (amount > widget.remaining) {
+      AppToast.showWarning(context, 'payment.exceed_warning'.tr());
+      return;
+    }
+
+    final now = DateTime.now();
+    final payment = Payment(
+      id: const Uuid().v4(),
+      loanId: widget.debtId,
+      amount: amount,
+      paymentDate: _paymentDate,
+      notes: _notesController.text.trim(),
+      createdAt: now,
+    );
+
+    // Get total paid BEFORE adding new payment
+    final currentTotalPaid = widget.storage.getTotalPaidForDebt(widget.debtId);
+    widget.storage.addPayment(payment);
+
+    // Auto-complete debt if fully paid
+    final newTotalPaid = currentTotalPaid + amount;
+    if (newTotalPaid >= widget.debt.totalAmount) {
+      widget.debt.status = DebtStatus.completed;
+      widget.debt.updatedAt = DateTime.now();
+      widget.storage.updateDebt(widget.debt);
+    }
+
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+    final currencyFormat = NumberFormat.currency(symbol: 'MMK ', decimalDigits: 0);
+
+    return AnimatedBuilder(
+      animation: _slideAnimation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _slideAnimation.value * 100),
+          child: child,
+        );
+      },
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.7)
+                  : Colors.white.withValues(alpha: 0.9),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+              border: Border(
+                top: BorderSide(
+                  color: AppTheme.successColor.withValues(alpha: 0.5),
+                  width: 2,
+                ),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, -5),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle bar with gradient
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.successColor.withValues(alpha: 0.5),
+                            AppTheme.successColor,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'payment.add'.tr(),
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF1A1A2E),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${'debt.remaining'.tr()}: ${currencyFormat.format(remaining)}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 24),
-              TextField(
-                controller: amountController,
-                decoration: InputDecoration(
-                  labelText: 'payment.amount_required'.tr(),
-                  prefixIcon: const Icon(Icons.attach_money_rounded),
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(8),
-                  CurrencyInputFormatter(),
-                ],
-              ),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: paymentDate,
-                    firstDate: debt.startDate,
-                    lastDate: DateTime.now(),
-                  );
-                  if (picked != null) {
-                    setState(() => paymentDate = picked);
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppTheme.darkCard : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
+                  const SizedBox(height: 24),
+                  // Title with icon
+                  Row(
                     children: [
-                      Icon(
-                        Icons.calendar_today_rounded,
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.successColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.payments_rounded,
+                          color: AppTheme.successColor,
+                          size: 24,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'payment.date'.tr(),
+                            'payment.add'.tr(),
                             style: TextStyle(
-                              fontSize: 12,
-                              color: isDark
-                                  ? Colors.grey[500]
-                                  : Colors.grey[600],
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : const Color(0xFF1A1A2E),
                             ),
                           ),
                           Text(
-                            DateFormat('MMM d, y').format(paymentDate),
+                            '${'debt.remaining'.tr()}: ${currencyFormat.format(widget.remaining)}',
                             style: TextStyle(
-                              fontSize: 16,
-                              color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF1A1A2E),
+                              fontSize: 13,
+                              color: isDark ? Colors.grey[400] : Colors.grey[600],
                             ),
                           ),
                         ],
                       ),
                     ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: notesController,
-                decoration: InputDecoration(
-                  labelText: 'payment.notes'.tr(),
-                  prefixIcon: const Icon(Icons.note_rounded),
-                ),
-                textCapitalization: TextCapitalization.sentences,
-                maxLength: 50,
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    final amount = CurrencyInputFormatter.parse(
-                      amountController.text,
-                    );
-                    if (amount == null || amount <= 0) {
-                      AppToast.showError(
-                        context,
-                        'payment.amount_required_msg'.tr(),
+                  const SizedBox(height: 24),
+                  // Amount field
+                  _buildTextField(
+                    controller: _amountController,
+                    label: 'payment.amount_required'.tr(),
+                    icon: Icons.attach_money_rounded,
+                    isDark: isDark,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(8),
+                      CurrencyInputFormatter(),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Payment Date Picker
+                  _buildDatePicker(
+                    label: 'payment.date'.tr(),
+                    date: _paymentDate,
+                    icon: Icons.calendar_today_rounded,
+                    isDark: isDark,
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _paymentDate,
+                        firstDate: widget.debt.startDate,
+                        lastDate: DateTime.now(),
                       );
-                      return;
-                    }
-
-                    if (amount > remaining) {
-                      AppToast.showWarning(
-                        context,
-                        'payment.exceed_warning'.tr(),
-                      );
-                      return;
-                    }
-
-                    final now = DateTime.now();
-                    final payment = Payment(
-                      id: const Uuid().v4(),
-                      loanId: debtId,
-                      amount: amount,
-                      paymentDate: paymentDate,
-                      notes: notesController.text.trim(),
-                      createdAt: now,
-                    );
-
-                    // Get total paid BEFORE adding new payment to avoid double counting
-                    final currentTotalPaid = storage.getTotalPaidForDebt(
-                      debtId,
-                    );
-
-                    storage.addPayment(payment);
-
-                    // Auto-complete debt if fully paid (remaining balance is exactly 0)
-                    final newTotalPaid = currentTotalPaid + amount;
-                    if (newTotalPaid >= debt.totalAmount) {
-                      debt.status = DebtStatus.completed;
-                      debt.updatedAt = DateTime.now();
-                      storage.updateDebt(debt);
-                    }
-
-                    Navigator.pop(context);
-                  },
-                  child: Text('payment.add'.tr()),
-                ),
+                      if (picked != null) {
+                        setState(() => _paymentDate = picked);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  // Notes field
+                  _buildTextField(
+                    controller: _notesController,
+                    label: 'payment.notes'.tr(),
+                    icon: Icons.note_rounded,
+                    isDark: isDark,
+                    maxLength: 50,
+                    textCapitalization: TextCapitalization.sentences,
+                  ),
+                  const SizedBox(height: 28),
+                  // Submit button with gradient
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppTheme.successColor, AppTheme.successColor.withValues(alpha: 0.8)],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.successColor.withValues(alpha: 0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _handleAddPayment,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          'payment.add'.tr(),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required bool isDark,
+    int? maxLength,
+    TextInputType? keyboardType,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.08)
+            : Colors.grey.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.grey.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(
+            color: isDark ? Colors.grey[400] : Colors.grey[600],
+          ),
+          prefixIcon: Icon(
+            icon,
+            color: AppTheme.successColor.withValues(alpha: 0.8),
+          ),
+          counterText: '',
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+        ),
+        style: TextStyle(
+          color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+        ),
+        textCapitalization: textCapitalization,
+        keyboardType: keyboardType,
+        maxLength: maxLength,
+        inputFormatters: inputFormatters,
+      ),
+    );
+  }
+
+  Widget _buildDatePicker({
+    required String label,
+    required DateTime date,
+    required IconData icon,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.grey.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.grey.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.grey[500] : Colors.grey[600],
+                  ),
+                ),
+                Text(
+                  DateFormat('MMM d, y').format(date),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

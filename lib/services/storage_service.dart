@@ -136,8 +136,31 @@ class StorageService extends ChangeNotifier {
   }
 
   Future<void> deletePayment(String paymentId) async {
+    // Find the payment before deleting to get its debtId
+    final payment = _payments.firstWhere(
+      (p) => p.id == paymentId,
+      orElse: () => throw Exception('Payment not found'),
+    );
+    final debtId = payment.loanId;
+    
+    // Remove the payment
     _payments.removeWhere((p) => p.id == paymentId);
     await _savePayments();
+    
+    // Check if debt needs to be reactivated
+    final debt = getDebtById(debtId);
+    if (debt != null && debt.status == DebtStatus.completed) {
+      final totalPaid = getTotalPaidForDebt(debtId);
+      final remaining = debt.totalAmount - totalPaid;
+      
+      // If remaining > 0, reactivate the debt
+      if (remaining > 0) {
+        debt.status = DebtStatus.active;
+        debt.updatedAt = DateTime.now();
+        await _saveDebts();
+      }
+    }
+    
     notifyListeners();
   }
 

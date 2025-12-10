@@ -135,21 +135,84 @@ class DebtDetailScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'payment.title'.tr(),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white : const Color(0xFF1A1A2E),
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        'payment.title'.tr(),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isDark 
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : Colors.grey.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${payments.length}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    '${payments.length}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isDark ? Colors.grey[500] : Colors.grey[600],
+                  if (debt.status == DebtStatus.active)
+                    GestureDetector(
+                      onTap: () => showAddPaymentDialog(
+                        context,
+                        storage,
+                        debt,
+                        debtId,
+                        remaining,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppTheme.successColor,
+                              AppTheme.successColor.withValues(alpha: 0.85),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.successColor.withValues(alpha: 0.35),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.add_rounded,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'payment.add'.tr(),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -175,22 +238,9 @@ class DebtDetailScreen extends StatelessWidget {
                 );
               }, childCount: sortedPayments.length),
             ),
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
       ),
-      floatingActionButton: debt.status == DebtStatus.active
-          ? FloatingActionButton.extended(
-              onPressed: () => showAddPaymentDialog(
-                context,
-                storage,
-                debt,
-                debtId,
-                remaining,
-              ),
-              icon: const Icon(Icons.add_rounded),
-              label: Text('payment.add'.tr()),
-            )
-          : null,
     );
   }
 
