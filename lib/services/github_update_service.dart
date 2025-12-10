@@ -148,35 +148,40 @@ class UpdateDialog extends StatelessWidget {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       backgroundColor: isDark ? const Color(0xFF1E1E2E) : Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Update Icon
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 280, maxWidth: 400),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Update Icon
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.system_update_rounded,
+                  color: Colors.green,
+                  size: 40,
+                ),
               ),
-              child: const Icon(
-                Icons.system_update_rounded,
-                color: Colors.green,
-                size: 40,
+              const SizedBox(height: 20),
+              
+              // Title
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Update ရရှိနိုင်ပါပြီ!',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Title
-            Text(
-              'Update ရရှိနိုင်ပါပြီ!',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : const Color(0xFF1A1A2E),
-              ),
-            ),
             const SizedBox(height: 8),
             
             // Version info
@@ -202,15 +207,19 @@ class UpdateDialog extends StatelessWidget {
             // Release notes (if available)
             if (releaseNotes.isNotEmpty) ...[
               Container(
-                constraints: const BoxConstraints(maxHeight: 100),
+                width: double.infinity,
+                constraints: const BoxConstraints(maxHeight: 120),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark 
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.grey.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: SingleChildScrollView(
-                  child: Text(
-                    releaseNotes,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                    ),
-                    textAlign: TextAlign.center,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: _buildFormattedNotes(releaseNotes, isDark),
                   ),
                 ),
               ),
@@ -263,27 +272,109 @@ class UpdateDialog extends StatelessWidget {
                       ),
                       elevation: 0,
                     ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.download_rounded, size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          'Update လုပ်ရန်',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.download_rounded, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Update လုပ်ရန်',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ],
+          ),
         ),
       ),
     );
+  }
+
+  /// Parse markdown and build formatted release notes
+  List<Widget> _buildFormattedNotes(String notes, bool isDark) {
+    final List<Widget> widgets = [];
+    final lines = notes.split('\n');
+    
+    for (final line in lines) {
+      final trimmed = line.trim();
+      if (trimmed.isEmpty) continue;
+      
+      // Check for header (## or #)
+      if (trimmed.startsWith('##')) {
+        final text = trimmed.replaceFirst(RegExp(r'^#+\s*'), '');
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+              ),
+            ),
+          ),
+        );
+      }
+      // Check for list item (- or *)
+      else if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
+        final text = trimmed.replaceFirst(RegExp(r'^[-*]\s*'), '');
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4, left: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '•  ',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    text,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? Colors.grey[300] : Colors.grey[700],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      // Regular text
+      else {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              trimmed,
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+              ),
+            ),
+          ),
+        );
+      }
+    }
+    
+    return widgets;
   }
 }
