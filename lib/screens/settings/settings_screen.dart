@@ -310,6 +310,8 @@ class _SettingsScreenState extends State<SettingsScreen>
 
     if (!mounted) return;
 
+    if (!context.mounted) return;
+    
     showDialog(
       context: context,
       builder: (context) => Dialog(
