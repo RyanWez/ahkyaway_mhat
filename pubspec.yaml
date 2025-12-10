@@ -55,6 +55,7 @@ dependencies:
   # Google Fonts for Myanmar font support
   google_fonts: ^6.2.1
   window_manager: ^0.5.1
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:

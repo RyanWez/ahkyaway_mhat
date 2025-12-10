@@ -69,6 +69,22 @@ android {
             )
         }
     }
+
+    // Custom APK naming: ahkyaway-mhat_v{version}.apk
+    applicationVariants.all {
+        val variant = this
+        variant.outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val versionName = variant.versionName ?: "1.0.0"
+            val buildType = variant.buildType.name
+            
+            output.outputFileName = if (buildType == "release") {
+                "ahkyaway-mhat_v${versionName}.apk"
+            } else {
+                "ahkyaway-mhat_v${versionName}_${buildType}.apk"
+            }
+        }
+    }
 }
 
 flutter {

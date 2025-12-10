@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/theme_provider.dart';
+import '../services/github_update_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/responsive.dart';
 import 'dashboard/dashboard_screen.dart';
@@ -32,6 +33,18 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);
+    
+    // Check for app updates after frame is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkForUpdates();
+    });
+  }
+
+  /// Check for updates from GitHub releases
+  Future<void> _checkForUpdates() async {
+    if (mounted) {
+      await GitHubUpdateService.checkForUpdate(context);
+    }
   }
 
   @override
