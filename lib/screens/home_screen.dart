@@ -153,6 +153,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               final itemWidth = constraints.maxWidth / 4;
               
               return Stack(
+                clipBehavior: Clip.none,
                 alignment: Alignment.center,
                 children: [
                   // Animated sliding indicator
