@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Internet permission for update checking -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:label="AhKyaway Mhat"
         android:name="${applicationName}"

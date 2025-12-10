@@ -31,6 +31,16 @@ class AppToast {
     _show(context, message, ToastType.info);
   }
 
+  /// Shows a quick online status toast (1 second, no progress bar)
+  static void showOnline(BuildContext context, String message) {
+    _showMini(context, message, isOnline: true);
+  }
+
+  /// Shows a quick offline status toast (1 second, no progress bar)
+  static void showOffline(BuildContext context, String message) {
+    _showMini(context, message, isOnline: false);
+  }
+
   /// Get duration based on toast type
   static Duration _getDuration(ToastType type) {
     switch (type) {
@@ -59,6 +69,27 @@ class AppToast {
         message: message,
         type: type,
         duration: duration,
+        onDismiss: () {
+          _currentToast?.remove();
+          _currentToast = null;
+        },
+      ),
+    );
+
+    overlay.insert(_currentToast!);
+  }
+
+  /// Internal method to show mini toast (1 second, no progress bar)
+  static void _showMini(BuildContext context, String message, {required bool isOnline}) {
+    _currentToast?.remove();
+    _currentToast = null;
+
+    final overlay = Overlay.of(context);
+
+    _currentToast = OverlayEntry(
+      builder: (context) => _MiniToastWidget(
+        message: message,
+        isOnline: isOnline,
         onDismiss: () {
           _currentToast?.remove();
           _currentToast = null;
@@ -402,6 +433,137 @@ class _ToastWidgetState extends State<_ToastWidget>
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Mini toast widget for quick status notifications (online/offline)
+class _MiniToastWidget extends StatefulWidget {
+  final String message;
+  final bool isOnline;
+  final VoidCallback onDismiss;
+
+  const _MiniToastWidget({
+    required this.message,
+    required this.isOnline,
+    required this.onDismiss,
+  });
+
+  @override
+  State<_MiniToastWidget> createState() => _MiniToastWidgetState();
+}
+
+class _MiniToastWidgetState extends State<_MiniToastWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<double>(begin: -50, end: 0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    _controller.forward();
+
+    // Auto dismiss after 2 seconds (change this value to adjust duration)
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        _controller.reverse().then((_) {
+          widget.onDismiss();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = widget.isOnline ? AppTheme.successColor : Colors.grey;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Positioned(
+          top: MediaQuery.of(context).padding.top + 16 + _slideAnimation.value,
+          left: 0,
+          right: 0,
+          child: Opacity(
+            opacity: _fadeAnimation.value,
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: color.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Animated dot
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: color.withValues(alpha: 0.6),
+                                  blurRadius: 6,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            widget.message,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: color,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
