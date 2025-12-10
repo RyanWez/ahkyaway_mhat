@@ -160,7 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                               onTap: () {
                                 if (context.locale != AppLocales.my) {
                                   context.setLocale(AppLocales.my);
-                                  AppToast.showSuccess(context, 'ဘာသာစကားမ ြန်မာဘာသာသို့ ပြောင်းလဲပြီးပါပြီ');
+                                  AppToast.showSuccess(context, 'ဘာသာစကား မြန်မာဘာသာသို့ ပြောင်းလဲပြီးပါပြီ');
                                 }
                               },
                               flagEmoji: '🇲🇲',
