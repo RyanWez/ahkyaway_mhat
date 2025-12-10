@@ -210,20 +210,59 @@ class UpdateDialog extends StatelessWidget {
             
             // Release notes (if available)
             if (releaseNotes.isNotEmpty) ...[
+              // Header for release notes
+              Row(
+                children: [
+                  Icon(
+                    Icons.new_releases_rounded,
+                    size: 18,
+                    color: Colors.green,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'ပြောင်းလဲချက်များ',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
               Container(
                 width: double.infinity,
-                constraints: const BoxConstraints(maxHeight: 120),
-                padding: const EdgeInsets.all(12),
+                constraints: const BoxConstraints(maxHeight: 200),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: isDark 
-                      ? Colors.white.withValues(alpha: 0.05)
-                      : Colors.grey.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.grey.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: Colors.green.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
                 ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: _buildFormattedNotes(releaseNotes, isDark),
+                child: ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white,
+                        Colors.white,
+                        Colors.white.withValues(alpha: 0.0),
+                      ],
+                      stops: const [0.0, 0.85, 1.0],
+                    ).createShader(bounds);
+                  },
+                  blendMode: BlendMode.dstIn,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: _buildFormattedNotes(releaseNotes, isDark),
+                    ),
                   ),
                 ),
               ),
