@@ -143,7 +143,12 @@ class _SettingsScreenState extends State<SettingsScreen>
                               icon: Icons.language_rounded,
                               locale: AppLocales.en,
                               isSelected: context.locale == AppLocales.en,
-                              onTap: () => context.setLocale(AppLocales.en),
+                              onTap: () {
+                                if (context.locale != AppLocales.en) {
+                                  context.setLocale(AppLocales.en);
+                                  AppToast.showSuccess(context, 'Language changed to English');
+                                }
+                              },
                               flagEmoji: '🇺🇸',
                             ),
                             _buildDivider(isDark),
@@ -152,7 +157,12 @@ class _SettingsScreenState extends State<SettingsScreen>
                               icon: Icons.translate_rounded,
                               locale: AppLocales.my,
                               isSelected: context.locale == AppLocales.my,
-                              onTap: () => context.setLocale(AppLocales.my),
+                              onTap: () {
+                                if (context.locale != AppLocales.my) {
+                                  context.setLocale(AppLocales.my);
+                                  AppToast.showSuccess(context, 'ဘာသာစကားမ ြန်မာဘာသာသို့ ပြောင်းလဲပြီးပါပြီ');
+                                }
+                              },
                               flagEmoji: '🇲🇲',
                             ),
                           ],
