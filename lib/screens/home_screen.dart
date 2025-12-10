@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:easy_localization/easy_localization.dart';
 import '../providers/theme_provider.dart';
 import '../services/github_update_service.dart';
 import '../theme/app_theme.dart';
@@ -19,9 +18,11 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late PageController _pageController;
+  late AnimationController _indicatorController;
+  late Animation<double> _indicatorAnimation;
 
   final List<Widget> _screens = const [
     DashboardScreen(),
@@ -34,6 +35,19 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);
+    
+    // Indicator animation controller
+    _indicatorController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _indicatorAnimation = Tween<double>(
+      begin: 0,
+      end: 0,
+    ).animate(CurvedAnimation(
+      parent: _indicatorController,
+      curve: Curves.easeOutBack,
+    ));
     
     // Check for app updates after frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -51,11 +65,26 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _indicatorController.dispose();
     super.dispose();
   }
 
   void _onTabTapped(int index) {
+    if (_currentIndex == index) return;
+    
     HapticFeedback.lightImpact();
+    
+    // Animate indicator
+    final oldIndex = _currentIndex;
+    _indicatorAnimation = Tween<double>(
+      begin: oldIndex.toDouble(),
+      end: index.toDouble(),
+    ).animate(CurvedAnimation(
+      parent: _indicatorController,
+      curve: Curves.easeOutBack,
+    ));
+    _indicatorController.forward(from: 0);
+    
     setState(() => _currentIndex = index);
     _pageController.jumpToPage(index);
   }
@@ -94,45 +123,86 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildFloatingNavBar(bool isDark) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          height: 70,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: isDark
-                ? Colors.black.withValues(alpha: 0.6)
-                : Colors.white.withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(24),
+                ? Colors.black.withValues(alpha: 0.65)
+                : Colors.white.withValues(alpha: 0.85),
+            borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.black.withValues(alpha: 0.08),
+                  : Colors.black.withValues(alpha: 0.06),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.15),
-                blurRadius: 20,
+                color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.12),
+                blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildNavItem(0, Icons.dashboard_rounded, 'nav.dashboard'.tr(), isDark),
-              _buildNavItem(1, Icons.people_rounded, 'nav.customers'.tr(), isDark),
-              _buildNavItem(2, Icons.settings_rounded, 'nav.settings'.tr(), isDark),
-              _buildNavItem(3, Icons.person_rounded, 'nav.account'.tr(), isDark),
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final itemWidth = constraints.maxWidth / 4;
+              
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Animated sliding indicator
+                  AnimatedBuilder(
+                    animation: _indicatorController,
+                    builder: (context, child) {
+                      final position = _indicatorController.isAnimating
+                          ? _indicatorAnimation.value
+                          : _currentIndex.toDouble();
+                      
+                      return Positioned(
+                        left: (position * itemWidth) + (itemWidth - 52) / 2,
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryDark.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primaryDark.withValues(alpha: 0.4),
+                                blurRadius: 16,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  // Nav items
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildNavItem(0, Icons.dashboard_rounded, isDark),
+                      _buildNavItem(1, Icons.people_rounded, isDark),
+                      _buildNavItem(2, Icons.settings_rounded, isDark),
+                      _buildNavItem(3, Icons.person_rounded, isDark),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label, bool isDark) {
+  Widget _buildNavItem(int index, IconData icon, bool isDark) {
     final isSelected = _currentIndex == index;
     final iconSize = Responsive.isSmallPhone ? 22.0 : 24.0;
 
@@ -140,38 +210,27 @@ class _HomeScreenState extends State<HomeScreen> {
       child: GestureDetector(
         onTap: () => _onTabTapped(index),
         behavior: HitTestBehavior.opaque,
-        child: Center(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.easeOutCubic,
-            width: isSelected ? 52 : 44,
-            height: isSelected ? 52 : 44,
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppTheme.primaryDark.withValues(alpha: 0.2)
-                  : Colors.transparent,
-              shape: BoxShape.circle,
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: AppTheme.primaryDark.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        spreadRadius: 2,
-                      ),
-                    ]
-                  : [],
-            ),
-            child: AnimatedScale(
-              scale: isSelected ? 1.1 : 1.0,
+        child: SizedBox(
+          height: 70,
+          child: Center(
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: isSelected ? 1 : 0),
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOutBack,
-              child: Icon(
-                icon,
-                color: isSelected
-                    ? AppTheme.primaryDark
-                    : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                size: iconSize,
-              ),
+              builder: (context, value, child) {
+                return Transform.scale(
+                  scale: 1 + (value * 0.15),
+                  child: Icon(
+                    icon,
+                    color: Color.lerp(
+                      isDark ? Colors.grey[500] : Colors.grey[600],
+                      AppTheme.primaryDark,
+                      value,
+                    ),
+                    size: iconSize,
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -179,4 +238,5 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
 
