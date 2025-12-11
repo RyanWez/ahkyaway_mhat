@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:lottie/lottie.dart';
+import 'package:dotlottie_loader/dotlottie_loader.dart';
 
 /// GitHub Update Service for checking and notifying app updates
 class GitHubUpdateService {
   static const String _owner = 'RyanWez';
   static const String _repo = 'ahkyaway_mhat-releases';
-  
-  static const String _apiUrl = 
+
+  static const String _apiUrl =
       'https://api.github.com/repos/$_owner/$_repo/releases/latest';
 
   /// Check for updates and show dialog if available
@@ -45,14 +47,16 @@ class GitHubUpdateService {
   /// Fetch latest release info from GitHub API
   static Future<Map<String, dynamic>?> _getLatestRelease() async {
     try {
-      final response = await http.get(
-        Uri.parse(_apiUrl),
-        headers: {'Accept': 'application/vnd.github.v3+json'},
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(
+            Uri.parse(_apiUrl),
+            headers: {'Accept': 'application/vnd.github.v3+json'},
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         // Extract version from tag (remove 'v' prefix if present)
         String version = data['tag_name'] ?? '';
         if (version.startsWith('v')) {
@@ -147,7 +151,7 @@ class UpdateDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       backgroundColor: isDark ? const Color(0xFF1E1E2E) : Colors.white,
@@ -158,26 +162,51 @@ class UpdateDialog extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Update Icon
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.system_update_rounded,
-                  color: Colors.green,
-                  size: 40,
+              // Update Lottie Animation (Optimized for low-end devices)
+              RepaintBoundary(
+                child: SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: DotLottieLoader.fromAsset(
+                    'assets/animations/update.lottie',
+                    frameBuilder: (context, dotLottie) {
+                      if (dotLottie != null) {
+                        return Lottie.memory(
+                          dotLottie.animations.values.single,
+                          fit: BoxFit.contain,
+                          repeat: true,
+                          frameRate: FrameRate(
+                            30,
+                          ), // Limit to 30fps for performance
+                          renderCache: RenderCache
+                              .raster, // Cache for better performance
+                          filterQuality:
+                              FilterQuality.low, // Reduce quality for speed
+                        );
+                      }
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.system_update_rounded,
+                          color: Colors.green,
+                          size: 40,
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Title
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  'Update ရရှိနိုင်ပါပြီ!🚀',
+                  'Update ရရှိနိုင်ပါပြီ!',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -185,158 +214,161 @@ class UpdateDialog extends StatelessWidget {
                   ),
                 ),
               ),
-            const SizedBox(height: 8),
-            
-            // Version info
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isDark 
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.grey.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                'v$currentVersion → v$latestVersion',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Release notes (if available)
-            if (releaseNotes.isNotEmpty) ...[
-              // Header for release notes
-              Row(
-                children: [
-                  Icon(
-                    Icons.new_releases_rounded,
-                    size: 18,
-                    color: Colors.green,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'ပြောင်းလဲချက်များ',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white : const Color(0xFF1A1A2E),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
+
+              // Version info
               Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(maxHeight: 200),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: isDark 
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.grey.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: Colors.green.withValues(alpha: 0.3),
-                    width: 1,
-                  ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
-                child: ShaderMask(
-                  shaderCallback: (Rect bounds) {
-                    return LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.white,
-                        Colors.white,
-                        Colors.white.withValues(alpha: 0.0),
-                      ],
-                      stops: const [0.0, 0.85, 1.0],
-                    ).createShader(bounds);
-                  },
-                  blendMode: BlendMode.dstIn,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _buildFormattedNotes(releaseNotes, isDark),
-                    ),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.grey.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'v$currentVersion → v$latestVersion',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-            ],
-            
-            // Buttons
-            Row(
-              children: [
-                // Later button
-                Expanded(
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+
+              // Release notes (if available)
+              if (releaseNotes.isNotEmpty) ...[
+                // Header for release notes
+                Row(
+                  children: [
+                    Icon(
+                      Icons.new_releases_rounded,
+                      size: 18,
+                      color: Colors.green,
                     ),
-                    child: Text(
-                      'နောက်မှ',
+                    const SizedBox(width: 8),
+                    Text(
+                      'ပြောင်းလဲချက်များ',
                       style: TextStyle(
-                        fontSize: 15,
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : const Color(0xFF1A1A2E),
                       ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(maxHeight: 200),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.grey.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.green.withValues(alpha: 0.3),
+                      width: 1,
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                // Update button
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                      final uri = Uri.parse(downloadUrl);
-                      if (await canLaunchUrl(uri)) {
-                        await launchUrl(
-                          uri,
-                          mode: LaunchMode.externalApplication,
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.download_rounded, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'Update လုပ်ရန်',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                  child: ShaderMask(
+                    shaderCallback: (Rect bounds) {
+                      return LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.white,
+                          Colors.white,
+                          Colors.white.withValues(alpha: 0.0),
                         ],
+                        stops: const [0.0, 0.85, 1.0],
+                      ).createShader(bounds);
+                    },
+                    blendMode: BlendMode.dstIn,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: _buildFormattedNotes(releaseNotes, isDark),
                       ),
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
               ],
-            ),
-          ],
+
+              // Buttons
+              Row(
+                children: [
+                  // Later button
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'နောက်မှ',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Update button
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        final uri = Uri.parse(downloadUrl);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(
+                            uri,
+                            mode: LaunchMode.externalApplication,
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.download_rounded, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Update လုပ်ရန်',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -347,11 +379,11 @@ class UpdateDialog extends StatelessWidget {
   List<Widget> _buildFormattedNotes(String notes, bool isDark) {
     final List<Widget> widgets = [];
     final lines = notes.split('\n');
-    
+
     for (final line in lines) {
       final trimmed = line.trim();
       if (trimmed.isEmpty) continue;
-      
+
       // Check for header (## or #)
       if (trimmed.startsWith('##')) {
         final text = trimmed.replaceFirst(RegExp(r'^#+\s*'), '');
@@ -416,7 +448,7 @@ class UpdateDialog extends StatelessWidget {
         );
       }
     }
-    
+
     return widgets;
   }
 }

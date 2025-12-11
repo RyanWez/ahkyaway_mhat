@@ -64,26 +64,35 @@ class _ComingSoonBannerState extends State<ComingSoonBanner>
           // Header with animated badge
           Row(
             children: [
-              // Lottie Animation
-              SizedBox(
-                width: 56,
-                height: 56,
-                child: DotLottieLoader.fromAsset(
-                  'assets/animations/wallet.lottie',
-                  frameBuilder: (context, dotLottie) {
-                    if (dotLottie != null) {
-                      return Lottie.memory(
-                        dotLottie.animations.values.single,
-                        fit: BoxFit.contain,
-                        repeat: true,
+              // Lottie Animation (Optimized for low-end devices)
+              RepaintBoundary(
+                child: SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: DotLottieLoader.fromAsset(
+                    'assets/animations/wallet.lottie',
+                    frameBuilder: (context, dotLottie) {
+                      if (dotLottie != null) {
+                        return Lottie.memory(
+                          dotLottie.animations.values.single,
+                          fit: BoxFit.contain,
+                          repeat: true,
+                          frameRate: FrameRate(
+                            30,
+                          ), // Limit to 30fps for performance
+                          renderCache: RenderCache
+                              .raster, // Cache for better performance
+                          filterQuality:
+                              FilterQuality.low, // Reduce quality for speed
+                        );
+                      }
+                      return const Icon(
+                        Icons.cloud_sync_rounded,
+                        size: 32,
+                        color: AppTheme.primaryDark,
                       );
-                    }
-                    return const Icon(
-                      Icons.cloud_sync_rounded,
-                      size: 32,
-                      color: AppTheme.primaryDark,
-                    );
-                  },
+                    },
+                  ),
                 ),
               ),
               const SizedBox(width: 16),

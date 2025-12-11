@@ -203,22 +203,31 @@ class _SplashWrapperState extends State<SplashWrapper>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Lottie Animation
-                  SizedBox(
-                    width: 180,
-                    height: 180,
-                    child: DotLottieLoader.fromAsset(
-                      'assets/animations/wallet.lottie',
-                      frameBuilder: (context, dotLottie) {
-                        if (dotLottie != null) {
-                          return Lottie.memory(
-                            dotLottie.animations.values.single,
-                            fit: BoxFit.contain,
-                            repeat: true,
-                          );
-                        }
-                        return const SizedBox();
-                      },
+                  // Lottie Animation (Optimized for low-end devices)
+                  RepaintBoundary(
+                    child: SizedBox(
+                      width: 180,
+                      height: 180,
+                      child: DotLottieLoader.fromAsset(
+                        'assets/animations/wallet.lottie',
+                        frameBuilder: (context, dotLottie) {
+                          if (dotLottie != null) {
+                            return Lottie.memory(
+                              dotLottie.animations.values.single,
+                              fit: BoxFit.contain,
+                              repeat: true,
+                              frameRate: FrameRate(
+                                30,
+                              ), // Limit to 30fps for performance
+                              renderCache: RenderCache
+                                  .raster, // Cache for better performance
+                              filterQuality:
+                                  FilterQuality.low, // Reduce quality for speed
+                            );
+                          }
+                          return const SizedBox();
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 32),
