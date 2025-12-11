@@ -106,16 +106,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                             ThemeOptionTile(
                               title: 'settings.dark_mode'.tr(),
                               icon: Icons.dark_mode_rounded,
-                              value: true,
-                              themeProvider: themeProvider,
+                              isSelected: themeProvider.isDarkMode,
+                              onTap: () =>
+                                  themeProvider.setThemeMode(ThemeMode.dark),
                               isDark: isDark,
                             ),
                             _buildDivider(isDark),
                             ThemeOptionTile(
                               title: 'settings.light_mode'.tr(),
                               icon: Icons.light_mode_rounded,
-                              value: false,
-                              themeProvider: themeProvider,
+                              isSelected: !themeProvider.isDarkMode,
+                              onTap: () =>
+                                  themeProvider.setThemeMode(ThemeMode.light),
                               isDark: isDark,
                             ),
                           ],

@@ -6,25 +6,23 @@ import '../../../theme/app_theme.dart';
 class ThemeOptionTile extends StatelessWidget {
   final String title;
   final IconData icon;
-  final bool value;
-  final ThemeProvider themeProvider;
+  final bool isSelected;
+  final VoidCallback onTap;
   final bool isDark;
 
   const ThemeOptionTile({
     super.key,
     required this.title,
     required this.icon,
-    required this.value,
-    required this.themeProvider,
+    required this.isSelected,
+    required this.onTap,
     required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = themeProvider.isDarkMode == value;
-
     return GestureDetector(
-      onTap: () => themeProvider.setDarkMode(value),
+      onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -34,13 +32,13 @@ class ThemeOptionTile extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: (value ? AppTheme.primaryDark : AppTheme.warningColor)
+                color: (isSelected ? AppTheme.primaryDark : AppTheme.warningColor)
                     .withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
-                color: value ? AppTheme.primaryDark : AppTheme.warningColor,
+                color: isSelected ? AppTheme.primaryDark : AppTheme.warningColor,
               ),
             ),
             const SizedBox(width: 16),

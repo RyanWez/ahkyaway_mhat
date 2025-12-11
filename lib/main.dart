@@ -41,11 +41,46 @@ void main() async {
 
   // Load preferences
   final prefs = await SharedPreferences.getInstance();
-  final isDarkMode = prefs.getBool('isDarkMode') ?? true;
+
+  
+  // Map string/bool legacy to ThemeMode
+  ThemeMode initialThemeMode = ThemeMode.system;
+
+  // Refined Logic:
+  // Safely handle both new String-based ThemeMode and legacy boolean isDarkMode
+  try {
+     // Try reading as String first (New format)
+     final themeStr = prefs.getString('isDarkMode');
+     if (themeStr != null) {
+       if (themeStr == 'ThemeMode.dark') {
+         initialThemeMode = ThemeMode.dark;
+       } else if (themeStr == 'ThemeMode.light') {
+         initialThemeMode = ThemeMode.light;
+       } else if (themeStr == 'ThemeMode.system') {
+         initialThemeMode = ThemeMode.system;
+       }
+     } else {
+       // If null, it might be legacy bool or truly missing (default to System)
+       // We explicitly throw here to trigger the catch block to check for bool
+       throw Exception('Value not found or is not string');
+     }
+  } catch (e) {
+     // It might be a bool from old version or just missing
+     try {
+       final isDark = prefs.getBool('isDarkMode');
+       if (isDark != null) {
+         initialThemeMode = isDark ? ThemeMode.dark : ThemeMode.light;
+       }
+     } catch (e) {
+       // Corrupt or unknown, default to system
+       initialThemeMode = ThemeMode.system;
+     }
+  }
+
   final hapticEnabled = prefs.getBool('hapticEnabled') ?? true;
 
   final themeProvider = ThemeProvider(
-    isDarkMode: isDarkMode,
+    themeMode: initialThemeMode,
     hapticEnabled: hapticEnabled,
   );
 

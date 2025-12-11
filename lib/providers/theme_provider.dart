@@ -6,37 +6,46 @@ class ThemeProvider extends ChangeNotifier {
   static const String _themeKey = 'isDarkMode';
   static const String _hapticKey = 'hapticEnabled';
   
-  bool _isDarkMode; 
+  ThemeMode _themeMode;
   bool _hapticEnabled;
 
-  ThemeProvider({bool isDarkMode = true, bool hapticEnabled = true})
-      : _isDarkMode = isDarkMode,
+  ThemeProvider({
+    ThemeMode themeMode = ThemeMode.system,
+    bool hapticEnabled = true,
+  })  : _themeMode = themeMode,
         _hapticEnabled = hapticEnabled;
 
-  bool get isDarkMode => _isDarkMode;
+  /// Returns true if the app is currently showing dark UI
+  /// This checks the actual brightness if mode is System
+  bool get isDarkMode {
+    if (_themeMode == ThemeMode.system) {
+      return WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+          Brightness.dark;
+    }
+    return _themeMode == ThemeMode.dark;
+  }
+
   bool get hapticEnabled => _hapticEnabled;
 
-  ThemeMode get themeMode => _isDarkMode ? ThemeMode.dark : ThemeMode.light;
+  ThemeMode get themeMode => _themeMode;
 
   Future<void> init() async {
-    final prefs = await SharedPreferences.getInstance();
-    _isDarkMode = prefs.getBool(_themeKey) ?? true;
-    _hapticEnabled = prefs.getBool(_hapticKey) ?? true;
+    // Deprecated: Initialization is now done in main.dart
     notifyListeners();
   }
 
-  Future<void> toggleTheme() async {
-    _isDarkMode = !_isDarkMode;
+  Future<void> setThemeMode(ThemeMode mode) async {
+    if (_themeMode == mode) return;
+
+    _themeMode = mode;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_themeKey, _isDarkMode);
+    await prefs.setString(_themeKey, mode.toString());
     notifyListeners();
   }
 
-  Future<void> setDarkMode(bool value) async {
-    _isDarkMode = value;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_themeKey, _isDarkMode);
-    notifyListeners();
+  // Backward compatibility wrapper
+  Future<void> setDarkMode(bool isDark) async {
+    await setThemeMode(isDark ? ThemeMode.dark : ThemeMode.light);
   }
 
   Future<void> setHapticEnabled(bool value) async {
