@@ -6,8 +6,12 @@ class ThemeProvider extends ChangeNotifier {
   static const String _themeKey = 'isDarkMode';
   static const String _hapticKey = 'hapticEnabled';
   
-  bool _isDarkMode = true; // Default to dark mode for modern feel
-  bool _hapticEnabled = true; // Default to enabled
+  bool _isDarkMode; 
+  bool _hapticEnabled;
+
+  ThemeProvider({bool isDarkMode = true, bool hapticEnabled = true})
+      : _isDarkMode = isDarkMode,
+        _hapticEnabled = hapticEnabled;
 
   bool get isDarkMode => _isDarkMode;
   bool get hapticEnabled => _hapticEnabled;

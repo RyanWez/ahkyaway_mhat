@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:lottie/lottie.dart';
@@ -38,12 +39,25 @@ void main() async {
     });
   }
 
+  // Load preferences
+  final prefs = await SharedPreferences.getInstance();
+  final isDarkMode = prefs.getBool('isDarkMode') ?? true;
+  final hapticEnabled = prefs.getBool('hapticEnabled') ?? true;
+
+  final themeProvider = ThemeProvider(
+    isDarkMode: isDarkMode,
+    hapticEnabled: hapticEnabled,
+  );
+
   runApp(
     EasyLocalization(
       supportedLocales: AppLocales.supportedLocales,
       path: AppLocales.path,
       fallbackLocale: AppLocales.fallbackLocale,
-      child: const MyApp(),
+      child: ChangeNotifierProvider.value(
+        value: themeProvider,
+        child: const MyApp(),
+      ),
     ),
   );
 }
@@ -53,14 +67,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'AhKyaway Mhat',
-      debugShowCheckedModeBanner: false,
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      theme: AppTheme.darkTheme,
-      home: const SplashWrapper(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return MaterialApp(
+          title: 'AhKyaway Mhat',
+          debugShowCheckedModeBanner: false,
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          locale: context.locale,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: const SplashWrapper(),
+        );
+      },
     );
   }
 }
@@ -79,7 +99,6 @@ class _SplashWrapperState extends State<SplashWrapper>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
-  ThemeProvider? _themeProvider;
   StorageService? _storageService;
   bool _isInitialized = false;
   bool _showSplash = true;
@@ -125,8 +144,7 @@ class _SplashWrapperState extends State<SplashWrapper>
     await Future.delayed(const Duration(milliseconds: 400));
 
     // Stage 2: Loading preferences (30-60%)
-    _themeProvider = ThemeProvider();
-    await _themeProvider!.init();
+    // ThemeProvider is already initialized in main()
     await _animateProgress(0.6, 'Loading preferences...');
     await Future.delayed(const Duration(milliseconds: 300));
 
@@ -203,7 +221,6 @@ class _SplashWrapperState extends State<SplashWrapper>
     if (!_showSplash && _isInitialized && _termsAccepted) {
       return MultiProvider(
         providers: [
-          ChangeNotifierProvider.value(value: _themeProvider!),
           ChangeNotifierProvider.value(value: _storageService!),
         ],
         child: Consumer<ThemeProvider>(
@@ -224,9 +241,11 @@ class _SplashWrapperState extends State<SplashWrapper>
       );
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     // Splash Screen
     return Scaffold(
-      backgroundColor: AppTheme.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -266,19 +285,22 @@ class _SplashWrapperState extends State<SplashWrapper>
                   ),
                   const SizedBox(height: 32),
                   // App Name
-                  const Text(
+                  Text(
                     'AhKyaway Mhat',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A2E),
                       letterSpacing: 1.2,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'For Small Communities',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.grey[500] : Colors.grey[600],
+                    ),
                   ),
                   const SizedBox(height: 48),
                   // Progress Bar
@@ -292,7 +314,7 @@ class _SplashWrapperState extends State<SplashWrapper>
                       key: ValueKey(_statusText),
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey[400],
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
