@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../providers/theme_provider.dart';
+
 import '../../../theme/app_theme.dart';
 
 /// Theme selection option widget for settings screen
