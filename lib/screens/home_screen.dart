@@ -128,26 +128,39 @@ class _HomeScreenState extends State<HomeScreen>
     return ClipRRect(
       borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
         child: Container(
           height: 70,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
+            // Frosted glass effect - more transparent
             color: isDark
-                ? Colors.black.withValues(alpha: 0.65)
-                : Colors.white.withValues(alpha: 0.85),
+                ? Colors.black.withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(28),
+            // Subtle border
             border: Border.all(
               color: isDark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.black.withValues(alpha: 0.06),
+                  ? Colors.white.withValues(alpha: 0.12)
+                  : Colors.grey.withValues(alpha: 0.2),
               width: 1,
             ),
+            // Soft shadow for depth
             boxShadow: [
+              // Main shadow
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.12),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.5)
+                    : Colors.black.withValues(alpha: 0.12),
+                blurRadius: 25,
+                offset: const Offset(0, 10),
+                spreadRadius: -5,
+              ),
+              // Accent glow (subtle)
+              BoxShadow(
+                color: AppTheme.primaryDark.withValues(alpha: isDark ? 0.2 : 0.06),
+                blurRadius: 40,
+                offset: const Offset(0, 5),
               ),
             ],
           ),

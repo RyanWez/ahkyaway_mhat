@@ -137,7 +137,7 @@ class GitHubUpdateService {
     
     try {
       // Use method channel to get supported ABIs from Android
-      const platform = MethodChannel('com.example.ankyaway_mhat/device_info');
+      const platform = MethodChannel('com.ahkyawaymhat.app/device_info');
       final List<dynamic>? abis = await platform.invokeMethod('getSupportedAbis');
       if (abis != null && abis.isNotEmpty) {
         // Return the primary (most preferred) ABI

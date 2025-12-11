@@ -21,7 +21,7 @@ class _ComingSoonBannerState extends State<ComingSoonBanner>
   void initState() {
     super.initState();
     _shimmerController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 2500),
       vsync: this,
     )..repeat();
   }
@@ -193,27 +193,40 @@ class _ComingSoonBannerState extends State<ComingSoonBanner>
     return AnimatedBuilder(
       animation: _shimmerController,
       builder: (context, child) {
+        // Use sine curve for smoother, more natural shimmer
+        final shimmerValue = (1 + (2 * _shimmerController.value - 1).abs()) / 2;
+        
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              begin: Alignment(-1 + 2 * _shimmerController.value, 0),
-              end: Alignment(1 + 2 * _shimmerController.value, 0),
+              begin: Alignment(-1.5 + 3 * _shimmerController.value, 0),
+              end: Alignment(0.5 + 3 * _shimmerController.value, 0),
               colors: const [
-                Color(0xFFFFD700),
-                Color(0xFFFFA500),
-                Color(0xFFFFD700),
+                Color(0xFFFFB800),
+                Color(0xFFFFD54F),
+                Color(0xFFFFE082),
+                Color(0xFFFFD54F),
+                Color(0xFFFFB800),
               ],
+              stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFB800).withValues(alpha: 0.3 + 0.2 * shimmerValue),
+                blurRadius: 8 + 4 * shimmerValue,
+                spreadRadius: 0,
+              ),
+            ],
           ),
           child: const Text(
             'COMING SOON',
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 1,
+              color: Color(0xFF5D4000),
+              letterSpacing: 1.2,
             ),
           ),
         );
