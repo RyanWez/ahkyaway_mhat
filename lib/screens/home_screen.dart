@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 import '../services/github_update_service.dart';
@@ -72,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen>
   void _onTabTapped(int index) {
     if (_currentIndex == index) return;
 
-    HapticFeedback.lightImpact();
+    Provider.of<ThemeProvider>(context, listen: false).lightImpact();
 
     // Animate indicator
     final oldIndex = _currentIndex;
@@ -107,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen>
             controller: _pageController,
             physics: const NeverScrollableScrollPhysics(),
             onPageChanged: (index) {
-              HapticFeedback.selectionClick();
+              Provider.of<ThemeProvider>(context, listen: false).selectionClick();
               setState(() => _currentIndex = index);
             },
             children: _screens,

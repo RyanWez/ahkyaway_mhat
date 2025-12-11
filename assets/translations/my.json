@@ -120,7 +120,10 @@
         "about_app": "App အကြောင်း",
         "about_app_desc": "ဗားရှင်းနှင့် developer အချက်အလက်",
         "check_updates": "Update စစ်ဆေးရန်",
-        "check_updates_desc": "Version အသစ် ရှိ/မရှိ စစ်ဆေးမည်"
+        "check_updates_desc": "Version အသစ် ရှိ/မရှိ စစ်ဆေးမည်",
+        "haptic": "တုန်ခါမှု",
+        "haptic_feedback": "တုန်ခါမှု တုံ့ပြန်ချက်",
+        "haptic_feedback_desc": "ခလုတ်နှိပ်သောအခါ တုန်ခါမှု"
     },
     "account": {
         "title": "အကောင့်",

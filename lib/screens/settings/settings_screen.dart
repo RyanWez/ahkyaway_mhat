@@ -12,6 +12,7 @@ import 'widgets/theme_option_tile.dart';
 import 'widgets/currency_info_card.dart';
 import 'widgets/settings_item_tile.dart';
 import 'widgets/language_option_tile.dart';
+import 'widgets/haptic_toggle_card.dart';
 import 'widgets/about_app_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -174,9 +175,33 @@ class _SettingsScreenState extends State<SettingsScreen>
 
                 const SizedBox(height: 32),
 
-                // Currency Section
+                // Haptic Feedback Section
                 _buildAnimatedSection(
                   index: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionTitle('settings.haptic'.tr(), isDark),
+                      const SizedBox(height: 16),
+                      HapticToggleCard(
+                        isEnabled: themeProvider.hapticEnabled,
+                        isDark: isDark,
+                        onChanged: (value) {
+                          themeProvider.setHapticEnabled(value);
+                          if (value) {
+                            themeProvider.lightImpact();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Currency Section
+                _buildAnimatedSection(
+                  index: 3,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -191,7 +216,7 @@ class _SettingsScreenState extends State<SettingsScreen>
 
                 // Data Section
                 _buildAnimatedSection(
-                  index: 3,
+                  index: 4,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -239,7 +264,7 @@ class _SettingsScreenState extends State<SettingsScreen>
 
                 // About Section
                 _buildAnimatedSection(
-                  index: 4,
+                  index: 5,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

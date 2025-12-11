@@ -120,7 +120,10 @@
         "about_app": "About App",
         "about_app_desc": "Version and developer info",
         "check_updates": "Check for Updates",
-        "check_updates_desc": "Check if a new version is available"
+        "check_updates_desc": "Check if a new version is available",
+        "haptic": "HAPTIC",
+        "haptic_feedback": "Haptic Feedback",
+        "haptic_feedback_desc": "Vibration on button press"
     },
     "account": {
         "title": "Account",
