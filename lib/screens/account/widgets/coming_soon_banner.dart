@@ -162,6 +162,7 @@ class _ComingSoonBannerState extends State<ComingSoonBanner>
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   Icons.notifications_active_rounded,
@@ -169,12 +170,15 @@ class _ComingSoonBannerState extends State<ComingSoonBanner>
                   color: AppTheme.primaryDark.withValues(alpha: 0.7),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'account.notify_me'.tr(),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.primaryDark.withValues(alpha: 0.7),
+                Flexible(
+                  child: Text(
+                    'account.notify_me'.tr(),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primaryDark.withValues(alpha: 0.7),
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
