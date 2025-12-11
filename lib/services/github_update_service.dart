@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 /// GitHub Update Service for checking and notifying app updates
 class GitHubUpdateService {
-  // TODO: Replace with your actual GitHub username and repo name
   static const String _owner = 'RyanWez';
   static const String _repo = 'ahkyaway_mhat-releases';
   
