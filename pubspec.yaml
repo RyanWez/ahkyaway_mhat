@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 2.0.3+1
+version: 2.0.5+1
 
 environment:
   sdk: ^3.10.1
@@ -57,6 +57,10 @@ dependencies:
   window_manager: ^0.5.1
   http: ^1.6.0
   connectivity_plus: ^7.0.0
+  
+  # Lottie animation support
+  lottie: ^3.3.1
+  dotlottie_loader: ^0.0.4
 
 dev_dependencies:
   flutter_test:
@@ -99,9 +103,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # Assets for translations
+  # Assets for translations and animations
   assets:
     - assets/translations/
+    - assets/animations/
 
   # Custom fonts
   fonts:

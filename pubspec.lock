@@ -113,6 +113,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.11"
+  dotlottie_loader:
+    dependency: "direct main"
+    description:
+      name: dotlottie_loader
+      sha256: "12d0171d6db3720f00301dd4889ff8b7f8cae8221ae0cc227b512720f90a2fd5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.5"
   easy_localization:
     dependency: "direct main"
     description:
@@ -277,6 +285,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  lottie:
+    dependency: "direct main"
+    description:
+      name: lottie
+      sha256: "8ae0be46dbd9e19641791dc12ee480d34e1fd3f84c749adc05f3ad9342b71b95"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.2"
   matcher:
     dependency: transitive
     description:
@@ -473,10 +489,10 @@ packages:
     dependency: "direct main"
     description:
       name: shared_preferences
-      sha256: "6e8bf70b7fef813df4e9a36f658ac46d107db4b4cfe1048b477d4e453a8159f5"
+      sha256: "2939ae520c9024cb197fc20dee269cd8cdbf564c8b5746374ec6cacdc5169e64"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.3"
+    version: "2.5.4"
   shared_preferences_android:
     dependency: transitive
     description:
