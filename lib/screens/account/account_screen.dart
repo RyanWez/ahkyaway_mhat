@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/theme_provider.dart';
-import '../theme/app_theme.dart';
+import '../../providers/theme_provider.dart';
+import '../../theme/app_theme.dart';
+
+// Import widgets
+import 'widgets/coming_soon_banner.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -148,6 +151,14 @@ class _AccountScreenState extends State<AccountScreen>
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 const SizedBox(height: 24),
+
+                // Coming Soon Banner
+                _buildAnimatedSection(
+                  index: 0,
+                  child: ComingSoonBanner(isDark: isDark),
+                ),
+
+                const SizedBox(height: 32),
 
                 // Features Section
                 _buildAnimatedSection(

@@ -134,7 +134,13 @@
         "payment_history": "ငွေပေးချေမှု မှတ်တမ်း",
         "payment_history_desc": "ပေးချေမှုများ မှတ်တမ်းတင်ရန်",
         "offline_storage": "အော့ဖ်လိုင်း သိုလှောင်မှု",
-        "offline_storage_desc": "ဒေတာကို စက်တွင် သိမ်းဆည်းသည်"
+        "offline_storage_desc": "ဒေတာကို စက်တွင် သိမ်းဆည်းသည်",
+        "cloud_sync_title": "Cloud Sync & Backup",
+        "cloud_sync_desc": "သင့်ဒေတာကို စက်အမျိုးမျိုးတွင် လုံခြုံစွာ sync လုပ်ပြီး မှတ်တမ်းများ မပျောက်ပျက်အောင် ထိန်းသိမ်းပါ။ Cloud လုပ်ဆောင်ချက်များ အသုံးပြုရန် sign in ဝင်ပါ။",
+        "feature_cloud": "အလိုအလျောက် cloud backup",
+        "feature_devices": "မည်သည့်စက်မှမဆို ဝင်ရောက်နိုင်",
+        "feature_secure": "လုံခြုံစွာ encrypt လုပ်ထားသော သိုလှောင်မှု",
+        "notify_me": "Update များကို အမြဲစောင့်ကြည်ပါ။"
     },
     "actions": {
         "save": "သိမ်းရန်",

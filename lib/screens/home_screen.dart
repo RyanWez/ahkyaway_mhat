@@ -9,7 +9,7 @@ import '../utils/responsive.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'customer/customers_screen.dart';
 import 'settings/settings_screen.dart';
-import 'account_screen.dart';
+import 'account/account_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,7 +18,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late PageController _pageController;
   late AnimationController _indicatorController;
@@ -35,20 +36,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);
-    
+
     // Indicator animation controller
     _indicatorController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _indicatorAnimation = Tween<double>(
-      begin: 0,
-      end: 0,
-    ).animate(CurvedAnimation(
-      parent: _indicatorController,
-      curve: Curves.easeOutBack,
-    ));
-    
+    _indicatorAnimation = Tween<double>(begin: 0, end: 0).animate(
+      CurvedAnimation(parent: _indicatorController, curve: Curves.easeOutBack),
+    );
+
     // Check for app updates after frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkForUpdates();
@@ -71,20 +68,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   void _onTabTapped(int index) {
     if (_currentIndex == index) return;
-    
+
     HapticFeedback.lightImpact();
-    
+
     // Animate indicator
     final oldIndex = _currentIndex;
-    _indicatorAnimation = Tween<double>(
-      begin: oldIndex.toDouble(),
-      end: index.toDouble(),
-    ).animate(CurvedAnimation(
-      parent: _indicatorController,
-      curve: Curves.easeOutBack,
-    ));
+    _indicatorAnimation =
+        Tween<double>(
+          begin: oldIndex.toDouble(),
+          end: index.toDouble(),
+        ).animate(
+          CurvedAnimation(
+            parent: _indicatorController,
+            curve: Curves.easeOutBack,
+          ),
+        );
     _indicatorController.forward(from: 0);
-    
+
     setState(() => _currentIndex = index);
     _pageController.jumpToPage(index);
   }
@@ -151,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           child: LayoutBuilder(
             builder: (context, constraints) {
               final itemWidth = constraints.maxWidth / 4;
-              
+
               return Stack(
                 clipBehavior: Clip.none,
                 alignment: Alignment.center,
@@ -163,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       final position = _indicatorController.isAnimating
                           ? _indicatorAnimation.value
                           : _currentIndex.toDouble();
-                      
+
                       return Positioned(
                         left: (position * itemWidth) + (itemWidth - 52) / 2,
                         child: Container(
@@ -174,7 +174,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primaryDark.withValues(alpha: 0.4),
+                                color: AppTheme.primaryDark.withValues(
+                                  alpha: 0.4,
+                                ),
                                 blurRadius: 16,
                                 spreadRadius: 2,
                               ),
@@ -239,5 +241,3 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 }
-
-
