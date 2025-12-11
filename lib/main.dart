@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:lottie/lottie.dart';
+import 'package:dotlottie_loader/dotlottie_loader.dart';
 import 'providers/theme_provider.dart';
 import 'services/storage_service.dart';
 import 'theme/app_theme.dart';
@@ -69,8 +71,9 @@ class SplashWrapper extends StatefulWidget {
 }
 
 class _SplashWrapperState extends State<SplashWrapper>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+    with TickerProviderStateMixin {
+  late AnimationController _fadeController;
+  late AnimationController _progressController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
@@ -79,11 +82,16 @@ class _SplashWrapperState extends State<SplashWrapper>
   bool _isInitialized = false;
   bool _showSplash = true;
 
+  // Progress tracking
+  double _progress = 0.0;
+  String _statusText = 'Initializing...';
+
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
+    // Fade animation controller
+    _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
@@ -91,27 +99,42 @@ class _SplashWrapperState extends State<SplashWrapper>
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeOutBack),
+    );
 
-    _controller.forward();
+    // Progress animation controller
+    _progressController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _fadeController.forward();
     _initialize();
   }
 
   Future<void> _initialize() async {
-    // Initialize providers
+    // Stage 1: Initializing (0-30%)
+    await _animateProgress(0.3, 'Initializing...');
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    // Stage 2: Loading preferences (30-60%)
     _themeProvider = ThemeProvider();
     await _themeProvider!.init();
+    await _animateProgress(0.6, 'Loading preferences...');
+    await Future.delayed(const Duration(milliseconds: 300));
 
+    // Stage 3: Preparing data (60-90%)
     _storageService = StorageService();
     await _storageService!.init();
+    await _animateProgress(0.9, 'Preparing data...');
+    await Future.delayed(const Duration(milliseconds: 300));
 
-    // Minimum splash display time (1.5 seconds)
-    await Future.delayed(const Duration(milliseconds: 1500));
+    // Stage 4: Ready (90-100%)
+    await _animateProgress(1.0, 'Ready! ✨');
+    await Future.delayed(const Duration(milliseconds: 500));
 
     if (mounted) {
       setState(() => _isInitialized = true);
@@ -124,9 +147,19 @@ class _SplashWrapperState extends State<SplashWrapper>
     }
   }
 
+  Future<void> _animateProgress(double target, String status) async {
+    if (!mounted) return;
+    setState(() {
+      _progress = target;
+      _statusText = status;
+    });
+    await Future.delayed(const Duration(milliseconds: 100));
+  }
+
   @override
   void dispose() {
-    _controller.dispose();
+    _fadeController.dispose();
+    _progressController.dispose();
     super.dispose();
   }
 
@@ -165,115 +198,63 @@ class _SplashWrapperState extends State<SplashWrapper>
           opacity: _fadeAnimation,
           child: ScaleTransition(
             scale: _scaleAnimation,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo Container
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppTheme.primaryDark, Color(0xFF8B83FF)],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Lottie Animation
+                  SizedBox(
+                    width: 180,
+                    height: 180,
+                    child: DotLottieLoader.fromAsset(
+                      'assets/animations/wallet.lottie',
+                      frameBuilder: (context, dotLottie) {
+                        if (dotLottie != null) {
+                          return Lottie.memory(
+                            dotLottie.animations.values.single,
+                            fit: BoxFit.contain,
+                            repeat: true,
+                          );
+                        }
+                        return const SizedBox();
+                      },
                     ),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primaryDark.withValues(alpha: 0.4),
-                        blurRadius: 30,
-                        offset: const Offset(0, 10),
+                  ),
+                  const SizedBox(height: 32),
+                  // App Name
+                  const Text(
+                    'AhKyaway Mhat',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'For Small Communities',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                  ),
+                  const SizedBox(height: 48),
+                  // Progress Bar
+                  _buildProgressBar(),
+                  const SizedBox(height: 16),
+                  // Status Text
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: Text(
+                      _statusText,
+                      key: ValueKey(_statusText),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[400],
+                        fontWeight: FontWeight.w500,
                       ),
-                    ],
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.account_balance_wallet_rounded,
-                    size: 48,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                // App Name
-                const Text(
-                  'AhKyaway Mhat',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'For Small Communities',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                ),
-                const SizedBox(height: 48),
-                // Loading Spinner
-                const _LoadingSpinner(),
-                const SizedBox(height: 16),
-                // Loading Text
-                const _AnimatedLoadingText(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Custom loading spinner with gradient
-class _LoadingSpinner extends StatefulWidget {
-  const _LoadingSpinner();
-
-  @override
-  State<_LoadingSpinner> createState() => _LoadingSpinnerState();
-}
-
-class _LoadingSpinnerState extends State<_LoadingSpinner>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 40,
-      height: 40,
-      child: RotationTransition(
-        turns: _controller,
-        child: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: SweepGradient(
-              colors: [
-                AppTheme.primaryDark.withValues(alpha: 0.1),
-                AppTheme.primaryDark,
-              ],
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(4),
-            child: Container(
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTheme.darkBackground,
+                ],
               ),
             ),
           ),
@@ -281,56 +262,58 @@ class _LoadingSpinnerState extends State<_LoadingSpinner>
       ),
     );
   }
-}
 
-/// Animated "Loading..." text with dots
-class _AnimatedLoadingText extends StatefulWidget {
-  const _AnimatedLoadingText();
-
-  @override
-  State<_AnimatedLoadingText> createState() => _AnimatedLoadingTextState();
-}
-
-class _AnimatedLoadingTextState extends State<_AnimatedLoadingText>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  int _dotCount = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller =
-        AnimationController(
-          duration: const Duration(milliseconds: 500),
-          vsync: this,
-        )..addStatusListener((status) {
-          if (status == AnimationStatus.completed) {
-            if (mounted) {
-              setState(() {
-                _dotCount = (_dotCount + 1) % 4;
-              });
-            }
-            _controller.forward(from: 0);
-          }
-        });
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      'Loading${'.' * _dotCount}',
-      style: TextStyle(
-        fontSize: 14,
-        color: Colors.grey[500],
-        fontWeight: FontWeight.w500,
-      ),
+  Widget _buildProgressBar() {
+    return Column(
+      children: [
+        // Progress bar container
+        Container(
+          width: double.infinity,
+          height: 6,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: Stack(
+            children: [
+              // Animated progress fill
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeOutCubic,
+                width: MediaQuery.of(context).size.width * 0.7 * _progress,
+                height: 6,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.primaryDark, Color(0xFF8B83FF)],
+                  ),
+                  borderRadius: BorderRadius.circular(3),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryDark.withValues(alpha: 0.5),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        // Percentage text
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: Text(
+            '${(_progress * 100).toInt()}%',
+            key: ValueKey((_progress * 100).toInt()),
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[500],
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

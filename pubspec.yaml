@@ -56,6 +56,10 @@ dependencies:
   google_fonts: ^6.2.1
   window_manager: ^0.5.1
   http: ^1.6.0
+  
+  # Lottie animation support
+  lottie: ^3.3.1
+  dotlottie_loader: ^0.0.4
 
 dev_dependencies:
   flutter_test:
@@ -98,9 +102,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # Assets for translations
+  # Assets for translations and animations
   assets:
     - assets/translations/
+    - assets/animations/
 
   # Custom fonts
   fonts:
