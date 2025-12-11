@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:lottie/lottie.dart';
 import 'package:dotlottie_loader/dotlottie_loader.dart';
+import '../widgets/app_toast.dart';
 
 /// GitHub Update Service for checking and notifying app updates
 class GitHubUpdateService {
@@ -22,11 +23,22 @@ class GitHubUpdateService {
     BuildContext context, {
     bool showManualResult = false,
   }) async {
+    // Show checking toast for manual checks
+    if (showManualResult && context.mounted) {
+      AppToast.showChecking(context, 'Update စစ်ဆေးနေသည်...');
+    }
+
     try {
       final updateInfo = await _getLatestRelease();
+      
+      // Dismiss the checking toast
+      if (showManualResult) {
+        AppToast.dismiss();
+      }
+      
       if (updateInfo == null) {
         if (showManualResult && context.mounted) {
-          _showSnackBar(context, 'Update စစ်ဆေး၍မရပါ။ Internet connection ကို စစ်ဆေးပါ။', isError: true);
+          AppToast.showUpdateError(context, 'Update စစ်ဆေး၍မရပါ။ Internet ကို စစ်ဆေးပါ။');
         }
         return;
       }
@@ -50,29 +62,20 @@ class GitHubUpdateService {
         }
       } else if (showManualResult && context.mounted) {
         // Only show "up to date" message for manual checks
-        _showSnackBar(context, 'သင့် App သည် နောက်ဆုံး version (v$currentVersion) ဖြစ်ပါပြီ။', isError: false);
+        AppToast.showUpToDate(context, 'နောက်ဆုံး version (v$currentVersion) ဖြစ်ပါပြီ');
       }
     } catch (e) {
       debugPrint('Update check failed: $e');
+      // Dismiss the checking toast on error
+      if (showManualResult) {
+        AppToast.dismiss();
+      }
       if (showManualResult && context.mounted) {
-        _showSnackBar(context, 'Update စစ်ဆေး၍မရပါ: ${e.toString()}', isError: true);
+        AppToast.showUpdateError(context, 'Update စစ်ဆေး၍မရပါ');
       }
     }
   }
 
-  /// Show a snackbar message
-  static void _showSnackBar(BuildContext context, String message, {required bool isError}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red.shade600 : Colors.green.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
 
   /// Fetch latest release info from GitHub API
   static Future<Map<String, dynamic>?> _getLatestRelease() async {

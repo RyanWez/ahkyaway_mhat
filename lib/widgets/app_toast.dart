@@ -51,6 +51,11 @@ class AppToast {
     _showMiniUpdate(context, message, isSuccess: false);
   }
 
+  /// Shows a "checking" status toast with loading indicator (stays until dismissed)
+  static void showChecking(BuildContext context, String message) {
+    _showMiniChecking(context, message);
+  }
+
   /// Get duration based on toast type
   static Duration _getDuration(ToastType type) {
     switch (type) {
@@ -104,6 +109,43 @@ class AppToast {
           _currentToast?.remove();
           _currentToast = null;
         },
+      ),
+    );
+
+    overlay.insert(_currentToast!);
+  }
+
+  /// Internal method to show mini update toast (3 seconds, top position)
+  static void _showMiniUpdate(BuildContext context, String message, {required bool isSuccess}) {
+    _currentToast?.remove();
+    _currentToast = null;
+
+    final overlay = Overlay.of(context);
+
+    _currentToast = OverlayEntry(
+      builder: (context) => _MiniUpdateToastWidget(
+        message: message,
+        isSuccess: isSuccess,
+        onDismiss: () {
+          _currentToast?.remove();
+          _currentToast = null;
+        },
+      ),
+    );
+
+    overlay.insert(_currentToast!);
+  }
+
+  /// Internal method to show mini checking toast (stays until dismissed manually)
+  static void _showMiniChecking(BuildContext context, String message) {
+    _currentToast?.remove();
+    _currentToast = null;
+
+    final overlay = Overlay.of(context);
+
+    _currentToast = OverlayEntry(
+      builder: (context) => _MiniCheckingToastWidget(
+        message: message,
       ),
     );
 
@@ -559,6 +601,244 @@ class _MiniToastWidgetState extends State<_MiniToastWidget>
                           Text(
                             widget.message,
                             style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: color,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Mini update toast widget for update check notifications
+class _MiniUpdateToastWidget extends StatefulWidget {
+  final String message;
+  final bool isSuccess;
+  final VoidCallback onDismiss;
+
+  const _MiniUpdateToastWidget({
+    required this.message,
+    required this.isSuccess,
+    required this.onDismiss,
+  });
+
+  @override
+  State<_MiniUpdateToastWidget> createState() => _MiniUpdateToastWidgetState();
+}
+
+class _MiniUpdateToastWidgetState extends State<_MiniUpdateToastWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<double>(begin: -50, end: 0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    _controller.forward();
+
+    // Auto dismiss after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        _controller.reverse().then((_) {
+          widget.onDismiss();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = widget.isSuccess ? AppTheme.successColor : Colors.redAccent;
+    final icon = widget.isSuccess 
+        ? Icons.check_circle_rounded 
+        : Icons.error_outline_rounded;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Positioned(
+          top: MediaQuery.of(context).padding.top + 16 + _slideAnimation.value,
+          left: 0,
+          right: 0,
+          child: Opacity(
+            opacity: _fadeAnimation.value,
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: color.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Icon
+                          Icon(
+                            icon,
+                            size: 18,
+                            color: color,
+                          ),
+                          const SizedBox(width: 10),
+                          Flexible(
+                            child: Text(
+                              widget.message,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: color,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Mini checking toast widget with loading indicator
+class _MiniCheckingToastWidget extends StatefulWidget {
+  final String message;
+
+  const _MiniCheckingToastWidget({
+    required this.message,
+  });
+
+  @override
+  State<_MiniCheckingToastWidget> createState() => _MiniCheckingToastWidgetState();
+}
+
+class _MiniCheckingToastWidgetState extends State<_MiniCheckingToastWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<double>(begin: -50, end: 0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const color = AppTheme.accentColor;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Positioned(
+          top: MediaQuery.of(context).padding.top + 16 + _slideAnimation.value,
+          left: 0,
+          right: 0,
+          child: Opacity(
+            opacity: _fadeAnimation.value,
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: color.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Loading spinner
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(color),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            widget.message,
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: color,
