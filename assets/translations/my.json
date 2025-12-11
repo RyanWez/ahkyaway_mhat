@@ -169,5 +169,15 @@
     },
     "common": {
         "close": "ပိတ်ရန်"
+    },
+    "update": {
+        "checking": "Update စစ်ဆေးနေသည်...",
+        "error": "Update စစ်ဆေး၍မရပါ။ Internet ကို စစ်ဆေးပါ။",
+        "up_to_date": "နောက်ဆုံး version (v{version}) ဖြစ်ပါပြီ",
+        "available": "Update ရရှိနိုင်ပါပြီ!",
+        "version_info": "v{current} → v{latest}",
+        "changes": "ပြောင်းလဲချက်များ",
+        "later": "နောက်မှ",
+        "update_now": "Update လုပ်ရန်"
     }
 }

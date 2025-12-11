@@ -169,5 +169,15 @@
     },
     "common": {
         "close": "Close"
+    },
+    "update": {
+        "checking": "Checking for updates...",
+        "error": "Failed to check for updates. Please check your internet.",
+        "up_to_date": "You're on the latest version (v{version})",
+        "available": "Update Available!",
+        "version_info": "v{current} → v{latest}",
+        "changes": "What's New",
+        "later": "Later",
+        "update_now": "Update Now"
     }
 }

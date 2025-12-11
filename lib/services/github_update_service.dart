@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:lottie/lottie.dart';
 import 'package:dotlottie_loader/dotlottie_loader.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../widgets/app_toast.dart';
 
 /// GitHub Update Service for checking and notifying app updates
@@ -25,7 +26,7 @@ class GitHubUpdateService {
   }) async {
     // Show checking toast for manual checks
     if (showManualResult && context.mounted) {
-      AppToast.showChecking(context, 'Update စစ်ဆေးနေသည်...');
+      AppToast.showChecking(context, 'update.checking'.tr());
     }
 
     try {
@@ -38,7 +39,7 @@ class GitHubUpdateService {
       
       if (updateInfo == null) {
         if (showManualResult && context.mounted) {
-          AppToast.showUpdateError(context, 'Update စစ်ဆေး၍မရပါ။ Internet ကို စစ်ဆေးပါ။');
+          AppToast.showUpdateError(context, 'update.error'.tr());
         }
         return;
       }
@@ -62,7 +63,7 @@ class GitHubUpdateService {
         }
       } else if (showManualResult && context.mounted) {
         // Only show "up to date" message for manual checks
-        AppToast.showUpToDate(context, 'နောက်ဆုံး version (v$currentVersion) ဖြစ်ပါပြီ');
+        AppToast.showUpToDate(context, 'update.up_to_date'.tr(namedArgs: {'version': currentVersion}));
       }
     } catch (e) {
       debugPrint('Update check failed: $e');
@@ -71,7 +72,7 @@ class GitHubUpdateService {
         AppToast.dismiss();
       }
       if (showManualResult && context.mounted) {
-        AppToast.showUpdateError(context, 'Update စစ်ဆေး၍မရပါ');
+        AppToast.showUpdateError(context, 'update.error'.tr());
       }
     }
   }
@@ -269,7 +270,7 @@ class UpdateDialog extends StatelessWidget {
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  'Update ရရှိနိုင်ပါပြီ!',
+                  'update.available'.tr(),
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -314,7 +315,7 @@ class UpdateDialog extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'ပြောင်းလဲချက်များ',
+                      'update.changes'.tr(),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -377,7 +378,7 @@ class UpdateDialog extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'နောက်မှ',
+                        'update.later'.tr(),
                         style: TextStyle(
                           fontSize: 15,
                           color: isDark ? Colors.grey[400] : Colors.grey[600],
@@ -411,15 +412,15 @@ class UpdateDialog extends StatelessWidget {
                       ),
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.download_rounded, size: 20),
-                            SizedBox(width: 8),
+                            const Icon(Icons.download_rounded, size: 20),
+                            const SizedBox(width: 8),
                             Text(
-                              'Update လုပ်ရန်',
-                              style: TextStyle(
+                              'update.update_now'.tr(),
+                              style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                               ),
