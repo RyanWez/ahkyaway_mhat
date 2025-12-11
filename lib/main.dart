@@ -8,6 +8,8 @@ import 'package:lottie/lottie.dart';
 import 'package:dotlottie_loader/dotlottie_loader.dart';
 import 'providers/theme_provider.dart';
 import 'services/storage_service.dart';
+import 'services/terms_service.dart';
+import 'widgets/terms_sheet.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
 import 'utils/app_localization.dart';
@@ -81,6 +83,8 @@ class _SplashWrapperState extends State<SplashWrapper>
   StorageService? _storageService;
   bool _isInitialized = false;
   bool _showSplash = true;
+  bool _termsAccepted = false;
+  bool _checkingTerms = false;
 
   // Progress tracking
   double _progress = 0.0;
@@ -136,13 +140,43 @@ class _SplashWrapperState extends State<SplashWrapper>
     await _animateProgress(1.0, 'Ready! ✨');
     await Future.delayed(const Duration(milliseconds: 500));
 
+    // Check if terms accepted
+    final termsAccepted = await TermsService().isTermsAccepted();
+
     if (mounted) {
-      setState(() => _isInitialized = true);
+      setState(() {
+        _isInitialized = true;
+        _termsAccepted = termsAccepted;
+      });
 
       // Wait for fade out
       await Future.delayed(const Duration(milliseconds: 400));
       if (mounted) {
         setState(() => _showSplash = false);
+        
+        // Show terms sheet if not accepted
+        if (!termsAccepted) {
+          _showTermsSheet();
+        }
+      }
+    }
+  }
+
+  /// Show terms sheet and handle acceptance
+  Future<void> _showTermsSheet() async {
+    if (_checkingTerms) return;
+    setState(() => _checkingTerms = true);
+
+    // Wait for next frame to ensure context is ready
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    if (mounted) {
+      final accepted = await showTermsSheet(context);
+      if (mounted) {
+        setState(() {
+          _termsAccepted = accepted;
+          _checkingTerms = false;
+        });
       }
     }
   }
@@ -165,8 +199,8 @@ class _SplashWrapperState extends State<SplashWrapper>
 
   @override
   Widget build(BuildContext context) {
-    // Show main app after splash
-    if (!_showSplash && _isInitialized) {
+    // Show main app after splash (only if terms accepted)
+    if (!_showSplash && _isInitialized && _termsAccepted) {
       return MultiProvider(
         providers: [
           ChangeNotifierProvider.value(value: _themeProvider!),
