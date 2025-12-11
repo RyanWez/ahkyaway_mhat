@@ -7,6 +7,7 @@ import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_toast.dart';
 import '../../utils/app_localization.dart';
+import '../../services/github_update_service.dart';
 
 // Import widgets
 import 'widgets/theme_option_tile.dart';
@@ -247,13 +248,26 @@ class _SettingsScreenState extends State<SettingsScreen>
                       const SizedBox(height: 16),
                       Container(
                         decoration: AppTheme.cardDecoration(isDark),
-                        child: SettingsItemTile(
-                          title: 'settings.about_app'.tr(),
-                          subtitle: 'settings.about_app_desc'.tr(),
-                          icon: Icons.info_outline_rounded,
-                          color: Colors.blue,
-                          isDark: isDark,
-                          onTap: () => _showAboutDialog(context, isDark),
+                        child: Column(
+                          children: [
+                            SettingsItemTile(
+                              title: 'settings.check_updates'.tr(),
+                              subtitle: 'settings.check_updates_desc'.tr(),
+                              icon: Icons.system_update_rounded,
+                              color: Colors.green,
+                              isDark: isDark,
+                              onTap: () => _checkForUpdates(),
+                            ),
+                            _buildDivider(isDark),
+                            SettingsItemTile(
+                              title: 'settings.about_app'.tr(),
+                              subtitle: 'settings.about_app_desc'.tr(),
+                              icon: Icons.info_outline_rounded,
+                              color: Colors.blue,
+                              isDark: isDark,
+                              onTap: () => _showAboutDialog(context, isDark),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -302,6 +316,13 @@ class _SettingsScreenState extends State<SettingsScreen>
           ? Colors.white.withValues(alpha: 0.1)
           : Colors.black.withValues(alpha: 0.05),
     );
+  }
+
+  /// Manual check for updates
+  Future<void> _checkForUpdates() async {
+    if (mounted) {
+      await GitHubUpdateService.checkForUpdate(context, showManualResult: true);
+    }
   }
 
   /// Show About App dialog

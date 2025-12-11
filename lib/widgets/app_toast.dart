@@ -41,6 +41,16 @@ class AppToast {
     _showMini(context, message, isOnline: false);
   }
 
+  /// Shows a quick "up to date" status toast (top position, mini style)
+  static void showUpToDate(BuildContext context, String message) {
+    _showMiniUpdate(context, message, isSuccess: true);
+  }
+
+  /// Shows a quick update error toast (top position, mini style)
+  static void showUpdateError(BuildContext context, String message) {
+    _showMiniUpdate(context, message, isSuccess: false);
+  }
+
   /// Get duration based on toast type
   static Duration _getDuration(ToastType type) {
     switch (type) {

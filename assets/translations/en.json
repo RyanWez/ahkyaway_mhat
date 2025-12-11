@@ -118,7 +118,9 @@
         "coming_soon": "Coming soon",
         "about": "ABOUT",
         "about_app": "About App",
-        "about_app_desc": "Version and developer info"
+        "about_app_desc": "Version and developer info",
+        "check_updates": "Check for Updates",
+        "check_updates_desc": "Check if a new version is available"
     },
     "account": {
         "title": "Account",

@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,10 +17,19 @@ class GitHubUpdateService {
       'https://api.github.com/repos/$_owner/$_repo/releases/latest';
 
   /// Check for updates and show dialog if available
-  static Future<void> checkForUpdate(BuildContext context) async {
+  /// [showManualResult] - If true, show messages even when no update or on error (for manual check from settings)
+  static Future<void> checkForUpdate(
+    BuildContext context, {
+    bool showManualResult = false,
+  }) async {
     try {
       final updateInfo = await _getLatestRelease();
-      if (updateInfo == null) return;
+      if (updateInfo == null) {
+        if (showManualResult && context.mounted) {
+          _showSnackBar(context, 'Update စစ်ဆေး၍မရပါ။ Internet connection ကို စစ်ဆေးပါ။', isError: true);
+        }
+        return;
+      }
 
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;
@@ -37,11 +48,30 @@ class GitHubUpdateService {
             releaseNotes: releaseNotes,
           );
         }
+      } else if (showManualResult && context.mounted) {
+        // Only show "up to date" message for manual checks
+        _showSnackBar(context, 'သင့် App သည် နောက်ဆုံး version (v$currentVersion) ဖြစ်ပါပြီ။', isError: false);
       }
     } catch (e) {
-      // Silently fail - don't interrupt user experience
       debugPrint('Update check failed: $e');
+      if (showManualResult && context.mounted) {
+        _showSnackBar(context, 'Update စစ်ဆေး၍မရပါ: ${e.toString()}', isError: true);
+      }
     }
+  }
+
+  /// Show a snackbar message
+  static void _showSnackBar(BuildContext context, String message, {required bool isError}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red.shade600 : Colors.green.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   /// Fetch latest release info from GitHub API
@@ -63,22 +93,31 @@ class GitHubUpdateService {
           version = version.substring(1);
         }
 
+        // Get device ABI to find the correct APK
+        final deviceAbi = await _getDeviceAbi();
+        
         // Find APK download URL from assets
         String? downloadUrl;
+        String? fallbackUrl;
         final assets = data['assets'] as List?;
         if (assets != null) {
           for (var asset in assets) {
             final name = asset['name'] as String? ?? '';
             if (name.endsWith('.apk')) {
-              downloadUrl = asset['browser_download_url'];
-              break;
+              // Check if this APK matches device ABI
+              if (deviceAbi.isNotEmpty && name.contains(deviceAbi)) {
+                downloadUrl = asset['browser_download_url'];
+                break;
+              }
+              // Keep first APK as fallback
+              fallbackUrl ??= asset['browser_download_url'];
             }
           }
         }
 
         return {
           'version': version,
-          'downloadUrl': downloadUrl ?? data['html_url'],
+          'downloadUrl': downloadUrl ?? fallbackUrl ?? data['html_url'],
           'releaseNotes': data['body'] ?? '',
         };
       }
@@ -86,6 +125,27 @@ class GitHubUpdateService {
       debugPrint('Failed to fetch release: $e');
     }
     return null;
+  }
+
+  /// Get the device's supported ABI (CPU architecture)
+  /// Returns: 'arm64-v8a', 'armeabi-v7a', 'x86_64', etc.
+  static Future<String> _getDeviceAbi() async {
+    if (!Platform.isAndroid) return '';
+    
+    try {
+      // Use method channel to get supported ABIs from Android
+      const platform = MethodChannel('com.example.ankyaway_mhat/device_info');
+      final List<dynamic>? abis = await platform.invokeMethod('getSupportedAbis');
+      if (abis != null && abis.isNotEmpty) {
+        // Return the primary (most preferred) ABI
+        return abis.first.toString();
+      }
+    } catch (e) {
+      debugPrint('Failed to get device ABI: $e');
+      // Fallback: Most modern Android phones are arm64-v8a
+      return 'arm64-v8a';
+    }
+    return 'arm64-v8a';
   }
 
   /// Compare version strings (e.g., "1.0.4" vs "1.0.5")
