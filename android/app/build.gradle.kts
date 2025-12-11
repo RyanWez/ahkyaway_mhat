@@ -70,19 +70,22 @@ android {
         }
     }
 
-    // Custom APK naming: ahkyaway-mhat_v{version}_{abi}.apk
+    // Custom APK naming: ahkyaway-mhat_v{version}.apk (or with abi suffix if split)
     applicationVariants.all {
         val variant = this
         variant.outputs.all {
             val output = this as com.android.build.gradle.internal.api.ApkVariantOutputImpl
             val versionName = variant.versionName ?: "1.0.0"
             val buildType = variant.buildType.name
-            val abi = output.getFilter(com.android.build.OutputFile.ABI) ?: "universal"
+            val abi = output.getFilter(com.android.build.OutputFile.ABI)
+            
+            // Only add ABI suffix if split-per-abi is used (abi is not null)
+            val abiSuffix = if (abi != null) "_${abi}" else ""
             
             output.outputFileName = if (buildType == "release") {
-                "ahkyaway-mhat_v${versionName}_${abi}.apk"
+                "ahkyaway-mhat_v${versionName}${abiSuffix}.apk"
             } else {
-                "ahkyaway-mhat_v${versionName}_${abi}_${buildType}.apk"
+                "ahkyaway-mhat_v${versionName}${abiSuffix}_${buildType}.apk"
             }
         }
     }
