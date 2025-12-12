@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
@@ -279,66 +280,102 @@ class _TermsSheetState extends State<TermsSheet>
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       height: 56,
-      child: ElevatedButton(
-        onPressed: _isLoading || _showSuccess ? null : _onAccept,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF4CAF50),
-          disabledBackgroundColor: const Color(0xFF4CAF50),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryDark.withValues(alpha: 0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
-          elevation: 0,
-        ),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          switchInCurve: Curves.easeOutBack,
-          switchOutCurve: Curves.easeIn,
-          child: _showSuccess
-              ? SizedBox(
-                  key: const ValueKey('lottie'),
-                  width: 48,
-                  height: 48,
-                  child: DotLottieLoader.fromAsset(
-                    'assets/animations/check-mark.lottie',
-                    frameBuilder: (context, dotLottie) {
-                      if (dotLottie != null) {
-                        return Lottie.memory(
-                          dotLottie.animations.values.first,
-                          repeat: false,
-                          options: LottieOptions(enableMergePaths: true),
-                        );
-                      }
-                      return const SizedBox();
-                    },
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.primaryDark,
+                  AppTheme.primaryDark.withValues(alpha: 0.8),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1.5,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _isLoading || _showSuccess ? null : _onAccept,
+                borderRadius: BorderRadius.circular(14),
+                splashColor: Colors.white.withValues(alpha: 0.2),
+                highlightColor: Colors.white.withValues(alpha: 0.1),
+                child: Center(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeOutBack,
+                    switchOutCurve: Curves.easeIn,
+                    child: _showSuccess
+                        ? SizedBox(
+                            key: const ValueKey('lottie'),
+                            width: 64,
+                            height: 64,
+                            child: DotLottieLoader.fromAsset(
+                              'assets/animations/check-mark.lottie',
+                              frameBuilder: (context, dotLottie) {
+                                if (dotLottie != null) {
+                                  return Lottie.memory(
+                                    dotLottie.animations.values.first,
+                                    repeat: false,
+                                    options: LottieOptions(enableMergePaths: true),
+                                  );
+                                }
+                                return const SizedBox();
+                              },
+                            ),
+                          )
+                        : _isLoading
+                            ? const SizedBox(
+                                key: ValueKey('loading'),
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Row(
+                                key: const ValueKey('text'),
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.verified_rounded, 
+                                    size: 22,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    TermsContent.acceptButtonText,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
                   ),
-                )
-              : _isLoading
-                  ? const SizedBox(
-                      key: ValueKey('loading'),
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Row(
-                      key: const ValueKey('text'),
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.verified_rounded, size: 22),
-                        const SizedBox(width: 8),
-                        Text(
-                          TermsContent.acceptButtonText,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
