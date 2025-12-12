@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lottie/lottie.dart';
+import 'package:dotlottie_loader/dotlottie_loader.dart';
 import '../theme/app_theme.dart';
 import '../utils/terms_content.dart';
 import '../services/terms_service.dart';
@@ -33,6 +35,7 @@ class _TermsSheetState extends State<TermsSheet>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   bool _isLoading = false;
+  bool _showSuccess = false;
 
   @override
   void initState() {
@@ -68,6 +71,20 @@ class _TermsSheetState extends State<TermsSheet>
     // Save acceptance
     await TermsService().acceptTerms();
     
+    // Show success animation in button
+    setState(() {
+      _isLoading = false;
+      _showSuccess = true;
+    });
+    
+    // Wait for Lottie animation to complete
+    await Future.delayed(const Duration(milliseconds: 1800));
+    
+    // Smooth fade-out transition
+    if (mounted) {
+      await _animationController.reverse();
+    }
+    
     if (mounted) {
       Navigator.of(context).pop(true);
     }
@@ -83,205 +100,245 @@ class _TermsSheetState extends State<TermsSheet>
     final screenHeight = MediaQuery.of(context).size.height;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: Container(
-          height: screenHeight * 0.92,
-          decoration: BoxDecoration(
-            color: AppTheme.darkBackground,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.5),
-                blurRadius: 30,
-                offset: const Offset(0, -10),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              // Drag handle
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
+    return Stack(
+      children: [
+        // Main content
+        FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: Container(
+              height: screenHeight * 0.92,
+              decoration: BoxDecoration(
+                color: AppTheme.darkBackground,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  width: 1,
                 ),
-              ),
-              
-              // Header - Compact design
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-                child: Row(
-                  children: [
-                    // Icon
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppTheme.primaryDark,
-                            AppTheme.primaryDark.withValues(alpha: 0.7),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.primaryDark.withValues(alpha: 0.4),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.policy_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    
-                    // Title and subtitle
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            TermsContent.title,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            TermsContent.introduction,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[400],
-                              height: 1.3,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              const Divider(height: 24),
-              
-              // Scrollable terms content
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      for (int i = 0; i < TermsContent.terms.length; i++)
-                        _buildTermItem(i + 1, TermsContent.terms[i]),
-                      const SizedBox(height: 16),
-                    ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 30,
+                    offset: const Offset(0, -10),
                   ),
-                ),
+                ],
               ),
-              
-              // Buttons
-              Container(
-                padding: EdgeInsets.fromLTRB(24, 16, 24, bottomPadding + 16),
-                decoration: BoxDecoration(
-                  color: AppTheme.darkSurface,
-                  border: Border(
-                    top: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.1),
+              child: Column(
+                children: [
+                  // Drag handle
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    // Decline button
-                    Expanded(
-                      child: TextButton(
-                        onPressed: _onDecline,
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            side: BorderSide(
-                              color: Colors.grey.withValues(alpha: 0.3),
+                  
+                  // Header - Compact design
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                    child: Row(
+                      children: [
+                        // Icon
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTheme.primaryDark,
+                                AppTheme.primaryDark.withValues(alpha: 0.7),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
-                          ),
-                        ),
-                        child: Text(
-                          TermsContent.declineButtonText,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    
-                    // Accept button
-                    Expanded(
-                      flex: 2,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _onAccept,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryDark,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primaryDark.withValues(alpha: 0.4),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                          elevation: 0,
+                          child: const Icon(
+                            Icons.policy_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                         ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                        const SizedBox(width: 16),
+                        
+                        // Title and subtitle
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                TermsContent.title,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.check_circle_outline, size: 20),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    TermsContent.acceptButtonText,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
                               ),
+                              const SizedBox(height: 4),
+                              Text(
+                                TermsContent.introduction,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[400],
+                                  height: 1.3,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const Divider(height: 24),
+                  
+                  // Scrollable terms content
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < TermsContent.terms.length; i++)
+                            _buildTermItem(i + 1, TermsContent.terms[i]),
+                          const SizedBox(height: 16),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  
+                  // Buttons
+                  Container(
+                    padding: EdgeInsets.fromLTRB(24, 16, 24, bottomPadding + 16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.darkSurface,
+                      border: Border(
+                        top: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        // Decline button
+                        Expanded(
+                          child: TextButton(
+                            onPressed: _showSuccess ? null : _onDecline,
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                side: BorderSide(
+                                  color: Colors.grey.withValues(alpha: 0.3),
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              TermsContent.declineButtonText,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[400],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        
+                        // Accept button
+                        Expanded(
+                          flex: 2,
+                          child: _buildAcceptButton(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildAcceptButton() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      height: 56,
+      child: ElevatedButton(
+        onPressed: _isLoading || _showSuccess ? null : _onAccept,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF4CAF50),
+          disabledBackgroundColor: const Color(0xFF4CAF50),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          elevation: 0,
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          switchInCurve: Curves.easeOutBack,
+          switchOutCurve: Curves.easeIn,
+          child: _showSuccess
+              ? SizedBox(
+                  key: const ValueKey('lottie'),
+                  width: 48,
+                  height: 48,
+                  child: DotLottieLoader.fromAsset(
+                    'assets/animations/check-mark.lottie',
+                    frameBuilder: (context, dotLottie) {
+                      if (dotLottie != null) {
+                        return Lottie.memory(
+                          dotLottie.animations.values.first,
+                          repeat: false,
+                          options: LottieOptions(enableMergePaths: true),
+                        );
+                      }
+                      return const SizedBox();
+                    },
+                  ),
+                )
+              : _isLoading
+                  ? const SizedBox(
+                      key: ValueKey('loading'),
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Row(
+                      key: const ValueKey('text'),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.verified_rounded, size: 22),
+                        const SizedBox(width: 8),
+                        Text(
+                          TermsContent.acceptButtonText,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
         ),
       ),
     );
