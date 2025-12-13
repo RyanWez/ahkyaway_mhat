@@ -142,17 +142,17 @@ class StorageService extends ChangeNotifier {
       orElse: () => throw Exception('Payment not found'),
     );
     final debtId = payment.loanId;
-    
+
     // Remove the payment
     _payments.removeWhere((p) => p.id == paymentId);
     await _savePayments();
-    
+
     // Check if debt needs to be reactivated
     final debt = getDebtById(debtId);
     if (debt != null && debt.status == DebtStatus.completed) {
       final totalPaid = getTotalPaidForDebt(debtId);
       final remaining = debt.totalAmount - totalPaid;
-      
+
       // If remaining > 0, reactivate the debt
       if (remaining > 0) {
         debt.status = DebtStatus.active;
@@ -160,7 +160,7 @@ class StorageService extends ChangeNotifier {
         await _saveDebts();
       }
     }
-    
+
     notifyListeners();
   }
 
@@ -188,4 +188,20 @@ class StorageService extends ChangeNotifier {
 
   int get completedDebtsCount =>
       _debts.where((d) => d.status == DebtStatus.completed).length;
+
+  /// Replace all data with import data (used for restore)
+  Future<void> replaceAllData({
+    required List<Customer> customers,
+    required List<Debt> debts,
+    required List<Payment> payments,
+  }) async {
+    _customers = List.from(customers);
+    _debts = List.from(debts);
+    _payments = List.from(payments);
+
+    await _saveCustomers();
+    await _saveDebts();
+    await _savePayments();
+    notifyListeners();
+  }
 }

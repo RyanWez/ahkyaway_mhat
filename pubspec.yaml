@@ -58,6 +58,11 @@ dependencies:
   http: ^1.6.0
   connectivity_plus: ^7.0.0
   
+  # Export/Import functionality
+  path_provider: ^2.1.4
+  file_picker: ^8.1.7
+  share_plus: ^10.1.4
+  
   # Lottie animation support
   lottie: ^3.3.1
   dotlottie_loader: ^0.0.4
