@@ -176,11 +176,34 @@
     "update": {
         "checking": "Update စစ်ဆေးနေသည်...",
         "error": "Update စစ်ဆေး၍မရပါ။ ခဏအကြာမှ ထပ်မံကြိုးစားကြည့်ပေးပါ",
-        "up_to_date": "နောက်ဆုံး version (v{version}) ဖြစ်ပါပြီ",
+        "up_to_date": "Appသည် နောက်ဆုံး version (v{version}) ဖြစ်ပြီးသားပါ။",
         "available": "Update ရရှိနိုင်ပါပြီ!",
         "version_info": "v{current} → v{latest}",
         "changes": "ပြောင်းလဲချက်များ",
         "later": "နောက်မှ",
         "update_now": "Update လုပ်ရန်"
+    },
+    "export_import": {
+        "export_title": "ဒေတာထုတ်ရန်",
+        "import_title": "ဒေတာသွင်းရန်",
+        "data_overview": "ဒေတာ အနှစ်ချုပ်",
+        "export_now": "ယခု Export လုပ်ရန်",
+        "exported_files": "ထုတ်ထားသော FILES များ",
+        "no_exports": "Export လုပ်ထားသော file မရှိသေးပါ",
+        "export_success": "ဒေတာ Export အောင်မြင်ပါသည်",
+        "export_error": "Export မအောင်မြင်ပါ",
+        "delete_export_confirm": "ဤ backup file ကို ဖျက်မလား?",
+        "delete_export_warning": "ပြန်လည်ရယူ၍မရပါ။",
+        "import_from_device": "စက်မှ Import လုပ်ရန်",
+        "import_from_device_desc": "သင့်စက်မှ backup file ရွေးပါ",
+        "select_from_exports": "သို့မဟုတ် EXPORTS မှ ရွေးပါ",
+        "import_warning": "Import လုပ်ပါက ရှိနေသော ဒေတာအားလုံး အစားထိုးသွားပါမည်",
+        "confirm_import": "Import အတည်ပြုရန်",
+        "import_replace_warning": "ဤ backup ကို import လုပ်ပါက ရှိနေသော ဒေတာအားလုံး အစားထိုးသွားပါမည်။",
+        "backup_info": "Backup အချက်အလက်",
+        "import_now": "ယခု Import လုပ်ရန်",
+        "import_success": "ဒေတာ Import အောင်မြင်ပါသည်",
+        "import_error": "Import မအောင်မြင်ပါ",
+        "invalid_backup": "Backup file မမှန်ကန်ပါ"
     }
 }

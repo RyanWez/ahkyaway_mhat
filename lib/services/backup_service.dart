@@ -129,7 +129,7 @@ class BackupService {
     return file;
   }
 
-  /// Create auto-backup before import
+  /// Create auto-backup before import (keeps only the latest one)
   Future<File?> createAutoBackup(
     StorageService storage,
     String appVersion,
@@ -140,6 +140,9 @@ class BackupService {
         storage.payments.isEmpty) {
       return null;
     }
+
+    // Delete all previous auto-backups first (keep only 1)
+    await _deleteAllAutoBackups();
 
     final exportDir = await _getExportDirectory();
     final filename = _generateFilename(isAutoBackup: true);
@@ -159,6 +162,22 @@ class BackupService {
     await file.writeAsString(jsonString);
 
     return file;
+  }
+
+  /// Delete all auto-backup files
+  Future<void> _deleteAllAutoBackups() async {
+    final exportDir = await _getExportDirectory();
+    if (!await exportDir.exists()) return;
+
+    final entities = await exportDir.list().toList();
+    for (final entity in entities) {
+      if (entity is File) {
+        final filename = entity.path.split('/').last;
+        if (filename.startsWith(_autoBackupPrefix)) {
+          await entity.delete();
+        }
+      }
+    }
   }
 
   /// Enforce max file limit by deleting oldest files

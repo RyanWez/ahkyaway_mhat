@@ -14,6 +14,8 @@ import 'widgets/settings_item_tile.dart';
 import 'widgets/language_option_tile.dart';
 import 'widgets/haptic_toggle_card.dart';
 import 'widgets/about_app_dialog.dart';
+import 'export/export_screen.dart';
+import 'import/import_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -149,7 +151,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                               onTap: () {
                                 if (context.locale != AppLocales.en) {
                                   context.setLocale(AppLocales.en);
-                                  AppToast.showSuccess(context, 'Language changed to English');
+                                  AppToast.showSuccess(
+                                    context,
+                                    'Language changed to English',
+                                  );
                                 }
                               },
                               flagEmoji: '🇺🇸',
@@ -163,7 +168,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                               onTap: () {
                                 if (context.locale != AppLocales.my) {
                                   context.setLocale(AppLocales.my);
-                                  AppToast.showSuccess(context, 'ဘာသာစကား မြန်မာဘာသာသို့ ပြောင်းလဲပြီးပါပြီ');
+                                  AppToast.showSuccess(
+                                    context,
+                                    'ဘာသာစကား မြန်မာဘာသာသို့ ပြောင်းလဲပြီးပါပြီ',
+                                  );
                                 }
                               },
                               flagEmoji: '🇲🇲',
@@ -235,9 +243,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                               color: AppTheme.accentColor,
                               isDark: isDark,
                               onTap: () {
-                                AppToast.showWarning(
+                                Navigator.push(
                                   context,
-                                  'settings.coming_soon'.tr(),
+                                  MaterialPageRoute(
+                                    builder: (_) => const ExportScreen(),
+                                  ),
                                 );
                               },
                             ),
@@ -249,9 +259,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                               color: AppTheme.primaryDark,
                               isDark: isDark,
                               onTap: () {
-                                AppToast.showWarning(
+                                Navigator.push(
                                   context,
-                                  'settings.coming_soon'.tr(),
+                                  MaterialPageRoute(
+                                    builder: (_) => const ImportScreen(),
+                                  ),
                                 );
                               },
                             ),
