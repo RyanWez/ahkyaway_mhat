@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -8,8 +7,10 @@ import '../../../services/storage_service.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_toast.dart';
+import '../../../widgets/optimized_bottom_sheet.dart';
 
 /// Shows a bottom sheet dialog for editing an existing customer with blur effect
+/// Optimized: Uses OptimizedBottomSheet for smooth keyboard animation
 void showEditCustomerDialog(
   BuildContext context,
   Customer customer,
@@ -100,148 +101,60 @@ class _EditCustomerSheetState extends State<EditCustomerSheet>
           child: child,
         );
       },
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.black.withValues(alpha: 0.7)
-                  : Colors.white.withValues(alpha: 0.9),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-              border: Border(
-                top: BorderSide(
-                  color: isDark
-                      ? AppTheme.primaryDark.withValues(alpha: 0.3)
-                      : AppTheme.primaryDark.withValues(alpha: 0.2),
-                  width: 2,
-                ),
+      child: OptimizedBottomSheet(
+        accentColor: AppTheme.primaryDark,
+        isDark: isDark,
+        content: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              SheetHandleBar(accentColor: AppTheme.primaryDark),
+              const SizedBox(height: 24),
+              
+              // Header
+              SheetHeader(
+                icon: Icons.person_rounded,
+                title: 'customer.edit'.tr(),
+                accentColor: AppTheme.primaryDark,
+                isDark: isDark,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Handle bar with gradient
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppTheme.primaryDark.withValues(alpha: 0.5),
-                            AppTheme.primaryDark,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Title with icon
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryDark.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.person_rounded,
-                          color: AppTheme.primaryDark,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'customer.edit'.tr(),
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : const Color(0xFF1A1A2E),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  // Name field with enhanced styling
-                  _buildTextField(
-                    controller: _nameController,
-                    label: 'customer.name_required'.tr(),
-                    icon: Icons.person_rounded,
-                    isDark: isDark,
-                    maxLength: 32,
-                    textCapitalization: TextCapitalization.words,
-                  ),
-                  const SizedBox(height: 16),
-                  // Phone field with enhanced styling
-                  _buildTextField(
-                    controller: _phoneController,
-                    label: 'customer.phone'.tr(),
-                    icon: Icons.phone_rounded,
-                    isDark: isDark,
-                    maxLength: 11,
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  ),
-                  const SizedBox(height: 28),
-                  // Submit button with gradient
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppTheme.primaryDark, Color(0xFF8B83FF)],
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.primaryDark.withValues(alpha: 0.4),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton(
-                        onPressed: _handleSaveCustomer,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Text(
-                          'actions.save'.tr(),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+              const SizedBox(height: 24),
+              
+              // Name field
+              _buildTextField(
+                controller: _nameController,
+                label: 'customer.name_required'.tr(),
+                icon: Icons.person_rounded,
+                isDark: isDark,
+                maxLength: 32,
+                textCapitalization: TextCapitalization.words,
               ),
-            ),
+              const SizedBox(height: 16),
+              
+              // Phone field
+              _buildTextField(
+                controller: _phoneController,
+                label: 'customer.phone'.tr(),
+                icon: Icons.phone_rounded,
+                isDark: isDark,
+                maxLength: 11,
+                keyboardType: TextInputType.phone,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              const SizedBox(height: 28),
+              
+              // Submit button
+              SheetSubmitButton(
+                label: 'actions.save'.tr(),
+                onPressed: _handleSaveCustomer,
+                primaryColor: AppTheme.primaryDark,
+                secondaryColor: const Color(0xFF8B83FF),
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
         ),
       ),

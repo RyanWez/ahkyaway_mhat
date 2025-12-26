@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -10,8 +9,10 @@ import '../../../providers/theme_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../utils/currency_input_formatter.dart';
 import '../../../widgets/app_toast.dart';
+import '../../../widgets/optimized_bottom_sheet.dart';
 
 /// Shows a bottom sheet dialog for adding a new debt to a customer
+/// Optimized: Uses OptimizedBottomSheet for smooth keyboard animation
 void showAddDebtDialog(
   BuildContext context,
   StorageService storage,
@@ -118,198 +119,113 @@ class _AddDebtSheetState extends State<AddDebtSheet>
           child: child,
         );
       },
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.black.withValues(alpha: 0.7)
-                  : Colors.white.withValues(alpha: 0.9),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-              border: Border(
-                top: BorderSide(
-                  color: AppTheme.warningColor.withValues(alpha: 0.5),
-                  width: 2,
-                ),
+      child: OptimizedBottomSheet(
+        accentColor: AppTheme.warningColor,
+        isDark: isDark,
+        content: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              SheetHandleBar(accentColor: AppTheme.warningColor),
+              const SizedBox(height: 24),
+              
+              // Header
+              SheetHeader(
+                icon: Icons.add_card_rounded,
+                title: 'debt.add'.tr(),
+                accentColor: AppTheme.warningColor,
+                isDark: isDark,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Handle bar with gradient
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppTheme.warningColor.withValues(alpha: 0.5),
-                            AppTheme.warningColor,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Title with icon
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.warningColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.add_card_rounded,
-                          color: AppTheme.warningColor,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'debt.add'.tr(),
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : const Color(0xFF1A1A2E),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  // Amount field
-                  _buildTextField(
-                    controller: _principalController,
-                    label: 'debt.amount_required'.tr(),
-                    icon: Icons.attach_money_rounded,
-                    isDark: isDark,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(8),
-                      CurrencyInputFormatter(),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Start Date Picker
-                  _buildDatePicker(
-                    label: 'debt.start_date'.tr(),
-                    date: _debtDate,
-                    icon: Icons.calendar_today_rounded,
-                    iconColor: isDark ? Colors.grey[400]! : Colors.grey[600]!,
-                    isDark: isDark,
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: _debtDate,
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime.now(),
-                      );
-                      if (picked != null) {
-                        setState(() {
-                          _debtDate = picked;
-                          if (_dueDate.isBefore(picked)) {
-                            _dueDate = DateTime(picked.year, picked.month + 1, 0);
-                            AppToast.showInfo(context, 'debt.due_date_adjusted'.tr());
-                          }
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  // Due Date Picker
-                  _buildDatePicker(
-                    label: 'debt.due_date'.tr(),
-                    date: _dueDate,
-                    icon: Icons.event_rounded,
-                    iconColor: AppTheme.warningColor,
-                    isDark: isDark,
-                    showBadge: true,
-                    badgeText: 'debt.end_of_month'.tr(),
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: _dueDate,
-                        firstDate: _debtDate,
-                        lastDate: DateTime(2100),
-                      );
-                      if (picked != null) {
-                        setState(() => _dueDate = picked);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  // Notes field
-                  _buildTextField(
-                    controller: _notesController,
-                    label: 'debt.notes'.tr(),
-                    icon: Icons.note_rounded,
-                    isDark: isDark,
-                    maxLines: 2,
-                    maxLength: 50,
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
-                  const SizedBox(height: 28),
-                  // Submit button with gradient
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppTheme.warningColor, AppTheme.warningColor.withValues(alpha: 0.8)],
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.warningColor.withValues(alpha: 0.4),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton(
-                        onPressed: _handleAddDebt,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Text(
-                          'debt.add'.tr(),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              
+              // Amount field
+              _buildTextField(
+                controller: _principalController,
+                label: 'debt.amount_required'.tr(),
+                icon: Icons.attach_money_rounded,
+                isDark: isDark,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(8),
+                  CurrencyInputFormatter(),
                 ],
               ),
-            ),
+              const SizedBox(height: 16),
+              
+              // Start Date Picker
+              _buildDatePicker(
+                label: 'debt.start_date'.tr(),
+                date: _debtDate,
+                icon: Icons.calendar_today_rounded,
+                iconColor: isDark ? Colors.grey[400]! : Colors.grey[600]!,
+                isDark: isDark,
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: _debtDate,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      _debtDate = picked;
+                      if (_dueDate.isBefore(picked)) {
+                        _dueDate = DateTime(picked.year, picked.month + 1, 0);
+                        AppToast.showInfo(context, 'debt.due_date_adjusted'.tr());
+                      }
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+              
+              // Due Date Picker
+              _buildDatePicker(
+                label: 'debt.due_date'.tr(),
+                date: _dueDate,
+                icon: Icons.event_rounded,
+                iconColor: AppTheme.warningColor,
+                isDark: isDark,
+                showBadge: true,
+                badgeText: 'debt.end_of_month'.tr(),
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: _dueDate,
+                    firstDate: _debtDate,
+                    lastDate: DateTime(2100),
+                  );
+                  if (picked != null) {
+                    setState(() => _dueDate = picked);
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              
+              // Notes field
+              _buildTextField(
+                controller: _notesController,
+                label: 'debt.notes'.tr(),
+                icon: Icons.note_rounded,
+                isDark: isDark,
+                maxLines: 2,
+                maxLength: 50,
+                textCapitalization: TextCapitalization.sentences,
+              ),
+              const SizedBox(height: 28),
+              
+              // Submit button
+              SheetSubmitButton(
+                label: 'debt.add'.tr(),
+                onPressed: _handleAddDebt,
+                primaryColor: AppTheme.warningColor,
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
         ),
       ),
