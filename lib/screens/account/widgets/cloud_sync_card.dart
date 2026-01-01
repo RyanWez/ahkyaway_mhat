@@ -21,12 +21,20 @@ class CloudSyncCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? [const Color(0xFF2D2D44), const Color(0xFF1E1E2E)]
-              : [const Color(0xFFF8F7FF), const Color(0xFFEEECFF)],
+              ? [
+                  const Color(0xFF1E1E2E), // Deep Dark
+                  const Color(0xFF2D2D44), // Subtle Indigo
+                ]
+              : [
+                  const Color(0xFFF8F7FF), // Original Light Background
+                  const Color(0xFFEEECFF),
+                ],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppTheme.primaryDark.withValues(alpha: 0.3),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : AppTheme.primaryDark.withValues(alpha: 0.1),
           width: 1.5,
         ),
         boxShadow: [
@@ -123,11 +131,11 @@ class CloudSyncCard extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: isDark ? 0.2 : 0.1),
+            color: isDark
+                ? const Color(0xFF1A1A2E).withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: color.withValues(alpha: 0.3),
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
@@ -135,7 +143,7 @@ class CloudSyncCard extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
+                  color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, size: 22, color: color),
