@@ -23,7 +23,6 @@ class BackupScreen extends StatefulWidget {
 
 class _BackupScreenState extends State<BackupScreen> {
   final BackupService _backupService = BackupService();
-  final GoogleDriveService _driveService = GoogleDriveService();
   List<BackupFile> _exportedFiles = [];
   DateTime? _lastExportDate;
   bool _isLoading = false;
@@ -33,12 +32,6 @@ class _BackupScreenState extends State<BackupScreen> {
   void initState() {
     super.initState();
     _loadExportedFiles();
-    _initDriveService();
-  }
-
-  Future<void> _initDriveService() async {
-    await _driveService.init();
-    if (mounted) setState(() {});
   }
 
   Future<void> _loadExportedFiles() async {
@@ -57,19 +50,20 @@ class _BackupScreenState extends State<BackupScreen> {
 
   Future<void> _exportData() async {
     if (_isExporting) return;
-    
+
     final storage = Provider.of<StorageService>(context, listen: false);
-    
+
     // Check if there's data to export
-    final hasData = storage.customers.isNotEmpty ||
+    final hasData =
+        storage.customers.isNotEmpty ||
         storage.debts.isNotEmpty ||
         storage.payments.isNotEmpty;
-    
+
     if (!hasData) {
       AppToast.showError(context, 'export_import.no_data_to_export'.tr());
       return;
     }
-    
+
     // Show confirmation dialog
     final confirmed = await _showExportConfirmation();
     if (!confirmed) return;
@@ -93,19 +87,20 @@ class _BackupScreenState extends State<BackupScreen> {
     }
   }
 
-  Future<void> _backupToCloud() async {
+  Future<void> _backupToCloud(GoogleDriveService driveService) async {
     final storage = Provider.of<StorageService>(context, listen: false);
-    
+
     // Check if there's data to backup
-    final hasData = storage.customers.isNotEmpty ||
+    final hasData =
+        storage.customers.isNotEmpty ||
         storage.debts.isNotEmpty ||
         storage.payments.isNotEmpty;
-    
+
     if (!hasData) {
       AppToast.showError(context, 'cloud.no_data_to_backup'.tr());
       return;
     }
-    
+
     // Show confirmation dialog
     final confirmed = await _showCloudBackupConfirmation();
     if (!confirmed) return;
@@ -113,15 +108,17 @@ class _BackupScreenState extends State<BackupScreen> {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
 
-      final success = await _driveService.backupToCloud(storage, packageInfo.version);
-      
+      final success = await driveService.backupToCloud(
+        storage,
+        packageInfo.version,
+      );
+
       if (mounted) {
         if (success) {
           AppToast.showSuccess(context, 'cloud.backup_success'.tr());
         } else {
           AppToast.showError(context, 'cloud.backup_error'.tr());
         }
-        setState(() {});
       }
     } catch (e) {
       if (mounted) {
@@ -130,25 +127,23 @@ class _BackupScreenState extends State<BackupScreen> {
     }
   }
 
-  Future<void> _signInGoogle() async {
-    final success = await _driveService.signIn();
+  Future<void> _signInGoogle(GoogleDriveService driveService) async {
+    final success = await driveService.signIn();
     if (mounted) {
       if (!success) {
         AppToast.showError(context, 'cloud.sign_in_error'.tr());
       }
-      setState(() {});
     }
   }
 
-  Future<void> _signOutGoogle() async {
+  Future<void> _signOutGoogle(GoogleDriveService driveService) async {
     // Show confirmation dialog
     final confirmed = await _showSignOutConfirmation();
     if (!confirmed) return;
-    
-    await _driveService.signOut();
+
+    await driveService.signOut();
     if (mounted) {
       AppToast.showSuccess(context, 'cloud.signed_out'.tr());
-      setState(() {});
     }
   }
 
@@ -399,15 +394,20 @@ class _BackupScreenState extends State<BackupScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Cloud Backup Card
-                  CloudBackupCard(
-                    isSignedIn: _driveService.isSignedIn,
-                    userEmail: _driveService.currentUser?.email,
-                    lastBackupDate: _driveService.lastBackupInfo?.formattedDate,
-                    isLoading: _driveService.isLoading,
-                    onBackup: _backupToCloud,
-                    onSignIn: _signInGoogle,
-                    onSignOut: _signOutGoogle,
-                    isDark: isDark,
+                  Consumer<GoogleDriveService>(
+                    builder: (context, driveService, child) {
+                      return CloudBackupCard(
+                        isSignedIn: driveService.isSignedIn,
+                        userEmail: driveService.currentUser?.email,
+                        lastBackupDate:
+                            driveService.lastBackupInfo?.formattedDate,
+                        isLoading: driveService.isLoading,
+                        onBackup: () => _backupToCloud(driveService),
+                        onSignIn: () => _signInGoogle(driveService),
+                        onSignOut: () => _signOutGoogle(driveService),
+                        isDark: isDark,
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 24),

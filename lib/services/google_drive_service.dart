@@ -23,7 +23,8 @@ class CloudBackupInfo {
     this.sizeBytes,
   });
 
-  String get formattedDate => DateFormat('MMM dd, yyyy hh:mm a').format(createdAt.toLocal());
+  String get formattedDate =>
+      DateFormat('MMM dd, yyyy hh:mm a').format(createdAt.toLocal());
 }
 
 /// Service for Google Drive backup operations
@@ -37,6 +38,7 @@ class GoogleDriveService extends ChangeNotifier {
   GoogleSignInAccount? _currentUser;
   drive.DriveApi? _driveApi;
   bool _isLoading = false;
+  bool _isInitialized = false;
   CloudBackupInfo? _lastBackupInfo;
 
   // Getters
@@ -44,18 +46,36 @@ class GoogleDriveService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   GoogleSignInAccount? get currentUser => _currentUser;
   CloudBackupInfo? get lastBackupInfo => _lastBackupInfo;
+  bool get isInitialized => _isInitialized;
 
   /// Initialize and check for existing sign-in
+  /// Returns immediately if already initialized to prevent redundant checks
   Future<void> init() async {
+    if (_isInitialized) return;
+
     try {
       _currentUser = await _googleSignIn.signInSilently();
       if (_currentUser != null) {
         await _initDriveApi();
         await _fetchLastBackupInfo();
       }
+      _isInitialized = true;
     } catch (e) {
       debugPrint('GoogleDriveService init error: $e');
     }
+    notifyListeners();
+  }
+
+  /// Manually refresh backup info (useful after external changes)
+  Future<void> refreshBackupInfo() async {
+    if (!_isInitialized || _driveApi == null) return;
+
+    _isLoading = true;
+    notifyListeners();
+
+    await _fetchLastBackupInfo();
+
+    _isLoading = false;
     notifyListeners();
   }
 
@@ -67,12 +87,15 @@ class GoogleDriveService extends ChangeNotifier {
 
       debugPrint('GoogleDriveService: Starting sign in...');
       _currentUser = await _googleSignIn.signIn();
-      debugPrint('GoogleDriveService: Sign in result - user: ${_currentUser?.email}');
-      
+      debugPrint(
+        'GoogleDriveService: Sign in result - user: ${_currentUser?.email}',
+      );
+
       if (_currentUser != null) {
         debugPrint('GoogleDriveService: Initializing Drive API...');
         await _initDriveApi();
         await _fetchLastBackupInfo();
+        _isInitialized = true;
         _isLoading = false;
         notifyListeners();
         debugPrint('GoogleDriveService: Sign in successful!');
@@ -96,6 +119,7 @@ class GoogleDriveService extends ChangeNotifier {
       _currentUser = null;
       _driveApi = null;
       _lastBackupInfo = null;
+      _isInitialized = false; // Reset initialization state
       notifyListeners();
     } catch (e) {
       debugPrint('Sign out error: $e');
@@ -118,8 +142,8 @@ class GoogleDriveService extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      // Create backup data
-      final backupData = {
+      // Create backup data map
+      final backupDataMap = {
         'appVersion': appVersion,
         'exportedAt': DateTime.now().toIso8601String(),
         'customers': storage.customers.map((c) => c.toJson()).toList(),
@@ -127,7 +151,8 @@ class GoogleDriveService extends ChangeNotifier {
         'payments': storage.payments.map((p) => p.toJson()).toList(),
       };
 
-      final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
+      // Encode JSON in background isolate
+      final jsonString = await compute(_jsonEncodeTask, backupDataMap);
       final bytes = utf8.encode(jsonString);
       final stream = Stream.value(bytes);
 
@@ -181,14 +206,18 @@ class GoogleDriveService extends ChangeNotifier {
       }
 
       // Download file
-      final response = await _driveApi!.files.get(
-        fileId,
-        downloadOptions: drive.DownloadOptions.fullMedia,
-      ) as drive.Media;
+      final response =
+          await _driveApi!.files.get(
+                fileId,
+                downloadOptions: drive.DownloadOptions.fullMedia,
+              )
+              as drive.Media;
 
       final bytes = await response.stream.expand((chunk) => chunk).toList();
       final jsonString = utf8.decode(bytes);
-      final data = jsonDecode(jsonString) as Map<String, dynamic>;
+
+      // Decode JSON in background isolate
+      final data = await compute(_jsonDecodeTask, jsonString);
 
       _isLoading = false;
       notifyListeners();
@@ -202,7 +231,10 @@ class GoogleDriveService extends ChangeNotifier {
   }
 
   /// Parse cloud backup data to models
-  Future<bool> applyCloudBackup(StorageService storage, Map<String, dynamic> data) async {
+  Future<bool> applyCloudBackup(
+    StorageService storage,
+    Map<String, dynamic> data,
+  ) async {
     try {
       final customers = (data['customers'] as List<dynamic>)
           .map((item) => Customer.fromJson(item))
@@ -279,4 +311,13 @@ class GoogleDriveService extends ChangeNotifier {
     final fileId = await _findBackupFile();
     return fileId != null;
   }
+}
+
+// Top-level functions for compute
+String _jsonEncodeTask(Map<String, dynamic> data) {
+  return const JsonEncoder.withIndent('  ').convert(data);
+}
+
+Map<String, dynamic> _jsonDecodeTask(String jsonString) {
+  return jsonDecode(jsonString) as Map<String, dynamic>;
 }

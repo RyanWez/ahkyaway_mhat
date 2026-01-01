@@ -29,7 +29,6 @@ class ImportScreen extends StatefulWidget {
 
 class _ImportScreenState extends State<ImportScreen> {
   final BackupService _backupService = BackupService();
-  final GoogleDriveService _driveService = GoogleDriveService();
   List<BackupFile> _exportedFiles = [];
   bool _isLoading = false;
   bool _isImporting = false;
@@ -38,12 +37,6 @@ class _ImportScreenState extends State<ImportScreen> {
   void initState() {
     super.initState();
     _loadExportedFiles();
-    _initDriveService();
-  }
-
-  Future<void> _initDriveService() async {
-    await _driveService.init();
-    if (mounted) setState(() {});
   }
 
   Future<void> _loadExportedFiles() async {
@@ -61,24 +54,23 @@ class _ImportScreenState extends State<ImportScreen> {
     }
   }
 
-  Future<void> _signInGoogle() async {
-    final success = await _driveService.signIn();
+  Future<void> _signInGoogle(GoogleDriveService driveService) async {
+    final success = await driveService.signIn();
     if (mounted) {
       if (!success) {
         AppToast.showError(context, 'cloud.sign_in_error'.tr());
       }
-      setState(() {});
     }
   }
 
-  Future<void> _restoreFromCloud() async {
+  Future<void> _restoreFromCloud(GoogleDriveService driveService) async {
     if (_isImporting) return;
 
     setState(() => _isImporting = true);
 
     try {
       // Get cloud backup data
-      final data = await _driveService.restoreFromCloud();
+      final data = await driveService.restoreFromCloud();
       if (data == null) {
         if (mounted) {
           AppToast.showError(context, 'cloud.no_backup_found'.tr());
@@ -91,11 +83,12 @@ class _ImportScreenState extends State<ImportScreen> {
 
       // Show confirmation dialog
       final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-      
+
       // Parse data for preview
       final previewData = BackupData(
         appVersion: data['appVersion'] ?? 'unknown',
-        exportedAt: DateTime.tryParse(data['exportedAt'] ?? '') ?? DateTime.now(),
+        exportedAt:
+            DateTime.tryParse(data['exportedAt'] ?? '') ?? DateTime.now(),
         customers: (data['customers'] as List<dynamic>? ?? [])
             .map((item) => Customer.fromJson(item))
             .toList(),
@@ -124,7 +117,7 @@ class _ImportScreenState extends State<ImportScreen> {
       await _backupService.createAutoBackup(storage, packageInfo.version);
 
       // Apply cloud backup
-      final success = await _driveService.applyCloudBackup(storage, data);
+      final success = await driveService.applyCloudBackup(storage, data);
 
       if (mounted) {
         if (success) {
@@ -258,15 +251,20 @@ class _ImportScreenState extends State<ImportScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Cloud Restore Card
-                  CloudRestoreCard(
-                    isSignedIn: _driveService.isSignedIn,
-                    userEmail: _driveService.currentUser?.email,
-                    lastBackupDate: _driveService.lastBackupInfo?.formattedDate,
-                    hasBackup: _driveService.lastBackupInfo != null,
-                    isLoading: _driveService.isLoading || _isImporting,
-                    onRestore: _restoreFromCloud,
-                    onSignIn: _signInGoogle,
-                    isDark: isDark,
+                  Consumer<GoogleDriveService>(
+                    builder: (context, driveService, child) {
+                      return CloudRestoreCard(
+                        isSignedIn: driveService.isSignedIn,
+                        userEmail: driveService.currentUser?.email,
+                        lastBackupDate:
+                            driveService.lastBackupInfo?.formattedDate,
+                        hasBackup: driveService.lastBackupInfo != null,
+                        isLoading: driveService.isLoading || _isImporting,
+                        onRestore: () => _restoreFromCloud(driveService),
+                        onSignIn: () => _signInGoogle(driveService),
+                        isDark: isDark,
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 24),
