@@ -14,14 +14,14 @@ import 'widgets/data_overview_card.dart';
 import 'widgets/export_button.dart';
 import 'widgets/exported_file_tile.dart';
 
-class ExportScreen extends StatefulWidget {
-  const ExportScreen({super.key});
+class BackupScreen extends StatefulWidget {
+  const BackupScreen({super.key});
 
   @override
-  State<ExportScreen> createState() => _ExportScreenState();
+  State<BackupScreen> createState() => _BackupScreenState();
 }
 
-class _ExportScreenState extends State<ExportScreen> {
+class _BackupScreenState extends State<BackupScreen> {
   final BackupService _backupService = BackupService();
   final GoogleDriveService _driveService = GoogleDriveService();
   List<BackupFile> _exportedFiles = [];
@@ -382,7 +382,7 @@ class _ExportScreenState extends State<ExportScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'export_import.export_title'.tr(),
+          'account.backup_data'.tr(),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,

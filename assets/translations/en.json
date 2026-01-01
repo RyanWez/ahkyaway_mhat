@@ -145,7 +145,13 @@
         "feature_cloud": "Automatic cloud backup",
         "feature_devices": "Access from any device",
         "feature_secure": "Encrypted & secure storage",
-        "notify_me": "Always stay tuned for updates."
+        "notify_me": "Always stay tuned for updates.",
+        "backup_data": "Backup Data",
+        "import_data": "Import Data",
+        "cloud_backup": "Cloud",
+        "local_backup": "Local",
+        "cloud_restore": "Cloud",
+        "local_restore": "Local"
     },
     "actions": {
         "save": "Save",

@@ -241,7 +241,7 @@ class _ImportScreenState extends State<ImportScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'export_import.import_title'.tr(),
+          'account.import_data'.tr(),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,

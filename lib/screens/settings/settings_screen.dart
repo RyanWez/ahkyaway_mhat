@@ -14,8 +14,6 @@ import 'widgets/settings_item_tile.dart';
 import 'widgets/language_option_tile.dart';
 import 'widgets/haptic_toggle_card.dart';
 import 'widgets/about_app_dialog.dart';
-import 'export/export_screen.dart';
-import 'import/import_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -224,57 +222,7 @@ class _SettingsScreenState extends State<SettingsScreen>
 
                 const SizedBox(height: 32),
 
-                // Data Section
-                _buildAnimatedSection(
-                  index: 4,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionTitle('settings.data'.tr(), isDark),
-                      const SizedBox(height: 16),
-                      Container(
-                        decoration: AppTheme.cardDecoration(isDark),
-                        child: Column(
-                          children: [
-                            SettingsItemTile(
-                              title: 'settings.export'.tr(),
-                              subtitle: 'settings.export_desc'.tr(),
-                              icon: Icons.download_rounded,
-                              color: AppTheme.accentColor,
-                              isDark: isDark,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const ExportScreen(),
-                                  ),
-                                );
-                              },
-                            ),
-                            _buildDivider(isDark),
-                            SettingsItemTile(
-                              title: 'settings.import'.tr(),
-                              subtitle: 'settings.import_desc'.tr(),
-                              icon: Icons.upload_rounded,
-                              color: AppTheme.primaryDark,
-                              isDark: isDark,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const ImportScreen(),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
 
-                const SizedBox(height: 32),
 
                 // About Section
                 _buildAnimatedSection(

@@ -5,7 +5,7 @@ import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
 
 // Import widgets
-import 'widgets/coming_soon_banner.dart';
+import 'widgets/cloud_sync_card.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -152,10 +152,10 @@ class _AccountScreenState extends State<AccountScreen>
               delegate: SliverChildListDelegate([
                 const SizedBox(height: 24),
 
-                // Coming Soon Banner
+                // Cloud Sync & Backup Card
                 _buildAnimatedSection(
                   index: 0,
-                  child: ComingSoonBanner(isDark: isDark),
+                  child: CloudSyncCard(isDark: isDark),
                 ),
 
                 const SizedBox(height: 32),
