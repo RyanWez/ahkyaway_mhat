@@ -205,6 +205,32 @@
         "import_now": "ယခု Import လုပ်ရန်",
         "import_success": "ဒေတာ Import အောင်မြင်ပါသည်",
         "import_error": "Import မအောင်မြင်ပါ",
-        "invalid_backup": "Backup file မမှန်ကန်ပါ"
+        "invalid_backup": "Backup file မမှန်ကန်ပါ",
+        "local_backup": "LOCAL BACKUP",
+        "local_restore": "LOCAL RESTORE",
+        "no_data_to_export": "Export လုပ်ရန် ဒေတာမရှိပါ",
+        "confirm_export": "Export လုပ်မှာလား?",
+        "confirm_export_desc": "သင့်ဒေတာကို backup file အဖြစ် သိမ်းပါမည်။"
+    },
+    "cloud": {
+        "backup_title": "Cloud Backup",
+        "restore_title": "Cloud Restore",
+        "sign_in_prompt": "Google ဖြင့် Sign in လုပ်ပြီး backup သိမ်းပါ",
+        "sign_in_to_restore": "Google ဖြင့် Sign in လုပ်ပြီး restore လုပ်ပါ",
+        "sign_in_google": "Google ဖြင့် Sign in",
+        "last_backup": "နောက်ဆုံး backup",
+        "no_backup": "Cloud backup မရှိသေးပါ",
+        "backup_available": "Backup ရှိပါသည်",
+        "no_backup_found": "Cloud backup မတွေ့ပါ",
+        "backup_now": "ယခု Backup လုပ်ရန်",
+        "restore_now": "ယခု Restore လုပ်ရန်",
+        "backup_success": "Cloud သို့ backup တင်ပြီးပါပြီ",
+        "backup_error": "Cloud backup မအောင်မြင်ပါ",
+        "restore_success": "Cloud မှ restore အောင်မြင်ပါသည်",
+        "restore_error": "Cloud restore မအောင်မြင်ပါ",
+        "sign_in_error": "Google Sign in မအောင်မြင်ပါ",
+        "no_data_to_backup": "Backup လုပ်ရန် ဒေတာမရှိပါ",
+        "confirm_backup": "Cloud သို့ Backup လုပ်မှာလား?",
+        "confirm_backup_desc": "သင့်ဒေတာကို Google Drive သို့ တင်ပါမည်။"
     }
 }

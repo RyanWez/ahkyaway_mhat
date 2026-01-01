@@ -205,6 +205,32 @@
         "import_now": "Import Now",
         "import_success": "Data imported successfully",
         "import_error": "Failed to import data",
-        "invalid_backup": "Invalid backup file"
+        "invalid_backup": "Invalid backup file",
+        "local_backup": "LOCAL BACKUP",
+        "local_restore": "LOCAL RESTORE",
+        "no_data_to_export": "No data to export",
+        "confirm_export": "Export Data?",
+        "confirm_export_desc": "This will create a backup file of your data."
+    },
+    "cloud": {
+        "backup_title": "Cloud Backup",
+        "restore_title": "Cloud Restore",
+        "sign_in_prompt": "Sign in with Google to backup your data",
+        "sign_in_to_restore": "Sign in with Google to restore your data",
+        "sign_in_google": "Sign in with Google",
+        "last_backup": "Last backup",
+        "no_backup": "No cloud backup yet",
+        "backup_available": "Backup available",
+        "no_backup_found": "No cloud backup found",
+        "backup_now": "Backup Now",
+        "restore_now": "Restore Now",
+        "backup_success": "Backed up to cloud successfully",
+        "backup_error": "Failed to backup to cloud",
+        "restore_success": "Restored from cloud successfully",
+        "restore_error": "Failed to restore from cloud",
+        "sign_in_error": "Failed to sign in with Google",
+        "no_data_to_backup": "No data to backup",
+        "confirm_backup": "Backup to Cloud?",
+        "confirm_backup_desc": "This will upload your data to Google Drive."
     }
 }

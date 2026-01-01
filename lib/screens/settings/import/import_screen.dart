@@ -6,11 +6,16 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../../models/customer.dart';
+import '../../../models/debt.dart';
+import '../../../models/payment.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../services/storage_service.dart';
 import '../../../services/backup_service.dart';
+import '../../../services/google_drive_service.dart';
 import '../../../widgets/app_toast.dart';
 
+import 'widgets/cloud_restore_card.dart';
 import 'widgets/import_device_card.dart';
 import 'widgets/backup_file_tile.dart';
 import 'widgets/import_confirm_dialog.dart';
@@ -24,6 +29,7 @@ class ImportScreen extends StatefulWidget {
 
 class _ImportScreenState extends State<ImportScreen> {
   final BackupService _backupService = BackupService();
+  final GoogleDriveService _driveService = GoogleDriveService();
   List<BackupFile> _exportedFiles = [];
   bool _isLoading = false;
   bool _isImporting = false;
@@ -32,6 +38,12 @@ class _ImportScreenState extends State<ImportScreen> {
   void initState() {
     super.initState();
     _loadExportedFiles();
+    _initDriveService();
+  }
+
+  Future<void> _initDriveService() async {
+    await _driveService.init();
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadExportedFiles() async {
@@ -46,6 +58,90 @@ class _ImportScreenState extends State<ImportScreen> {
       });
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInGoogle() async {
+    final success = await _driveService.signIn();
+    if (mounted) {
+      if (!success) {
+        AppToast.showError(context, 'cloud.sign_in_error'.tr());
+      }
+      setState(() {});
+    }
+  }
+
+  Future<void> _restoreFromCloud() async {
+    if (_isImporting) return;
+
+    setState(() => _isImporting = true);
+
+    try {
+      // Get cloud backup data
+      final data = await _driveService.restoreFromCloud();
+      if (data == null) {
+        if (mounted) {
+          AppToast.showError(context, 'cloud.no_backup_found'.tr());
+        }
+        setState(() => _isImporting = false);
+        return;
+      }
+
+      if (!mounted) return;
+
+      // Show confirmation dialog
+      final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+      
+      // Parse data for preview
+      final previewData = BackupData(
+        appVersion: data['appVersion'] ?? 'unknown',
+        exportedAt: DateTime.tryParse(data['exportedAt'] ?? '') ?? DateTime.now(),
+        customers: (data['customers'] as List<dynamic>? ?? [])
+            .map((item) => Customer.fromJson(item))
+            .toList(),
+        debts: (data['debts'] as List<dynamic>? ?? [])
+            .map((item) => Debt.fromJson(item))
+            .toList(),
+        payments: (data['payments'] as List<dynamic>? ?? [])
+            .map((item) => Payment.fromJson(item))
+            .toList(),
+      );
+
+      final confirmed = await ImportConfirmDialog.show(
+        context,
+        previewData,
+        themeProvider.isDarkMode,
+      );
+
+      if (!confirmed || !mounted) {
+        setState(() => _isImporting = false);
+        return;
+      }
+
+      // Create auto-backup before import
+      final storage = Provider.of<StorageService>(context, listen: false);
+      final packageInfo = await PackageInfo.fromPlatform();
+      await _backupService.createAutoBackup(storage, packageInfo.version);
+
+      // Apply cloud backup
+      final success = await _driveService.applyCloudBackup(storage, data);
+
+      if (mounted) {
+        if (success) {
+          AppToast.showSuccess(context, 'cloud.restore_success'.tr());
+          Navigator.pop(context);
+        } else {
+          AppToast.showError(context, 'cloud.restore_error'.tr());
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        AppToast.showError(context, 'cloud.restore_error'.tr());
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isImporting = false);
+      }
     }
   }
 
@@ -161,6 +257,33 @@ class _ImportScreenState extends State<ImportScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Cloud Restore Card
+                  CloudRestoreCard(
+                    isSignedIn: _driveService.isSignedIn,
+                    userEmail: _driveService.currentUser?.email,
+                    lastBackupDate: _driveService.lastBackupInfo?.formattedDate,
+                    hasBackup: _driveService.lastBackupInfo != null,
+                    isLoading: _driveService.isLoading || _isImporting,
+                    onRestore: _restoreFromCloud,
+                    onSignIn: _signInGoogle,
+                    isDark: isDark,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Section Header
+                  Text(
+                    'export_import.local_restore'.tr(),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.grey[500] : Colors.grey[600],
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
                   // Import from Device Card
                   ImportDeviceCard(
                     onPressed: _importFromDevice,

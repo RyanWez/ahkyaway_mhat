@@ -281,11 +281,13 @@ class BackupService {
   /// Share a backup file
   Future<void> shareFile(BackupFile backupFile) async {
     try {
-      await Share.shareXFiles(
-        [XFile(backupFile.path)],
-        subject: 'AhKyaway Mhat Backup',
-        text:
-            'Backup exported on ${DateFormat('MMM dd, yyyy').format(backupFile.createdAt)}',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(backupFile.path)],
+          subject: 'AhKyaway Mhat Backup',
+          text:
+              'Backup exported on ${DateFormat('MMM dd, yyyy').format(backupFile.createdAt)}',
+        ),
       );
     } catch (e) {
       debugPrint('Error sharing file: $e');

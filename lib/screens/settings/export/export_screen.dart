@@ -6,8 +6,10 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../services/storage_service.dart';
 import '../../../services/backup_service.dart';
+import '../../../services/google_drive_service.dart';
 import '../../../widgets/app_toast.dart';
 
+import 'widgets/cloud_backup_card.dart';
 import 'widgets/data_overview_card.dart';
 import 'widgets/export_button.dart';
 import 'widgets/exported_file_tile.dart';
@@ -21,6 +23,7 @@ class ExportScreen extends StatefulWidget {
 
 class _ExportScreenState extends State<ExportScreen> {
   final BackupService _backupService = BackupService();
+  final GoogleDriveService _driveService = GoogleDriveService();
   List<BackupFile> _exportedFiles = [];
   DateTime? _lastExportDate;
   bool _isLoading = false;
@@ -30,6 +33,12 @@ class _ExportScreenState extends State<ExportScreen> {
   void initState() {
     super.initState();
     _loadExportedFiles();
+    _initDriveService();
+  }
+
+  Future<void> _initDriveService() async {
+    await _driveService.init();
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadExportedFiles() async {
@@ -48,10 +57,25 @@ class _ExportScreenState extends State<ExportScreen> {
 
   Future<void> _exportData() async {
     if (_isExporting) return;
+    
+    final storage = Provider.of<StorageService>(context, listen: false);
+    
+    // Check if there's data to export
+    final hasData = storage.customers.isNotEmpty ||
+        storage.debts.isNotEmpty ||
+        storage.payments.isNotEmpty;
+    
+    if (!hasData) {
+      AppToast.showError(context, 'export_import.no_data_to_export'.tr());
+      return;
+    }
+    
+    // Show confirmation dialog
+    final confirmed = await _showExportConfirmation();
+    if (!confirmed) return;
 
     setState(() => _isExporting = true);
     try {
-      final storage = Provider.of<StorageService>(context, listen: false);
       final packageInfo = await PackageInfo.fromPlatform();
 
       await _backupService.exportData(storage, packageInfo.version);
@@ -67,6 +91,58 @@ class _ExportScreenState extends State<ExportScreen> {
     } finally {
       setState(() => _isExporting = false);
     }
+  }
+
+  Future<void> _backupToCloud() async {
+    final storage = Provider.of<StorageService>(context, listen: false);
+    
+    // Check if there's data to backup
+    final hasData = storage.customers.isNotEmpty ||
+        storage.debts.isNotEmpty ||
+        storage.payments.isNotEmpty;
+    
+    if (!hasData) {
+      AppToast.showError(context, 'cloud.no_data_to_backup'.tr());
+      return;
+    }
+    
+    // Show confirmation dialog
+    final confirmed = await _showCloudBackupConfirmation();
+    if (!confirmed) return;
+
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+
+      final success = await _driveService.backupToCloud(storage, packageInfo.version);
+      
+      if (mounted) {
+        if (success) {
+          AppToast.showSuccess(context, 'cloud.backup_success'.tr());
+        } else {
+          AppToast.showError(context, 'cloud.backup_error'.tr());
+        }
+        setState(() {});
+      }
+    } catch (e) {
+      if (mounted) {
+        AppToast.showError(context, 'cloud.backup_error'.tr());
+      }
+    }
+  }
+
+  Future<void> _signInGoogle() async {
+    final success = await _driveService.signIn();
+    if (mounted) {
+      if (!success) {
+        AppToast.showError(context, 'cloud.sign_in_error'.tr());
+      }
+      setState(() {});
+    }
+  }
+
+  Future<void> _signOutGoogle() async {
+    await _driveService.signOut();
+    if (mounted) setState(() {});
   }
 
   Future<void> _shareFile(BackupFile file) async {
@@ -94,6 +170,98 @@ class _ExportScreenState extends State<ExportScreen> {
         AppToast.showError(context, 'messages.error'.tr());
       }
     }
+  }
+
+  Future<bool> _showExportConfirmation() async {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDark = themeProvider.isDarkMode;
+
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: isDark ? const Color(0xFF252540) : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(
+              'export_import.confirm_export'.tr(),
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              'export_import.confirm_export_desc'.tr(),
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  'actions.cancel'.tr(),
+                  style: TextStyle(color: Colors.grey[500]),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4CAF50),
+                  foregroundColor: Colors.white,
+                ),
+                child: Text('export_import.export_now'.tr()),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  Future<bool> _showCloudBackupConfirmation() async {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDark = themeProvider.isDarkMode;
+
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: isDark ? const Color(0xFF252540) : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(
+              'cloud.confirm_backup'.tr(),
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              'cloud.confirm_backup_desc'.tr(),
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  'actions.cancel'.tr(),
+                  style: TextStyle(color: Colors.grey[500]),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4285F4),
+                  foregroundColor: Colors.white,
+                ),
+                child: Text('cloud.backup_now'.tr()),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   Future<bool> _showDeleteConfirmation() async {
@@ -178,6 +346,33 @@ class _ExportScreenState extends State<ExportScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Cloud Backup Card
+                  CloudBackupCard(
+                    isSignedIn: _driveService.isSignedIn,
+                    userEmail: _driveService.currentUser?.email,
+                    lastBackupDate: _driveService.lastBackupInfo?.formattedDate,
+                    isLoading: _driveService.isLoading,
+                    onBackup: _backupToCloud,
+                    onSignIn: _signInGoogle,
+                    onSignOut: _signOutGoogle,
+                    isDark: isDark,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Section Header
+                  Text(
+                    'export_import.local_backup'.tr(),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.grey[500] : Colors.grey[600],
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
                   // Data Overview Card
                   DataOverviewCard(
                     customersCount: storage.customers.length,
