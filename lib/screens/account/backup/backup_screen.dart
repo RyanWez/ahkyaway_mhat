@@ -96,6 +96,8 @@ class _BackupScreenState extends State<BackupScreen> {
       return;
     }
 
+    if (!mounted) return;
+
     final storage = Provider.of<StorageService>(context, listen: false);
 
     // Check if there's data to backup
@@ -105,7 +107,7 @@ class _BackupScreenState extends State<BackupScreen> {
         storage.payments.isNotEmpty;
 
     if (!hasData) {
-      AppToast.showError(context, 'cloud.no_data_to_backup'.tr());
+      if (mounted) AppToast.showError(context, 'cloud.no_data_to_backup'.tr());
       return;
     }
 
