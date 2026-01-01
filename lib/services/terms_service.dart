@@ -1,10 +1,10 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service to manage Terms and Conditions acceptance state.
-/// 
+///
 /// Stores user's acceptance in SharedPreferences.
 class TermsService {
-  static const String _termsAcceptedKey = 'terms_accepted';
+  static const String _termsAcceptedKey = 'terms_accepted_v2';
 
   /// Check if user has already accepted terms.
   Future<bool> isTermsAccepted() async {
