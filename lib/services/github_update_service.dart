@@ -52,6 +52,9 @@ class GitHubUpdateService {
 
       // Compare versions
       if (_isNewerVersion(currentVersion, latestVersion)) {
+        // Determine if this should be a force update
+        final isForceUpdate = _determineForceUpdate(currentVersion, latestVersion, releaseNotes);
+        
         if (context.mounted) {
           _showUpdateDialog(
             context,
@@ -59,6 +62,7 @@ class GitHubUpdateService {
             latestVersion: latestVersion,
             downloadUrl: downloadUrl,
             releaseNotes: releaseNotes,
+            isForceUpdate: isForceUpdate,
           );
         }
       } else if (showManualResult && context.mounted) {
@@ -176,6 +180,43 @@ class GitHubUpdateService {
     return false;
   }
 
+  /// Determine if update should be forced
+  /// Logic:
+  /// 1. [OPTIONAL] tag in release notes → Always optional
+  /// 2. [FORCE] tag in release notes → Always force
+  /// 3. Default: Major or Minor version change = force, Patch = optional
+  static bool _determineForceUpdate(String current, String latest, String releaseNotes) {
+    // Check for override tags first (case-insensitive)
+    final notesLower = releaseNotes.toLowerCase();
+    if (notesLower.contains('[optional]')) return false;
+    if (notesLower.contains('[force]')) return true;
+
+    try {
+      final currentParts = current.split('.').map(int.parse).toList();
+      final latestParts = latest.split('.').map(int.parse).toList();
+
+      // Pad with zeros if needed
+      while (currentParts.length < 3) {
+        currentParts.add(0);
+      }
+      while (latestParts.length < 3) {
+        latestParts.add(0);
+      }
+
+      // Force update if Major or Minor version changed
+      // Major: 2.x.x → 3.x.x
+      // Minor: 2.0.x → 2.1.x
+      if (latestParts[0] > currentParts[0]) return true; // Major change
+      if (latestParts[0] == currentParts[0] && latestParts[1] > currentParts[1]) return true; // Minor change
+
+    } catch (e) {
+      debugPrint('Force update check failed: $e');
+    }
+
+    // Patch update or error → Optional
+    return false;
+  }
+
   /// Show update dialog
   static void _showUpdateDialog(
     BuildContext context, {
@@ -183,15 +224,17 @@ class GitHubUpdateService {
     required String latestVersion,
     required String downloadUrl,
     required String releaseNotes,
+    required bool isForceUpdate,
   }) {
     showDialog(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: !isForceUpdate, // Cannot dismiss force update
       builder: (context) => UpdateDialog(
         currentVersion: currentVersion,
         latestVersion: latestVersion,
         downloadUrl: downloadUrl,
         releaseNotes: releaseNotes,
+        isForceUpdate: isForceUpdate,
       ),
     );
   }
@@ -203,6 +246,7 @@ class UpdateDialog extends StatelessWidget {
   final String latestVersion;
   final String downloadUrl;
   final String releaseNotes;
+  final bool isForceUpdate;
 
   const UpdateDialog({
     super.key,
@@ -210,75 +254,85 @@ class UpdateDialog extends StatelessWidget {
     required this.latestVersion,
     required this.downloadUrl,
     required this.releaseNotes,
+    required this.isForceUpdate,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Color scheme based on force update status
+    final accentColor = isForceUpdate ? Colors.orange : Colors.green;
 
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      backgroundColor: isDark ? const Color(0xFF1E1E2E) : Colors.white,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 280, maxWidth: 400),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Update Lottie Animation (Optimized for low-end devices)
-              RepaintBoundary(
-                child: SizedBox(
-                  width: 80,
-                  height: 80,
-                  child: DotLottieLoader.fromAsset(
-                    'assets/animations/update.lottie',
-                    frameBuilder: (context, dotLottie) {
-                      if (dotLottie != null) {
-                        return Lottie.memory(
-                          dotLottie.animations.values.single,
-                          fit: BoxFit.contain,
-                          repeat: true,
-                          frameRate: FrameRate(
-                            30,
-                          ), // Limit to 30fps for performance
-                          renderCache: RenderCache
-                              .raster, // Cache for better performance
-                          filterQuality:
-                              FilterQuality.low, // Reduce quality for speed
+    return PopScope(
+      canPop: !isForceUpdate, // Prevent back button for force updates
+      child: Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: isDark ? const Color(0xFF1E1E2E) : Colors.white,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 280, maxWidth: 400),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Update Lottie Animation (Optimized for low-end devices)
+                RepaintBoundary(
+                  child: SizedBox(
+                    width: 80,
+                    height: 80,
+                    child: DotLottieLoader.fromAsset(
+                      'assets/animations/update.lottie',
+                      frameBuilder: (context, dotLottie) {
+                        if (dotLottie != null) {
+                          return Lottie.memory(
+                            dotLottie.animations.values.single,
+                            fit: BoxFit.contain,
+                            repeat: true,
+                            frameRate: FrameRate(
+                              30,
+                            ), // Limit to 30fps for performance
+                            renderCache: RenderCache
+                                .raster, // Cache for better performance
+                            filterQuality:
+                                FilterQuality.low, // Reduce quality for speed
+                          );
+                        }
+                        return Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: accentColor.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isForceUpdate 
+                                ? Icons.security_update_warning_rounded 
+                                : Icons.system_update_rounded,
+                            color: accentColor,
+                            size: 40,
+                          ),
                         );
-                      }
-                      return Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.system_update_rounded,
-                          color: Colors.green,
-                          size: 40,
-                        ),
-                      );
-                    },
+                      },
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Title
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  'update.available'.tr(),
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                // Title - Different for force vs optional
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    isForceUpdate 
+                        ? 'update.required'.tr() 
+                        : 'update.available'.tr(),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
+                const SizedBox(height: 8),
 
               // Version info
               Container(
@@ -367,32 +421,37 @@ class UpdateDialog extends StatelessWidget {
               // Buttons
               Row(
                 children: [
-                  // Later button
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  // Later button - Only show for optional updates
+                  if (!isForceUpdate) ...[
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        'update.later'.tr(),
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        child: Text(
+                          'update.later'.tr(),
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
+                    const SizedBox(width: 12),
+                  ],
                   // Update button
                   Expanded(
-                    flex: 2,
+                    flex: isForceUpdate ? 1 : 2,
                     child: ElevatedButton(
                       onPressed: () async {
-                        Navigator.pop(context);
+                        // Don't close dialog for force update - they must update
+                        if (!isForceUpdate) {
+                          Navigator.pop(context);
+                        }
                         final uri = Uri.parse(downloadUrl);
                         if (await canLaunchUrl(uri)) {
                           await launchUrl(
@@ -402,7 +461,7 @@ class UpdateDialog extends StatelessWidget {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: accentColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
@@ -436,6 +495,7 @@ class UpdateDialog extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 

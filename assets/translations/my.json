@@ -178,6 +178,7 @@
         "error": "Update စစ်ဆေး၍မရပါ။ ခဏအကြာမှ ထပ်မံကြိုးစားကြည့်ပေးပါ",
         "up_to_date": "Appသည် နောက်ဆုံး version (v{version}) ဖြစ်ပြီးသားပါ။",
         "available": "Update ရရှိနိုင်ပါပြီ!",
+        "required": "Update လုပ်ရန် လိုအပ်သည်!",
         "version_info": "v{current} → v{latest}",
         "changes": "ပြောင်းလဲချက်များ",
         "later": "နောက်မှ",
