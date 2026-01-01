@@ -141,8 +141,15 @@ class _ExportScreenState extends State<ExportScreen> {
   }
 
   Future<void> _signOutGoogle() async {
+    // Show confirmation dialog
+    final confirmed = await _showSignOutConfirmation();
+    if (!confirmed) return;
+    
     await _driveService.signOut();
-    if (mounted) setState(() {});
+    if (mounted) {
+      AppToast.showSuccess(context, 'cloud.signed_out'.tr());
+      setState(() {});
+    }
   }
 
   Future<void> _shareFile(BackupFile file) async {
@@ -257,6 +264,51 @@ class _ExportScreenState extends State<ExportScreen> {
                   foregroundColor: Colors.white,
                 ),
                 child: Text('cloud.backup_now'.tr()),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  Future<bool> _showSignOutConfirmation() async {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDark = themeProvider.isDarkMode;
+
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: isDark ? const Color(0xFF252540) : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(
+              'cloud.confirm_sign_out'.tr(),
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              'cloud.confirm_sign_out_desc'.tr(),
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  'actions.cancel'.tr(),
+                  style: TextStyle(color: Colors.grey[500]),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(
+                  'cloud.sign_out'.tr(),
+                  style: const TextStyle(color: Colors.redAccent),
+                ),
               ),
             ],
           ),

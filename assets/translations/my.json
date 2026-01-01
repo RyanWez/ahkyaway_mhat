@@ -231,6 +231,10 @@
         "sign_in_error": "Google Sign in မအောင်မြင်ပါ",
         "no_data_to_backup": "Backup လုပ်ရန် ဒေတာမရှိပါ",
         "confirm_backup": "Cloud သို့ Backup လုပ်မှာလား?",
-        "confirm_backup_desc": "သင့်ဒေတာကို Google Drive သို့ တင်ပါမည်။"
+        "confirm_backup_desc": "သင့်ဒေတာကို Google Drive သို့ တင်ပါမည်။",
+        "confirm_sign_out": "Sign Out လုပ်မှာလား?",
+        "confirm_sign_out_desc": "Backup/Restore လုပ်ဖို့ နောက်တစ်ကြိမ် Sign in ပြန်လုပ်ရပါမည်။",
+        "sign_out": "Sign Out",
+        "signed_out": "Sign out အောင်မြင်ပါသည်"
     }
 }

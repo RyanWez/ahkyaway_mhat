@@ -231,6 +231,10 @@
         "sign_in_error": "Failed to sign in with Google",
         "no_data_to_backup": "No data to backup",
         "confirm_backup": "Backup to Cloud?",
-        "confirm_backup_desc": "This will upload your data to Google Drive."
+        "confirm_backup_desc": "This will upload your data to Google Drive.",
+        "confirm_sign_out": "Sign Out?",
+        "confirm_sign_out_desc": "You'll need to sign in again to backup or restore data.",
+        "sign_out": "Sign Out",
+        "signed_out": "Signed out successfully"
     }
 }
