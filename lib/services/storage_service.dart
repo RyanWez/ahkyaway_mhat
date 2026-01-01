@@ -7,7 +7,7 @@ import '../models/debt.dart';
 import '../models/payment.dart';
 
 /// Secure Storage Service with encryption support
-/// 
+///
 /// This service uses FlutterSecureStorage for encrypted data storage.
 /// On first run after upgrade, it automatically migrates data from
 /// the old SharedPreferences (plaintext) to secure encrypted storage.
@@ -26,7 +26,8 @@ class StorageService extends ChangeNotifier {
   // Secure storage instance with Android-specific options
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
     aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
+      // encryptedSharedPreferences is deprecated and removed in v10.
+      // Data is auto-migrated.
     ),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock_this_device,
@@ -83,7 +84,8 @@ class StorageService extends ChangeNotifier {
       final paymentsData = prefs.getString(_legacyPaymentsKey);
 
       // Check if there's any data to migrate
-      final hasData = (customersData != null && customersData.isNotEmpty) ||
+      final hasData =
+          (customersData != null && customersData.isNotEmpty) ||
           (debtsData != null && debtsData.isNotEmpty) ||
           (paymentsData != null && paymentsData.isNotEmpty);
 
@@ -149,10 +151,7 @@ class StorageService extends ChangeNotifier {
   }
 
   Future<void> _saveDebts() async {
-    await _secureStorage.write(
-      key: _debtsKey,
-      value: Debt.encode(_debts),
-    );
+    await _secureStorage.write(key: _debtsKey, value: Debt.encode(_debts));
   }
 
   Future<void> _savePayments() async {

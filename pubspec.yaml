@@ -2,7 +2,7 @@ name: ahkyaway_mhat
 description: "AhKyaway Mhat - A debt tracking app for small businesses."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 2.0.8+9
+version: 2.0.9+1
 
 environment:
   sdk: ^3.10.1
@@ -34,41 +34,41 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  
+
   # State management
   provider: ^6.1.2
-  
+
   # Local storage
   shared_preferences: ^2.3.4
-  flutter_secure_storage: ^9.2.4
-  
+  flutter_secure_storage: ^10.0.0
+
   # Date/number formatting
   intl: ^0.20.2
-  
+
   # Unique ID generation
   uuid: ^4.5.1
   package_info_plus: ^9.0.0
   url_launcher: ^6.3.2
-  
+
   # Localization
   easy_localization: ^3.0.8
-  
+
   # Google Fonts for Myanmar font support
   google_fonts: ^6.2.1
   window_manager: ^0.5.1
   http: ^1.6.0
   connectivity_plus: ^7.0.0
-  
+
   # Google Drive backup
   google_sign_in: ^6.2.2
   googleapis: ^13.2.0
-  extension_google_sign_in_as_googleapis_auth: ^2.0.12
-  
+  extension_google_sign_in_as_googleapis_auth: ^2.0.13
+
   # Export/Import functionality
   path_provider: ^2.1.4
   file_picker: ^10.3.8
   share_plus: ^12.0.1
-  
+
   # Lottie animation support
   lottie: ^3.3.1
   dotlottie_loader: ^0.0.4
@@ -108,7 +108,6 @@ flutter_launcher_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -124,5 +123,3 @@ flutter:
     - family: PangramBig
       fonts:
         - asset: assets/fonts/PangramBig.ttf
-
-
