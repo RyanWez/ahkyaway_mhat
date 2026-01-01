@@ -145,7 +145,9 @@
         "feature_cloud": "အလိုအလျောက် cloud backup",
         "feature_devices": "မည်သည့်စက်မှမဆို ဝင်ရောက်နိုင်",
         "feature_secure": "လုံခြုံစွာ encrypt လုပ်ထားသော သိုလှောင်မှု",
-        "notify_me": "Update များကို အမြဲစောင့်ကြည့်ပါ။"
+        "notify_me": "Update များကို အမြဲစောင့်ကြည့်ပါ။",
+        "backup_data": "ဒေတာ Backup လုပ်ရန်",
+        "import_data": "ဒေတာ Import လုပ်ရန်"
     },
     "actions": {
         "save": "သိမ်းရန်",
@@ -235,6 +237,7 @@
         "confirm_sign_out": "Sign Out လုပ်မှာလား?",
         "confirm_sign_out_desc": "Backup/Restore လုပ်ဖို့ နောက်တစ်ကြိမ် Sign in ပြန်လုပ်ရပါမည်။",
         "sign_out": "Sign Out",
-        "signed_out": "Sign out အောင်မြင်ပါသည်"
+        "signed_out": "Sign out အောင်မြင်ပါသည်",
+        "no_internet": "အင်တာနက် ကွန်နက်ရှင် မရှိပါ"
     }
 }

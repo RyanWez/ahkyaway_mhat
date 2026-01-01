@@ -12,7 +12,9 @@ import '../../../models/payment.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../services/storage_service.dart';
 import '../../../services/backup_service.dart';
+import '../../../services/backup_service.dart';
 import '../../../services/google_drive_service.dart';
+import '../../../services/connectivity_service.dart';
 import '../../../widgets/app_toast.dart';
 
 import 'widgets/cloud_restore_card.dart';
@@ -55,6 +57,13 @@ class _ImportScreenState extends State<ImportScreen> {
   }
 
   Future<void> _signInGoogle(GoogleDriveService driveService) async {
+    // Check internet connection
+    final isOnline = await ConnectivityService().checkConnection();
+    if (!isOnline) {
+      if (mounted) AppToast.showError(context, 'cloud.no_internet'.tr());
+      return;
+    }
+
     final success = await driveService.signIn();
     if (mounted) {
       if (!success) {
@@ -65,6 +74,13 @@ class _ImportScreenState extends State<ImportScreen> {
 
   Future<void> _restoreFromCloud(GoogleDriveService driveService) async {
     if (_isImporting) return;
+
+    // Check internet connection
+    final isOnline = await ConnectivityService().checkConnection();
+    if (!isOnline) {
+      if (mounted) AppToast.showError(context, 'cloud.no_internet'.tr());
+      return;
+    }
 
     setState(() => _isImporting = true);
 

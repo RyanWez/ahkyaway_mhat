@@ -24,7 +24,9 @@ class ConnectivityService {
     _checkInitialConnectivity();
 
     // Listen for changes
-    _subscription = Connectivity().onConnectivityChanged.listen(_handleConnectivityChange);
+    _subscription = Connectivity().onConnectivityChanged.listen(
+      _handleConnectivityChange,
+    );
   }
 
   /// Check initial connectivity without showing toast
@@ -36,7 +38,7 @@ class ConnectivityService {
   /// Handle connectivity changes
   void _handleConnectivityChange(List<ConnectivityResult> results) {
     final isOnline = _isConnected(results);
-    
+
     // Only show toast if status actually changed
     if (isOnline != _wasOnline) {
       final ctx = _context;
@@ -51,12 +53,19 @@ class ConnectivityService {
     }
   }
 
+  /// Check if device is currently connected to the internet
+  Future<bool> checkConnection() async {
+    final results = await Connectivity().checkConnectivity();
+    return _isConnected(results);
+  }
+
   /// Check if any connection is available
   bool _isConnected(List<ConnectivityResult> results) {
-    return results.any((result) => 
-      result == ConnectivityResult.wifi ||
-      result == ConnectivityResult.mobile ||
-      result == ConnectivityResult.ethernet
+    return results.any(
+      (result) =>
+          result == ConnectivityResult.wifi ||
+          result == ConnectivityResult.mobile ||
+          result == ConnectivityResult.ethernet,
     );
   }
 

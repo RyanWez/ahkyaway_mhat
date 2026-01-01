@@ -7,6 +7,7 @@ import '../../../providers/theme_provider.dart';
 import '../../../services/storage_service.dart';
 import '../../../services/backup_service.dart';
 import '../../../services/google_drive_service.dart';
+import '../../../services/connectivity_service.dart';
 import '../../../widgets/app_toast.dart';
 
 import 'widgets/cloud_backup_card.dart';
@@ -88,6 +89,13 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   Future<void> _backupToCloud(GoogleDriveService driveService) async {
+    // Check internet connection
+    final isOnline = await ConnectivityService().checkConnection();
+    if (!isOnline) {
+      if (mounted) AppToast.showError(context, 'cloud.no_internet'.tr());
+      return;
+    }
+
     final storage = Provider.of<StorageService>(context, listen: false);
 
     // Check if there's data to backup
@@ -128,6 +136,13 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   Future<void> _signInGoogle(GoogleDriveService driveService) async {
+    // Check internet connection
+    final isOnline = await ConnectivityService().checkConnection();
+    if (!isOnline) {
+      if (mounted) AppToast.showError(context, 'cloud.no_internet'.tr());
+      return;
+    }
+
     final success = await driveService.signIn();
     if (mounted) {
       if (!success) {
