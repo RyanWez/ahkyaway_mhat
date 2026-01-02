@@ -3,8 +3,7 @@ import 'package:lottie/lottie.dart';
 import 'package:dotlottie_loader/dotlottie_loader.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../theme/app_theme.dart';
-import '../backup/backup_screen.dart';
-import '../import/import_screen.dart';
+import '../cloud_sync/cloud_sync_screen.dart';
 
 class CloudSyncCard extends StatelessWidget {
   final bool isDark;
@@ -78,54 +77,46 @@ class CloudSyncCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              Text(
-                'account.cloud_sync_title'.tr(),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'cloud.sync_title'.tr(),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'cloud.sync_desc'.tr(),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // Backup Data Button
-          _buildActionButton(
-            context: context,
-            label: 'account.backup_data'.tr(),
-            icon: Icons.backup_rounded,
-            color: const Color(0xFF4285F4),
-            onTap: () => _navigateToBackup(context),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Import Data Button
-          _buildActionButton(
-            context: context,
-            label: 'account.import_data'.tr(),
-            icon: Icons.restore_rounded,
-            color: const Color(0xFF34A853),
-            onTap: () => _navigateToImport(context),
-          ),
+          // Cloud Sync Button
+          _buildSyncButton(context),
         ],
       ),
     );
   }
 
-  Widget _buildActionButton({
-    required BuildContext context,
-    required String label,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildSyncButton(BuildContext context) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: () => _navigateToCloudSync(context),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
@@ -135,7 +126,9 @@ class CloudSyncCard extends StatelessWidget {
                 ? const Color(0xFF1A1A2E).withValues(alpha: 0.5)
                 : Colors.white.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: const Color(0xFF4285F4).withValues(alpha: 0.3),
+            ),
           ),
           child: Row(
             children: [
@@ -143,15 +136,19 @@ class CloudSyncCard extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
+                  color: const Color(0xFF4285F4).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, size: 22, color: color),
+                child: const Icon(
+                  Icons.cloud_sync_rounded,
+                  size: 22,
+                  color: Color(0xFF4285F4),
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
-                  label,
+                  'cloud.sync_title'.tr(),
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -171,17 +168,10 @@ class CloudSyncCard extends StatelessWidget {
     );
   }
 
-  void _navigateToBackup(BuildContext context) {
+  void _navigateToCloudSync(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const BackupScreen()),
-    );
-  }
-
-  void _navigateToImport(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ImportScreen()),
+      MaterialPageRoute(builder: (context) => const CloudSyncScreen()),
     );
   }
 }

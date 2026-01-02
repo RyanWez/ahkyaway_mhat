@@ -216,6 +216,8 @@
         "confirm_export_desc": "သင့်ဒေတာကို backup file အဖြစ် သိမ်းပါမည်။"
     },
     "cloud": {
+        "sync_title": "Cloud Sync",
+        "sync_desc": "စက်အမျိုးမျိုးတွင် ဒေတာ sync လုပ်ရန်",
         "backup_title": "Cloud Backup",
         "restore_title": "Cloud Restore",
         "sign_in_prompt": "Google ဖြင့် Sign in လုပ်ပြီး backup သိမ်းပါ",

@@ -220,6 +220,8 @@
     "confirm_export_desc": "This will create a backup file of your data."
   },
   "cloud": {
+    "sync_title": "Cloud Sync",
+    "sync_desc": "Sync your data across devices",
     "backup_title": "Cloud Backup",
     "restore_title": "Cloud Restore",
     "sign_in_prompt": "Sign in with Google to backup your data",
