@@ -242,10 +242,16 @@ class SyncPreviewDialog extends StatelessWidget {
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(Icons.sync_rounded, size: 18),
-                        const SizedBox(width: 8),
-                        Text('cloud.sync_now'.tr()),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'cloud.sync_now'.tr(),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ],
                     ),
                   ),
