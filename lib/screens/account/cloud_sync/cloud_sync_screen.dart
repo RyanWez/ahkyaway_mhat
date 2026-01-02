@@ -10,9 +10,9 @@ import '../../../services/connectivity_service.dart';
 import '../../../widgets/app_toast.dart';
 import '../../../theme/app_theme.dart';
 
-import '../backup/widgets/data_overview_card.dart';
-import '../backup/widgets/sync_preview_dialog.dart';
-import '../backup/widgets/sync_loading_overlay.dart';
+import 'widgets/data_overview_card.dart';
+import 'widgets/sync_preview_dialog.dart';
+import 'widgets/sync_loading_overlay.dart';
 
 class CloudSyncScreen extends StatefulWidget {
   const CloudSyncScreen({super.key});
