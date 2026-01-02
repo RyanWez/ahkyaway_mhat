@@ -182,7 +182,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Made with ❤️ in Myanmar
 
 <p>
-  <a href="https://github.com/RyanWez/ahkyaway_mhat/releases">
+  <a href="https://github.com/RyanWez/ahkyaway_mhat-releases/releases">
     <img src="https://img.shields.io/badge/Download-Latest%20APK-success?style=for-the-badge&logo=android&logoColor=white" alt="Download">
   </a>
 </p>
