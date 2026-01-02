@@ -172,6 +172,7 @@ class _SyncLoadingOverlayState extends State<SyncLoadingOverlay>
                             ? Colors.white
                             : const Color(0xFF1A1A2E),
                         letterSpacing: 0.3,
+                        decoration: TextDecoration.none,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -206,6 +207,7 @@ class _SyncLoadingOverlayState extends State<SyncLoadingOverlay>
                         color: widget.isDark
                             ? Colors.grey[500]
                             : Colors.grey[600],
+                        decoration: TextDecoration.none,
                       ),
                     ),
                   ],
