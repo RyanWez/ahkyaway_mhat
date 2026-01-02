@@ -14,6 +14,8 @@ import 'widgets/cloud_backup_card.dart';
 import 'widgets/data_overview_card.dart';
 import 'widgets/export_button.dart';
 import 'widgets/exported_file_tile.dart';
+import 'widgets/sync_preview_dialog.dart';
+import 'widgets/sync_loading_overlay.dart';
 
 class BackupScreen extends StatefulWidget {
   const BackupScreen({super.key});
@@ -88,7 +90,7 @@ class _BackupScreenState extends State<BackupScreen> {
     }
   }
 
-  Future<void> _backupToCloud(GoogleDriveService driveService) async {
+  Future<void> _syncToCloud(GoogleDriveService driveService) async {
     // Check internet connection
     final isOnline = await ConnectivityService().checkConnection();
     if (!isOnline) {
@@ -99,40 +101,88 @@ class _BackupScreenState extends State<BackupScreen> {
     if (!mounted) return;
 
     final storage = Provider.of<StorageService>(context, listen: false);
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
 
-    // Check if there's data to backup
-    final hasData =
+    // Check if there's data to sync
+    final hasLocalData =
         storage.customers.isNotEmpty ||
         storage.debts.isNotEmpty ||
         storage.payments.isNotEmpty;
 
-    if (!hasData) {
+    final hasCloudBackup = await driveService.hasCloudBackup();
+
+    if (!hasLocalData && !hasCloudBackup) {
       if (mounted) AppToast.showError(context, 'cloud.no_data_to_backup'.tr());
       return;
     }
 
-    // Show confirmation dialog
-    final confirmed = await _showCloudBackupConfirmation();
-    if (!confirmed) return;
-
     try {
+      // Get merge preview
+      final stats = await driveService.getMergePreview(storage);
+
+      if (!mounted) return;
+
+      // If no cloud backup exists, just do a simple backup
+      if (stats == null) {
+        final confirmed = await _showCloudBackupConfirmation();
+        if (!confirmed) return;
+
+        final packageInfo = await PackageInfo.fromPlatform();
+        final success = await driveService.backupToCloud(
+          storage,
+          packageInfo.version,
+        );
+
+        if (mounted) {
+          if (success) {
+            AppToast.showSuccess(context, 'cloud.backup_success'.tr());
+          } else {
+            AppToast.showError(context, 'cloud.backup_error'.tr());
+          }
+        }
+        return;
+      }
+
+      // Show preview dialog
+      final confirmed = await SyncPreviewDialog.show(
+        context: context,
+        stats: stats,
+        isDark: themeProvider.isDarkMode,
+      );
+
+      if (!confirmed || !mounted) return;
+
+      // Show loading overlay
+      SyncLoadingOverlay.show(
+        context,
+        'cloud.syncing'.tr(),
+        themeProvider.isDarkMode,
+      );
+
       final packageInfo = await PackageInfo.fromPlatform();
 
-      final success = await driveService.backupToCloud(
+      final result = await driveService.syncWithCloud(
         storage,
         packageInfo.version,
       );
 
+      // Hide loading overlay
+      if (mounted) SyncLoadingOverlay.hide(context);
+
       if (mounted) {
-        if (success) {
-          AppToast.showSuccess(context, 'cloud.backup_success'.tr());
+        if (result != null) {
+          AppToast.showSuccess(context, 'cloud.sync_success'.tr());
         } else {
-          AppToast.showError(context, 'cloud.backup_error'.tr());
+          AppToast.showError(context, 'cloud.sync_error'.tr());
         }
       }
     } catch (e) {
+      // Hide loading overlay on error
       if (mounted) {
-        AppToast.showError(context, 'cloud.backup_error'.tr());
+        try {
+          SyncLoadingOverlay.hide(context);
+        } catch (_) {}
+        AppToast.showError(context, 'cloud.sync_error'.tr());
       }
     }
   }
@@ -419,7 +469,7 @@ class _BackupScreenState extends State<BackupScreen> {
                         lastBackupDate:
                             driveService.lastBackupInfo?.formattedDate,
                         isLoading: driveService.isLoading,
-                        onBackup: () => _backupToCloud(driveService),
+                        onBackup: () => _syncToCloud(driveService),
                         onSignIn: () => _signInGoogle(driveService),
                         onSignOut: () => _signOutGoogle(driveService),
                         isDark: isDark,

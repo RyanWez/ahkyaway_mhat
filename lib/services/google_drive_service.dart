@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import '../models/customer.dart';
 import '../models/debt.dart';
 import '../models/payment.dart';
+import 'merge_service.dart';
 import 'storage_service.dart';
 
 /// Represents cloud backup metadata
@@ -310,6 +311,147 @@ class GoogleDriveService extends ChangeNotifier {
     if (_driveApi == null) return false;
     final fileId = await _findBackupFile();
     return fileId != null;
+  }
+
+  /// Get a preview of what the merge would look like
+  /// Returns null if no cloud backup exists or not signed in
+  Future<MergeStats?> getMergePreview(StorageService storage) async {
+    if (_driveApi == null) return null;
+
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Get cloud data
+      final cloudData = await restoreFromCloud();
+      if (cloudData == null) {
+        _isLoading = false;
+        notifyListeners();
+        return null;
+      }
+
+      // Parse cloud data
+      final cloudCustomers = (cloudData['customers'] as List<dynamic>)
+          .map((item) => Customer.fromJson(item))
+          .toList();
+      final cloudDebts = (cloudData['debts'] as List<dynamic>)
+          .map((item) => Debt.fromJson(item))
+          .toList();
+      final cloudPayments = (cloudData['payments'] as List<dynamic>)
+          .map((item) => Payment.fromJson(item))
+          .toList();
+
+      // Generate preview
+      final stats = MergeService.preview(
+        localCustomers: storage.customers,
+        localDebts: storage.debts,
+        localPayments: storage.payments,
+        cloudCustomers: cloudCustomers,
+        cloudDebts: cloudDebts,
+        cloudPayments: cloudPayments,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+      return stats;
+    } catch (e) {
+      debugPrint('Get merge preview error: $e');
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// Perform Smart Merge: merge local and cloud data, then sync both
+  /// Returns true if successful
+  Future<MergeResult?> syncWithCloud(
+    StorageService storage,
+    String appVersion,
+  ) async {
+    if (_driveApi == null) return null;
+
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Get cloud data
+      final cloudData = await restoreFromCloud();
+
+      List<Customer> cloudCustomers = [];
+      List<Debt> cloudDebts = [];
+      List<Payment> cloudPayments = [];
+
+      if (cloudData != null) {
+        cloudCustomers = (cloudData['customers'] as List<dynamic>)
+            .map((item) => Customer.fromJson(item))
+            .toList();
+        cloudDebts = (cloudData['debts'] as List<dynamic>)
+            .map((item) => Debt.fromJson(item))
+            .toList();
+        cloudPayments = (cloudData['payments'] as List<dynamic>)
+            .map((item) => Payment.fromJson(item))
+            .toList();
+      }
+
+      // Perform merge
+      final mergeResult = MergeService.merge(
+        localCustomers: storage.customers,
+        localDebts: storage.debts,
+        localPayments: storage.payments,
+        cloudCustomers: cloudCustomers,
+        cloudDebts: cloudDebts,
+        cloudPayments: cloudPayments,
+      );
+
+      // Update local storage with merged data
+      await storage.replaceAllData(
+        customers: mergeResult.customers,
+        debts: mergeResult.debts,
+        payments: mergeResult.payments,
+      );
+
+      // Upload merged data to cloud
+      final backupDataMap = {
+        'appVersion': appVersion,
+        'exportedAt': DateTime.now().toIso8601String(),
+        'customers': mergeResult.customers.map((c) => c.toJson()).toList(),
+        'debts': mergeResult.debts.map((d) => d.toJson()).toList(),
+        'payments': mergeResult.payments.map((p) => p.toJson()).toList(),
+      };
+
+      final jsonString = await compute(_jsonEncodeTask, backupDataMap);
+      final bytes = utf8.encode(jsonString);
+      final stream = Stream.value(bytes);
+
+      final existingFileId = await _findBackupFile();
+
+      if (existingFileId != null) {
+        await _driveApi!.files.update(
+          drive.File()..name = _backupFileName,
+          existingFileId,
+          uploadMedia: drive.Media(stream, bytes.length),
+        );
+      } else {
+        final file = drive.File()
+          ..name = _backupFileName
+          ..parents = ['appDataFolder'];
+
+        await _driveApi!.files.create(
+          file,
+          uploadMedia: drive.Media(stream, bytes.length),
+        );
+      }
+
+      await _fetchLastBackupInfo();
+      _isLoading = false;
+      notifyListeners();
+      return mergeResult;
+    } catch (e) {
+      debugPrint('Sync with cloud error: $e');
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
   }
 }
 

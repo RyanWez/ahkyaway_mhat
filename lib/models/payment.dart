@@ -7,6 +7,7 @@ class Payment {
   DateTime paymentDate;
   String notes;
   final DateTime createdAt;
+  DateTime updatedAt;
 
   Payment({
     required this.id,
@@ -15,7 +16,8 @@ class Payment {
     required this.paymentDate,
     this.notes = '',
     required this.createdAt,
-  });
+    DateTime? updatedAt,
+  }) : updatedAt = updatedAt ?? createdAt;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -24,6 +26,7 @@ class Payment {
     'paymentDate': paymentDate.toIso8601String(),
     'notes': notes,
     'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
   };
 
   factory Payment.fromJson(Map<String, dynamic> json) => Payment(
@@ -33,6 +36,10 @@ class Payment {
     paymentDate: DateTime.parse(json['paymentDate']),
     notes: json['notes'] ?? '',
     createdAt: DateTime.parse(json['createdAt']),
+    // Backward compatible: use createdAt if updatedAt not present
+    updatedAt: json['updatedAt'] != null
+        ? DateTime.parse(json['updatedAt'])
+        : DateTime.parse(json['createdAt']),
   );
 
   static String encode(List<Payment> payments) =>

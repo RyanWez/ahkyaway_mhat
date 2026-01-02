@@ -177,7 +177,8 @@
     "no_warnings_subtitle": "No overdue or upcoming debts"
   },
   "common": {
-    "close": "Close"
+    "close": "Close",
+    "cancel": "Cancel"
   },
   "update": {
     "checking": "Checking for updates...",
@@ -242,6 +243,23 @@
     "confirm_sign_out_desc": "You'll need to sign in again to backup or restore data.",
     "sign_out": "Sign Out",
     "signed_out": "Signed out successfully",
-    "no_internet": "No internet connection"
+    "no_internet": "No internet connection",
+    "sync_preview_title": "Smart Sync Preview",
+    "sync_preview_subtitle": "Review changes before syncing",
+    "changes_summary": "Changes Summary",
+    "no_changes": "Data is already in sync",
+    "sync_now": "Sync Now",
+    "sync_success": "Data synced successfully",
+    "sync_error": "Failed to sync data",
+    "syncing": "Syncing your data...",
+    "new_customers_cloud": "new customer(s) from cloud",
+    "new_customers_local": "new customer(s) from this device",
+    "customers_updated_cloud": "customer(s) updated (cloud newer)",
+    "new_debts_cloud": "new debt(s) from cloud",
+    "new_debts_local": "new debt(s) from this device",
+    "debts_updated_cloud": "debt(s) updated (cloud newer)",
+    "new_payments_cloud": "new payment(s) from cloud",
+    "new_payments_local": "new payment(s) from this device",
+    "payments_updated_cloud": "payment(s) updated (cloud newer)"
   }
 }

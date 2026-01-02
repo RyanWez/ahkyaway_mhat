@@ -173,7 +173,8 @@
         "no_warnings_subtitle": "ရက်လွန် သို့မဟုတ် မကြာမီပေးရမည့် အကြွေးမရှိပါ"
     },
     "common": {
-        "close": "ပိတ်ရန်"
+        "close": "ပိတ်ရန်",
+        "cancel": "မလုပ်တော့ပါ"
     },
     "update": {
         "checking": "Update စစ်ဆေးနေသည်...",
@@ -238,6 +239,23 @@
         "confirm_sign_out_desc": "Backup/Restore လုပ်ဖို့ နောက်တစ်ကြိမ် Sign in ပြန်လုပ်ရပါမည်။",
         "sign_out": "Sign Out",
         "signed_out": "Sign out အောင်မြင်ပါသည်",
-        "no_internet": "အင်တာနက် ကွန်နက်ရှင် မရှိပါ"
+        "no_internet": "အင်တာနက် ကွန်နက်ရှင် မရှိပါ",
+        "sync_preview_title": "Smart Sync Preview",
+        "sync_preview_subtitle": "Sync မလုပ်ခင် ပြောင်းလဲချက်များကို ကြည့်ရှုပါ",
+        "changes_summary": "ပြောင်းလဲချက် အနှစ်ချုပ်",
+        "no_changes": "ဒေတာများ sync ဖြစ်ပြီးသားပါ",
+        "sync_now": "ယခု Sync လုပ်ရန်",
+        "sync_success": "ဒေတာ Sync အောင်မြင်ပါသည်",
+        "sync_error": "Sync မအောင်မြင်ပါ",
+        "syncing": "ဒေတာ Sync လုပ်နေသည်...",
+        "new_customers_cloud": "ဖောက်သည်အသစ် (cloud မှ)",
+        "new_customers_local": "ဖောက်သည်အသစ် (ဤစက်မှ)",
+        "customers_updated_cloud": "ဖောက်သည် update (cloud ပိုသစ်)",
+        "new_debts_cloud": "အကြွေးအသစ် (cloud မှ)",
+        "new_debts_local": "အကြွေးအသစ် (ဤစက်မှ)",
+        "debts_updated_cloud": "အကြွေး update (cloud ပိုသစ်)",
+        "new_payments_cloud": "ပေးချေမှုအသစ် (cloud မှ)",
+        "new_payments_local": "ပေးချေမှုအသစ် (ဤစက်မှ)",
+        "payments_updated_cloud": "ပေးချေမှု update (cloud ပိုသစ်)"
     }
 }

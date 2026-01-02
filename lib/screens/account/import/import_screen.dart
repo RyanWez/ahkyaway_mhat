@@ -5,10 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-
-import '../../../models/customer.dart';
-import '../../../models/debt.dart';
-import '../../../models/payment.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../services/storage_service.dart';
 import '../../../services/backup_service.dart';
@@ -20,6 +16,8 @@ import 'widgets/cloud_restore_card.dart';
 import 'widgets/import_device_card.dart';
 import 'widgets/backup_file_tile.dart';
 import 'widgets/import_confirm_dialog.dart';
+import '../backup/widgets/sync_preview_dialog.dart';
+import '../backup/widgets/sync_loading_overlay.dart';
 
 class ImportScreen extends StatefulWidget {
   const ImportScreen({super.key});
@@ -71,8 +69,12 @@ class _ImportScreenState extends State<ImportScreen> {
     }
   }
 
-  Future<void> _restoreFromCloud(GoogleDriveService driveService) async {
+  Future<void> _syncFromCloud(GoogleDriveService driveService) async {
     if (_isImporting) return;
+
+    // Capture providers before async gap
+    final storage = Provider.of<StorageService>(context, listen: false);
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
 
     // Check internet connection
     final isOnline = await ConnectivityService().checkConnection();
@@ -81,44 +83,29 @@ class _ImportScreenState extends State<ImportScreen> {
       return;
     }
 
+    if (!mounted) return;
     setState(() => _isImporting = true);
 
     try {
-      // Get cloud backup data
-      final data = await driveService.restoreFromCloud();
-      if (data == null) {
-        if (mounted) {
-          AppToast.showError(context, 'cloud.no_backup_found'.tr());
-        }
+      // Get merge preview
+      final stats = await driveService.getMergePreview(storage);
+
+      if (!mounted) {
+        return;
+      }
+
+      // If no cloud backup exists
+      if (stats == null) {
+        AppToast.showError(context, 'cloud.no_backup_found'.tr());
         setState(() => _isImporting = false);
         return;
       }
 
-      if (!mounted) return;
-
-      // Show confirmation dialog
-      final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-
-      // Parse data for preview
-      final previewData = BackupData(
-        appVersion: data['appVersion'] ?? 'unknown',
-        exportedAt:
-            DateTime.tryParse(data['exportedAt'] ?? '') ?? DateTime.now(),
-        customers: (data['customers'] as List<dynamic>? ?? [])
-            .map((item) => Customer.fromJson(item))
-            .toList(),
-        debts: (data['debts'] as List<dynamic>? ?? [])
-            .map((item) => Debt.fromJson(item))
-            .toList(),
-        payments: (data['payments'] as List<dynamic>? ?? [])
-            .map((item) => Payment.fromJson(item))
-            .toList(),
-      );
-
-      final confirmed = await ImportConfirmDialog.show(
-        context,
-        previewData,
-        themeProvider.isDarkMode,
+      // Show preview dialog
+      final confirmed = await SyncPreviewDialog.show(
+        context: context,
+        stats: stats,
+        isDark: themeProvider.isDarkMode,
       );
 
       if (!confirmed || !mounted) {
@@ -126,24 +113,37 @@ class _ImportScreenState extends State<ImportScreen> {
         return;
       }
 
-      // Create auto-backup before import
-      final storage = Provider.of<StorageService>(context, listen: false);
-      final packageInfo = await PackageInfo.fromPlatform();
-      await _backupService.createAutoBackup(storage, packageInfo.version);
+      // Show loading overlay
+      SyncLoadingOverlay.show(
+        context,
+        'cloud.syncing'.tr(),
+        themeProvider.isDarkMode,
+      );
 
-      // Apply cloud backup
-      final success = await driveService.applyCloudBackup(storage, data);
+      final packageInfo = await PackageInfo.fromPlatform();
+
+      final result = await driveService.syncWithCloud(
+        storage,
+        packageInfo.version,
+      );
+
+      // Hide loading overlay
+      if (mounted) SyncLoadingOverlay.hide(context);
 
       if (mounted) {
-        if (success) {
-          AppToast.showSuccess(context, 'cloud.restore_success'.tr());
+        if (result != null) {
+          AppToast.showSuccess(context, 'cloud.sync_success'.tr());
           Navigator.pop(context);
         } else {
-          AppToast.showError(context, 'cloud.restore_error'.tr());
+          AppToast.showError(context, 'cloud.sync_error'.tr());
         }
       }
     } catch (e) {
+      // Hide loading overlay on error
       if (mounted) {
+        try {
+          SyncLoadingOverlay.hide(context);
+        } catch (_) {}
         AppToast.showError(context, 'cloud.restore_error'.tr());
       }
     } finally {
@@ -275,7 +275,7 @@ class _ImportScreenState extends State<ImportScreen> {
                             driveService.lastBackupInfo?.formattedDate,
                         hasBackup: driveService.lastBackupInfo != null,
                         isLoading: driveService.isLoading || _isImporting,
-                        onRestore: () => _restoreFromCloud(driveService),
+                        onRestore: () => _syncFromCloud(driveService),
                         onSignIn: () => _signInGoogle(driveService),
                         isDark: isDark,
                       );
