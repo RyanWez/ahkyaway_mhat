@@ -127,6 +127,7 @@
   },
   "account": {
     "title": "Account",
+    "sign_in_desc": "Sign in to sync your data across devices",
     "about": "ABOUT",
     "version": "Version",
     "developer": "Developer",

@@ -127,6 +127,7 @@
     },
     "account": {
         "title": "အကောင့်",
+        "sign_in_desc": "စက်အမျိုးမျိုးတွင် ဒေတာ sync လုပ်ရန် Sign in ဝင်ပါ",
         "about": "အကြောင်း",
         "version": "ဗားရှင်း",
         "developer": "Source Code",

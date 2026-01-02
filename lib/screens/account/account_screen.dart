@@ -5,6 +5,7 @@ import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
 
 // Import widgets
+import 'widgets/account_card.dart';
 import 'widgets/cloud_sync_card.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -57,9 +58,17 @@ class _AccountScreenState extends State<AccountScreen> {
               delegate: SliverChildListDelegate([
                 const SizedBox(height: 24),
 
-                // Cloud Sync & Backup Card
+                // Account Card (Google Sign In)
                 _buildAnimatedSection(
                   index: 0,
+                  child: AccountCard(isDark: isDark),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Cloud Sync & Backup Card
+                _buildAnimatedSection(
+                  index: 1,
                   child: CloudSyncCard(isDark: isDark),
                 ),
 
@@ -67,7 +76,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
                 // Features Section
                 _buildAnimatedSection(
-                  index: 1,
+                  index: 2,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
