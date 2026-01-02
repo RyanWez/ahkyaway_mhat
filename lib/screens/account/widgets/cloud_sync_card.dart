@@ -140,7 +140,7 @@ class CloudSyncCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
-                  Icons.cloud_sync_rounded,
+                  Icons.cloud_rounded,
                   size: 22,
                   color: Color(0xFF4285F4),
                 ),
