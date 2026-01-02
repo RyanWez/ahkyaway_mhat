@@ -15,35 +15,7 @@ class CloudSyncCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [
-                  const Color(0xFF1E1E2E), // Deep Dark
-                  const Color(0xFF2D2D44), // Subtle Indigo
-                ]
-              : [
-                  const Color(0xFFF8F7FF), // Original Light Background
-                  const Color(0xFFEEECFF),
-                ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : AppTheme.primaryDark.withValues(alpha: 0.1),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryDark.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+      decoration: AppTheme.cardDecoration(isDark),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -120,15 +92,10 @@ class CloudSyncCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF1A1A2E).withValues(alpha: 0.5)
-                : Colors.white.withValues(alpha: 0.6),
+            color: isDark ? const Color(0xFF1E1E30) : Colors.grey[50],
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: const Color(0xFF4285F4).withValues(alpha: 0.3),
-            ),
           ),
           child: Row(
             children: [

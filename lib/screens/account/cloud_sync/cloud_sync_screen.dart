@@ -319,22 +319,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [const Color(0xFF1E1E2E), const Color(0xFF2D2D44)]
-              : [const Color(0xFFF8F7FF), const Color(0xFFEEECFF)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : AppTheme.primaryDark.withValues(alpha: 0.1),
-          width: 1.5,
-        ),
-      ),
+      decoration: AppTheme.cardDecoration(isDark),
       child: Column(
         children: [
           // Icon
@@ -478,22 +463,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [const Color(0xFF1E1E2E), const Color(0xFF2D2D44)]
-              : [const Color(0xFFF8F7FF), const Color(0xFFEEECFF)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : AppTheme.primaryDark.withValues(alpha: 0.1),
-          width: 1.5,
-        ),
-      ),
+      decoration: AppTheme.cardDecoration(isDark),
       child: Column(
         children: [
           Row(
