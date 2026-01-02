@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -338,15 +339,15 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
         children: [
           // Icon
           Container(
-            width: 72,
-            height: 72,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFF4285F4).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
+              color: const Color(0xFF4285F4).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(24),
             ),
             child: const Icon(
-              Icons.cloud_sync_rounded,
-              size: 36,
+              Icons.cloud_rounded,
+              size: 44,
               color: Color(0xFF4285F4),
             ),
           ),
@@ -389,8 +390,18 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
           const SizedBox(height: 28),
 
           // Sign In Button
-          SizedBox(
+          Container(
             width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: ElevatedButton(
               onPressed: driveService.isLoading
                   ? null
@@ -398,50 +409,40 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: const Color(0xFF1A1A2E),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
                 ),
                 elevation: 0,
               ),
               child: driveService.isLoading
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.grey,
+                        strokeWidth: 2.5,
+                        color: Color(0xFF4285F4),
                       ),
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Google Logo colors container
-                        Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'G',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF4285F4),
-                              ),
-                            ),
-                          ),
+                        SvgPicture.asset(
+                          'assets/icons/google_logo.svg',
+                          width: 22,
+                          height: 22,
                         ),
-                        const SizedBox(width: 10),
-                        Flexible(
-                          child: Text(
-                            'cloud.sign_in_google'.tr(),
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                            overflow: TextOverflow.ellipsis,
+                        const SizedBox(width: 12),
+                        Text(
+                          'cloud.sign_in_google'.tr(),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF3C4043),
                           ),
                         ),
                       ],

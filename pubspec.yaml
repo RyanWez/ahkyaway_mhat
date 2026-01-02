@@ -72,6 +72,7 @@ dependencies:
   # Lottie animation support
   lottie: ^3.3.1
   dotlottie_loader: ^0.0.4
+  flutter_svg: ^2.2.3
 
 dev_dependencies:
   flutter_test:
@@ -117,6 +118,7 @@ flutter:
   assets:
     - assets/translations/
     - assets/animations/
+    - assets/icons/
 
   # Custom fonts
   fonts:
