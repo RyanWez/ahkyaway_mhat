@@ -20,8 +20,9 @@ class AccountCard extends StatelessWidget {
     // Check internet connection
     final isOnline = await ConnectivityService().checkConnection();
     if (!isOnline) {
-      if (context.mounted)
+      if (context.mounted) {
         AppToast.showError(context, 'cloud.no_internet'.tr());
+      }
       return;
     }
 
