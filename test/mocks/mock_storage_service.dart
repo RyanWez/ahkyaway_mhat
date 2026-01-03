@@ -79,6 +79,9 @@ class MockStorageService extends ChangeNotifier implements StorageService {
     }
   }
 
+  @override
+  Customer? getCustomer(String id) => getCustomerById(id);
+
   // Debt operations
   @override
   Future<void> addDebt(Debt debt) async {
@@ -116,11 +119,23 @@ class MockStorageService extends ChangeNotifier implements StorageService {
     }
   }
 
+  @override
+  Debt? getDebt(String id) => getDebtById(id);
+
   // Payment operations
   @override
   Future<void> addPayment(Payment payment) async {
     _payments.add(payment);
     notifyListeners();
+  }
+
+  @override
+  Future<void> updatePayment(Payment payment) async {
+    final index = _payments.indexWhere((p) => p.id == payment.id);
+    if (index != -1) {
+      _payments[index] = payment;
+      notifyListeners();
+    }
   }
 
   @override
@@ -199,7 +214,8 @@ class MockStorageService extends ChangeNotifier implements StorageService {
   }
 
   /// Helper: Clear all data
-  void clearAll() {
+  @override
+  Future<void> clearAll() async {
     _customers = [];
     _debts = [];
     _payments = [];

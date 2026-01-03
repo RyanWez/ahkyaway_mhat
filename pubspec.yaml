@@ -42,6 +42,10 @@ dependencies:
   shared_preferences: ^2.3.4
   flutter_secure_storage: ^10.0.0
 
+  # Hive database
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
   # Date/number formatting
   intl: ^0.20.2
 
@@ -85,6 +89,10 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
+
+  # Hive code generation
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.0
 
 # Flutter Launcher Icons configuration
 flutter_launcher_icons:

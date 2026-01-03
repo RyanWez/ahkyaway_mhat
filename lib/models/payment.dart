@@ -1,13 +1,32 @@
 import 'dart:convert';
+import 'package:hive/hive.dart';
 
-class Payment {
+part 'payment.g.dart';
+
+@HiveType(typeId: 3)
+class Payment extends HiveObject {
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   final String loanId;
+
+  @HiveField(2)
   double amount;
+
+  @HiveField(3)
   DateTime paymentDate;
+
+  @HiveField(4)
   String notes;
+
+  @HiveField(5)
   final DateTime createdAt;
+
+  @HiveField(6)
   DateTime updatedAt;
+
+  @HiveField(7)
   final DateTime? deletedAt; // Soft delete timestamp
 
   Payment({

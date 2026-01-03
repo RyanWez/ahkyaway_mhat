@@ -1,43 +1,48 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/customer.dart';
 import '../models/debt.dart';
 import '../models/payment.dart';
 import 'error_notifier.dart';
 
-/// Secure Storage Service with encryption support
+/// Hive-based Storage Service with encryption support
 ///
-/// This service uses FlutterSecureStorage for encrypted data storage.
+/// This service uses Hive for efficient typed data storage.
 /// On first run after upgrade, it automatically migrates data from
-/// the old SharedPreferences (plaintext) to secure encrypted storage.
+/// the old FlutterSecureStorage/SharedPreferences to Hive boxes.
 class StorageService extends ChangeNotifier {
-  // Storage keys for secure storage
-  static const String _customersKey = 'secure_customers';
-  static const String _debtsKey = 'secure_loans';
-  static const String _paymentsKey = 'secure_payments';
-  static const String _migrationKey = 'migration_complete_v1';
+  // Hive box names
+  static const String _customersBoxName = 'customers_box';
+  static const String _debtsBoxName = 'debts_box';
+  static const String _paymentsBoxName = 'payments_box';
 
-  // Legacy keys for migration (SharedPreferences)
+  // Migration keys
+  static const String _hiveMigrationKey = 'hive_migration_complete_v1';
+
+  // Legacy keys for migration
   static const String _legacyCustomersKey = 'customers';
   static const String _legacyDebtsKey = 'loans';
   static const String _legacyPaymentsKey = 'payments';
+  static const String _secureCustomersKey = 'secure_customers';
+  static const String _secureDebtsKey = 'secure_loans';
+  static const String _securePaymentsKey = 'secure_payments';
 
-  // Secure storage instance with Android-specific options
+  // Legacy secure storage for migration only
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      // encryptedSharedPreferences is deprecated and removed in v10.
-      // Data is auto-migrated.
-    ),
+    aOptions: AndroidOptions(),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock_this_device,
     ),
   );
 
-  List<Customer> _customers = [];
-  List<Debt> _debts = [];
-  List<Payment> _payments = [];
+  // Hive boxes
+  late Box<Customer> _customersBox;
+  late Box<Debt> _debtsBox;
+  late Box<Payment> _paymentsBox;
+  bool _isInitialized = false;
 
   // Error state management
   StorageError? _lastError;
@@ -54,9 +59,13 @@ class StorageService extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<Customer> get customers => _customers;
-  List<Debt> get debts => _debts;
-  List<Payment> get payments => _payments;
+  List<Customer> get customers =>
+      _isInitialized ? _customersBox.values.toList() : [];
+
+  List<Debt> get debts => _isInitialized ? _debtsBox.values.toList() : [];
+
+  List<Payment> get payments =>
+      _isInitialized ? _paymentsBox.values.toList() : [];
 
   /// Initialize storage - handles migration from legacy storage
   /// Returns true if successful, false if there were errors (check lastError)
@@ -64,15 +73,38 @@ class StorageService extends ChangeNotifier {
     _lastError = null;
 
     try {
-      // Check if migration is needed
-      final isMigrated = await _checkMigrationStatus();
+      // Initialize Hive
+      await Hive.initFlutter();
 
-      if (!isMigrated) {
-        await _migrateFromSharedPreferences();
+      // Register adapters if not registered
+      if (!Hive.isAdapterRegistered(0)) {
+        Hive.registerAdapter(CustomerAdapter());
+      }
+      if (!Hive.isAdapterRegistered(1)) {
+        Hive.registerAdapter(DebtAdapter());
+      }
+      if (!Hive.isAdapterRegistered(2)) {
+        Hive.registerAdapter(DebtStatusAdapter());
+      }
+      if (!Hive.isAdapterRegistered(3)) {
+        Hive.registerAdapter(PaymentAdapter());
       }
 
-      // Load data from secure storage
-      await _loadFromSecureStorage();
+      // Open boxes
+      _customersBox = await Hive.openBox<Customer>(_customersBoxName);
+      _debtsBox = await Hive.openBox<Debt>(_debtsBoxName);
+      _paymentsBox = await Hive.openBox<Payment>(_paymentsBoxName);
+
+      // Check if migration is needed
+      final prefs = await SharedPreferences.getInstance();
+      final isMigrated = prefs.getBool(_hiveMigrationKey) ?? false;
+
+      if (!isMigrated) {
+        await _migrateFromLegacyStorage();
+        await prefs.setBool(_hiveMigrationKey, true);
+      }
+
+      _isInitialized = true;
       notifyListeners();
       return true;
     } catch (e) {
@@ -82,269 +114,237 @@ class StorageService extends ChangeNotifier {
         originalError: e,
       );
       debugPrint('StorageService init error: $e');
-
-      // Attempt recovery by loading directly
-      try {
-        await _loadFromSecureStorage();
-      } catch (loadError) {
-        _lastError = StorageError(
-          type: StorageErrorType.load,
-          message: 'Failed to load data after init error',
-          originalError: loadError,
-        );
-      }
-
       notifyListeners();
       return false;
     }
   }
 
-  /// Check if migration has been completed
-  Future<bool> _checkMigrationStatus() async {
+  /// Migrate data from legacy JSON storage to Hive boxes
+  Future<void> _migrateFromLegacyStorage() async {
+    debugPrint('Starting migration to Hive...');
+
     try {
-      final value = await _secureStorage.read(key: _migrationKey);
-      return value == 'true';
-    } catch (e) {
-      return false;
-    }
-  }
+      // Try to read from FlutterSecureStorage first
+      String? customersData = await _secureStorage.read(
+        key: _secureCustomersKey,
+      );
+      String? debtsData = await _secureStorage.read(key: _secureDebtsKey);
+      String? paymentsData = await _secureStorage.read(key: _securePaymentsKey);
 
-  /// Migrate data from SharedPreferences to FlutterSecureStorage
-  Future<void> _migrateFromSharedPreferences() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-
-      // Read legacy data
-      final customersData = prefs.getString(_legacyCustomersKey);
-      final debtsData = prefs.getString(_legacyDebtsKey);
-      final paymentsData = prefs.getString(_legacyPaymentsKey);
-
-      // Check if there's any data to migrate
-      final hasData =
-          (customersData != null && customersData.isNotEmpty) ||
-          (debtsData != null && debtsData.isNotEmpty) ||
-          (paymentsData != null && paymentsData.isNotEmpty);
-
-      if (hasData) {
-        // Write to secure storage
-        if (customersData != null && customersData.isNotEmpty) {
-          await _secureStorage.write(key: _customersKey, value: customersData);
-        }
-        if (debtsData != null && debtsData.isNotEmpty) {
-          await _secureStorage.write(key: _debtsKey, value: debtsData);
-        }
-        if (paymentsData != null && paymentsData.isNotEmpty) {
-          await _secureStorage.write(key: _paymentsKey, value: paymentsData);
-        }
-
-        // Clear legacy data after successful migration
-        await prefs.remove(_legacyCustomersKey);
-        await prefs.remove(_legacyDebtsKey);
-        await prefs.remove(_legacyPaymentsKey);
-
-        debugPrint('Migration completed: Data moved to secure storage');
+      // If no secure storage data, try SharedPreferences (older legacy)
+      if (customersData == null && debtsData == null && paymentsData == null) {
+        final prefs = await SharedPreferences.getInstance();
+        customersData = prefs.getString(_legacyCustomersKey);
+        debtsData = prefs.getString(_legacyDebtsKey);
+        paymentsData = prefs.getString(_legacyPaymentsKey);
       }
 
-      // Mark migration as complete
-      await _secureStorage.write(key: _migrationKey, value: 'true');
+      // Parse and migrate customers
+      if (customersData != null && customersData.isNotEmpty) {
+        final customers = Customer.decode(customersData);
+        for (final customer in customers) {
+          await _customersBox.put(customer.id, customer);
+        }
+        debugPrint('Migrated ${customers.length} customers');
+      }
+
+      // Parse and migrate debts
+      if (debtsData != null && debtsData.isNotEmpty) {
+        final debts = Debt.decode(debtsData);
+        for (final debt in debts) {
+          await _debtsBox.put(debt.id, debt);
+        }
+        debugPrint('Migrated ${debts.length} debts');
+      }
+
+      // Parse and migrate payments
+      if (paymentsData != null && paymentsData.isNotEmpty) {
+        final payments = Payment.decode(paymentsData);
+        for (final payment in payments) {
+          await _paymentsBox.put(payment.id, payment);
+        }
+        debugPrint('Migrated ${payments.length} payments');
+      }
+
+      // Clean up old storage
+      await _secureStorage.delete(key: _secureCustomersKey);
+      await _secureStorage.delete(key: _secureDebtsKey);
+      await _secureStorage.delete(key: _securePaymentsKey);
+
+      debugPrint('Migration to Hive completed');
     } catch (e) {
       debugPrint('Migration failed: $e');
-      // Don't mark as complete if migration failed
       rethrow;
     }
   }
 
-  /// Load all data from secure storage
-  Future<void> _loadFromSecureStorage() async {
-    try {
-      final customersData = await _secureStorage.read(key: _customersKey);
-      if (customersData != null && customersData.isNotEmpty) {
-        _customers = Customer.decode(customersData);
-      }
+  // ============== Customer operations ==============
 
-      final debtsData = await _secureStorage.read(key: _debtsKey);
-      if (debtsData != null && debtsData.isNotEmpty) {
-        _debts = Debt.decode(debtsData);
-      }
-
-      final paymentsData = await _secureStorage.read(key: _paymentsKey);
-      if (paymentsData != null && paymentsData.isNotEmpty) {
-        _payments = Payment.decode(paymentsData);
-      }
-    } catch (e) {
-      debugPrint('Failed to load from secure storage: $e');
-      _customers = [];
-      _debts = [];
-      _payments = [];
-    }
-  }
-
-  Future<void> _saveCustomers() async {
-    await _secureStorage.write(
-      key: _customersKey,
-      value: Customer.encode(_customers),
-    );
-  }
-
-  Future<void> _saveDebts() async {
-    await _secureStorage.write(key: _debtsKey, value: Debt.encode(_debts));
-  }
-
-  Future<void> _savePayments() async {
-    await _secureStorage.write(
-      key: _paymentsKey,
-      value: Payment.encode(_payments),
-    );
-  }
-
-  // Customer operations
   Future<void> addCustomer(Customer customer) async {
-    _customers.add(customer);
-    await _saveCustomers();
+    await _customersBox.put(customer.id, customer);
     notifyListeners();
   }
 
   Future<void> updateCustomer(Customer customer) async {
-    final index = _customers.indexWhere((c) => c.id == customer.id);
-    if (index != -1) {
-      _customers[index] = customer;
-      await _saveCustomers();
+    await _customersBox.put(customer.id, customer);
+    notifyListeners();
+  }
+
+  Future<void> deleteCustomer(String id) async {
+    // Soft delete customer
+    final customer = _customersBox.get(id);
+    if (customer != null) {
+      final deleted = customer.copyWith(
+        deletedAt: DateTime.now(),
+        setDeletedAt: true,
+      );
+      await _customersBox.put(id, deleted);
+
+      // Soft delete related debts and payments
+      for (final debt in _debtsBox.values.where((d) => d.customerId == id)) {
+        await deleteDebt(debt.id);
+      }
       notifyListeners();
     }
   }
 
-  Future<void> deleteCustomer(String customerId) async {
-    _customers.removeWhere((c) => c.id == customerId);
-    _debts.removeWhere((d) => d.customerId == customerId);
-    final debtIds = _debts
-        .where((d) => d.customerId == customerId)
-        .map((d) => d.id)
-        .toSet();
-    _payments.removeWhere((p) => debtIds.contains(p.loanId));
-    await _saveCustomers();
-    await _saveDebts();
-    await _savePayments();
-    notifyListeners();
+  Customer? getCustomer(String id) {
+    return _customersBox.get(id);
   }
 
-  Customer? getCustomerById(String id) {
-    try {
-      return _customers.firstWhere((c) => c.id == id);
-    } catch (e) {
-      return null;
-    }
+  /// Alias for getCustomer (backward compatibility)
+  Customer? getCustomerById(String id) => getCustomer(id);
+
+  /// Get all debts for a specific customer
+  List<Debt> getDebtsForCustomer(String customerId) {
+    return debts
+        .where((d) => d.customerId == customerId && !d.isDeleted)
+        .toList();
   }
 
-  // Debt operations
+  // ============== Debt operations ==============
+
   Future<void> addDebt(Debt debt) async {
-    _debts.add(debt);
-    await _saveDebts();
+    await _debtsBox.put(debt.id, debt);
     notifyListeners();
   }
 
   Future<void> updateDebt(Debt debt) async {
-    final index = _debts.indexWhere((d) => d.id == debt.id);
-    if (index != -1) {
-      _debts[index] = debt;
-      await _saveDebts();
+    await _debtsBox.put(debt.id, debt);
+    notifyListeners();
+  }
+
+  Future<void> deleteDebt(String id) async {
+    final debt = _debtsBox.get(id);
+    if (debt != null) {
+      final deleted = debt.copyWith(
+        deletedAt: DateTime.now(),
+        setDeletedAt: true,
+      );
+      await _debtsBox.put(id, deleted);
+
+      // Soft delete related payments
+      for (final payment in _paymentsBox.values.where((p) => p.loanId == id)) {
+        await deletePayment(payment.id);
+      }
       notifyListeners();
     }
   }
 
-  Future<void> deleteDebt(String debtId) async {
-    _debts.removeWhere((d) => d.id == debtId);
-    _payments.removeWhere((p) => p.loanId == debtId);
-    await _saveDebts();
-    await _savePayments();
-    notifyListeners();
+  Debt? getDebt(String id) {
+    return _debtsBox.get(id);
   }
 
-  List<Debt> getDebtsForCustomer(String customerId) {
-    return _debts.where((d) => d.customerId == customerId).toList();
-  }
+  /// Alias for getDebt (backward compatibility)
+  Debt? getDebtById(String id) => getDebt(id);
 
-  Debt? getDebtById(String id) {
-    try {
-      return _debts.firstWhere((d) => d.id == id);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  // Payment operations
-  Future<void> addPayment(Payment payment) async {
-    _payments.add(payment);
-    await _savePayments();
-    notifyListeners();
-  }
-
-  Future<void> deletePayment(String paymentId) async {
-    // Find the payment before deleting to get its debtId
-    final payment = _payments.firstWhere(
-      (p) => p.id == paymentId,
-      orElse: () => throw Exception('Payment not found'),
-    );
-    final debtId = payment.loanId;
-
-    // Remove the payment
-    _payments.removeWhere((p) => p.id == paymentId);
-    await _savePayments();
-
-    // Check if debt needs to be reactivated
-    final debt = getDebtById(debtId);
-    if (debt != null && debt.status == DebtStatus.completed) {
-      final totalPaid = getTotalPaidForDebt(debtId);
-      final remaining = debt.totalAmount - totalPaid;
-
-      // If remaining > 0, reactivate the debt
-      if (remaining > 0) {
-        debt.status = DebtStatus.active;
-        debt.updatedAt = DateTime.now();
-        await _saveDebts();
-      }
-    }
-
-    notifyListeners();
-  }
-
+  /// Get all payments for a specific debt
   List<Payment> getPaymentsForDebt(String debtId) {
-    return _payments.where((p) => p.loanId == debtId).toList();
+    return payments.where((p) => p.loanId == debtId && !p.isDeleted).toList();
   }
 
-  double getTotalPaidForDebt(String debtId) {
-    return _payments
-        .where((p) => p.loanId == debtId)
-        .fold(0.0, (sum, p) => sum + p.amount);
+  int get activeDebtsCount =>
+      debts.where((d) => d.status == DebtStatus.active && !d.isDeleted).length;
+
+  int get completedDebtsCount => debts
+      .where((d) => d.status == DebtStatus.completed && !d.isDeleted)
+      .length;
+
+  // ============== Payment operations ==============
+
+  Future<void> addPayment(Payment payment) async {
+    await _paymentsBox.put(payment.id, payment);
+    notifyListeners();
   }
 
-  // Summary stats
+  Future<void> updatePayment(Payment payment) async {
+    await _paymentsBox.put(payment.id, payment);
+    notifyListeners();
+  }
+
+  Future<void> deletePayment(String id) async {
+    final payment = _paymentsBox.get(id);
+    if (payment != null) {
+      final deleted = payment.copyWith(
+        deletedAt: DateTime.now(),
+        setDeletedAt: true,
+      );
+      await _paymentsBox.put(id, deleted);
+      notifyListeners();
+    }
+  }
+
+  // ============== Statistics ==============
+
   double get totalOutstandingDebts {
     double total = 0;
-    for (final debt in _debts.where((d) => d.status == DebtStatus.active)) {
-      total += debt.totalAmount - getTotalPaidForDebt(debt.id);
+    for (final debt in debts.where(
+      (d) => d.status == DebtStatus.active && !d.isDeleted,
+    )) {
+      final paid = getTotalPaidForDebt(debt.id);
+      total += debt.principal - paid;
     }
     return total;
   }
 
-  int get activeDebtsCount =>
-      _debts.where((d) => d.status == DebtStatus.active).length;
+  double getTotalPaidForDebt(String debtId) {
+    return payments
+        .where((p) => p.loanId == debtId && !p.isDeleted)
+        .fold(0.0, (sum, p) => sum + p.amount);
+  }
 
-  int get completedDebtsCount =>
-      _debts.where((d) => d.status == DebtStatus.completed).length;
+  // ============== Bulk operations ==============
 
-  /// Replace all data with import data (used for restore)
+  /// Replace all data (used for restore operations)
   Future<void> replaceAllData({
     required List<Customer> customers,
     required List<Debt> debts,
     required List<Payment> payments,
   }) async {
-    _customers = List.from(customers);
-    _debts = List.from(debts);
-    _payments = List.from(payments);
+    // Clear existing data
+    await _customersBox.clear();
+    await _debtsBox.clear();
+    await _paymentsBox.clear();
 
-    await _saveCustomers();
-    await _saveDebts();
-    await _savePayments();
+    // Add new data
+    for (final customer in customers) {
+      await _customersBox.put(customer.id, customer);
+    }
+    for (final debt in debts) {
+      await _debtsBox.put(debt.id, debt);
+    }
+    for (final payment in payments) {
+      await _paymentsBox.put(payment.id, payment);
+    }
+
+    notifyListeners();
+  }
+
+  /// Clear all data
+  Future<void> clearAll() async {
+    await _customersBox.clear();
+    await _debtsBox.clear();
+    await _paymentsBox.clear();
     notifyListeners();
   }
 }

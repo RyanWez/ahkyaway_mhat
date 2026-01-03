@@ -1,13 +1,32 @@
 import 'dart:convert';
+import 'package:hive/hive.dart';
 
-class Customer {
+part 'customer.g.dart';
+
+@HiveType(typeId: 0)
+class Customer extends HiveObject {
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   String name;
+
+  @HiveField(2)
   String phone;
+
+  @HiveField(3)
   String address;
+
+  @HiveField(4)
   String notes;
+
+  @HiveField(5)
   final DateTime createdAt;
+
+  @HiveField(6)
   DateTime updatedAt;
+
+  @HiveField(7)
   final DateTime? deletedAt; // Soft delete timestamp
 
   Customer({

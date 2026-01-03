@@ -1,17 +1,46 @@
 import 'dart:convert';
+import 'package:hive/hive.dart';
 
-enum DebtStatus { active, completed }
+part 'debt.g.dart';
 
-class Debt {
+@HiveType(typeId: 2)
+enum DebtStatus {
+  @HiveField(0)
+  active,
+  @HiveField(1)
+  completed,
+}
+
+@HiveType(typeId: 1)
+class Debt extends HiveObject {
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   final String customerId;
+
+  @HiveField(2)
   double principal;
+
+  @HiveField(3)
   DateTime startDate;
+
+  @HiveField(4)
   DateTime dueDate;
+
+  @HiveField(5)
   DebtStatus status;
+
+  @HiveField(6)
   String notes;
+
+  @HiveField(7)
   final DateTime createdAt;
+
+  @HiveField(8)
   DateTime updatedAt;
+
+  @HiveField(9)
   final DateTime? deletedAt; // Soft delete timestamp
 
   Debt({
