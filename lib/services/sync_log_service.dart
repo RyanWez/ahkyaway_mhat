@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'merge_service.dart';
+import '../utils/app_constants.dart';
 
 /// Types of sync actions
 enum SyncAction { backup, restore, merge }
@@ -94,7 +95,7 @@ class SyncLogEntry {
 /// Service for tracking sync history
 class SyncLogService extends ChangeNotifier {
   static const String _storageKey = 'sync_log_entries';
-  static const int maxLogEntries = 50;
+  static const int maxLogEntries = StorageConstants.maxLogEntries;
 
   List<SyncLogEntry> _entries = [];
   bool _isInitialized = false;

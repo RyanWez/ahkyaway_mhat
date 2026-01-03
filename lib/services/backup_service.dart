@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:intl/intl.dart';
 
 import '../models/customer.dart';
 import '../models/debt.dart';
 import '../models/payment.dart';
+import '../utils/app_constants.dart';
 import 'storage_service.dart';
 
 /// Represents the data structure for backup files
@@ -69,19 +70,19 @@ class BackupFile {
   });
 
   String get formattedSize {
-    if (sizeBytes < 1024) {
+    if (sizeBytes < FileSizeConstants.bytesPerKB) {
       return '$sizeBytes B';
-    } else if (sizeBytes < 1024 * 1024) {
-      return '${(sizeBytes / 1024).toStringAsFixed(1)} KB';
+    } else if (sizeBytes < FileSizeConstants.bytesPerMB) {
+      return '${(sizeBytes / FileSizeConstants.bytesPerKB).toStringAsFixed(1)} KB';
     } else {
-      return '${(sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+      return '${(sizeBytes / FileSizeConstants.bytesPerMB).toStringAsFixed(1)} MB';
     }
   }
 }
 
 /// Service for handling backup and restore operations
 class BackupService {
-  static const int maxExportFiles = 10;
+  static const int maxExportFiles = StorageConstants.maxExportFiles;
   static const String _exportPrefix = 'ahkyaway-mhat_';
   static const String _autoBackupPrefix = 'auto-backup_';
   static const String _fileExtension = '.json';
