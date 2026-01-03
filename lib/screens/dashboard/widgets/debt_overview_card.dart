@@ -53,22 +53,26 @@ class DebtOverviewCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          // Circular Progress Chart - slightly smaller
-          CircularProgressChart(
-            progress: progress.clamp(0.0, 1.0),
-            centerText: '$percentage%',
-            subText: 'dashboard.paid'.tr(),
-            size: 85,
-            strokeWidth: 9,
-            progressColor: const Color(0xFF00E676),
-            backgroundColor: const Color(0xFFFF6B6B),
-            isDark: true,
+          // Circular Progress Chart - 50% width
+          Expanded(
+            child: Center(
+              child: CircularProgressChart(
+                progress: progress.clamp(0.0, 1.0),
+                centerText: '$percentage%',
+                subText: 'dashboard.paid'.tr(),
+                size: 120,
+                strokeWidth: 11,
+                progressColor: const Color(0xFF00E676),
+                backgroundColor: const Color(0xFFFF6B6B),
+                isDark: true,
+              ),
+            ),
           ),
-          const SizedBox(width: 16),
-          // Stats Column
+          // Stats Column - 50% width
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 // Outstanding
                 _buildStatRow(
