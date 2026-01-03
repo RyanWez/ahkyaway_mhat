@@ -13,7 +13,7 @@ class NotificationSettingsService extends ChangeNotifier {
   bool _isInitialized = false;
 
   // Default values
-  bool _isEnabled = true;
+  bool _isEnabled = false;
   int _reminderDaysBefore = 1;
   bool _soundEnabled = true;
 
@@ -39,7 +39,7 @@ class NotificationSettingsService extends ChangeNotifier {
     _prefs = await SharedPreferences.getInstance();
 
     // Load saved values
-    _isEnabled = _prefs?.getBool(_keyEnabled) ?? true;
+    _isEnabled = _prefs?.getBool(_keyEnabled) ?? false;
     _reminderDaysBefore = _prefs?.getInt(_keyReminderDays) ?? 1;
     _soundEnabled = _prefs?.getBool(_keySoundEnabled) ?? true;
 
