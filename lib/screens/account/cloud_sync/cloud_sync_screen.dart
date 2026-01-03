@@ -362,15 +362,23 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
           const SizedBox(height: 24),
 
           // Features list
-          _buildFeatureRow(Icons.sync_rounded, 'Sync across devices', isDark),
-          const SizedBox(height: 8),
           _buildFeatureRow(
-            Icons.cloud_rounded,
-            'Automatic cloud backup',
+            Icons.sync_rounded,
+            'cloud.feature_sync_devices'.tr(),
             isDark,
           ),
           const SizedBox(height: 8),
-          _buildFeatureRow(Icons.lock_rounded, 'Secure & encrypted', isDark),
+          _buildFeatureRow(
+            Icons.cloud_rounded,
+            'cloud.feature_cloud_backup'.tr(),
+            isDark,
+          ),
+          const SizedBox(height: 8),
+          _buildFeatureRow(
+            Icons.lock_rounded,
+            'cloud.feature_secure'.tr(),
+            isDark,
+          ),
 
           const SizedBox(height: 28),
 
@@ -442,11 +450,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
   Widget _buildFeatureRow(IconData icon, String text, bool isDark) {
     return Row(
       children: [
-        Icon(
-          Icons.check_circle_rounded,
-          size: 18,
-          color: const Color(0xFF34A853),
-        ),
+        Icon(icon, size: 18, color: const Color(0xFF34A853)),
         const SizedBox(width: 10),
         Text(
           text,

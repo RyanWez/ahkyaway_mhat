@@ -263,6 +263,22 @@
     "debts_updated_cloud": "debt(s) updated (cloud newer)",
     "new_payments_cloud": "new payment(s) from cloud",
     "new_payments_local": "new payment(s) from this device",
-    "payments_updated_cloud": "payment(s) updated (cloud newer)"
+    "payments_updated_cloud": "payment(s) updated (cloud newer)",
+    "data_overview": "Data Overview",
+    "stat_customers": "Customers",
+    "stat_active": "Active",
+    "stat_done": "Done",
+    "stat_payments": "Payments",
+    "feature_sync_devices": "Sync across devices",
+    "feature_cloud_backup": "Automatic cloud backup",
+    "feature_secure": "Secure & encrypted",
+    "please_wait": "Please wait...",
+    "error_timeout": "Connection timed out. Please check your internet connection.",
+    "error_auth_expired": "Your session has expired. Please sign in again.",
+    "error_auth_cancelled": "Sign in was cancelled.",
+    "error_quota": "Google Drive storage is full. Please free up some space.",
+    "error_server": "Server error. Please try again later.",
+    "error_invalid_data": "Invalid data format. Backup may be corrupted.",
+    "error_retry": "Retrying..."
   }
 }

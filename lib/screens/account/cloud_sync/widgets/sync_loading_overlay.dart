@@ -1,27 +1,42 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:dotlottie_loader/dotlottie_loader.dart';
 
 /// A professional full-screen loading overlay with glassmorphism and Lottie animation
 class SyncLoadingOverlay extends StatelessWidget {
   final String message;
   final bool isDark;
+  final double? progress; // 0.0 to 1.0, null = indeterminate
+  final String? statusText; // e.g. "Uploading customers..."
 
   const SyncLoadingOverlay({
     super.key,
     required this.message,
     required this.isDark,
+    this.progress,
+    this.statusText,
   });
 
   /// Show the loading overlay
-  static void show(BuildContext context, String message, bool isDark) {
+  static void show(
+    BuildContext context,
+    String message,
+    bool isDark, {
+    double? progress,
+    String? statusText,
+  }) {
     showDialog(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.transparent,
-      builder: (context) =>
-          SyncLoadingOverlay(message: message, isDark: isDark),
+      builder: (context) => SyncLoadingOverlay(
+        message: message,
+        isDark: isDark,
+        progress: progress,
+        statusText: statusText,
+      ),
     );
   }
 
@@ -146,31 +161,50 @@ class SyncLoadingOverlay extends StatelessWidget {
                   // Progress indicator
                   SizedBox(
                     width: 180,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        backgroundColor: isDark
-                            ? Colors.white.withValues(alpha: 0.1)
-                            : Colors.grey.withValues(alpha: 0.15),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF4285F4),
+                    child: Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value:
+                                progress, // null = indeterminate, 0-1 = determinate
+                            backgroundColor: isDark
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.grey.withValues(alpha: 0.15),
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Color(0xFF4285F4),
+                            ),
+                            minHeight: 4,
+                          ),
                         ),
-                        minHeight: 4,
-                      ),
+                        if (progress != null) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            '${(progress! * 100).toInt()}%',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF4285F4),
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
 
                   const SizedBox(height: 16),
 
-                  // Subtle hint
+                  // Status text or default hint
                   Text(
-                    'Please wait...',
+                    statusText ?? 'cloud.please_wait'.tr(),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       color: isDark ? Colors.grey[500] : Colors.grey[600],
                       decoration: TextDecoration.none,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),

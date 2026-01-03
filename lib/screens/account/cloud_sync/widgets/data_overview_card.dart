@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../theme/app_theme.dart';
 
 /// Card showing data counts overview
@@ -42,7 +43,7 @@ class DataOverviewCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                'Data Overview',
+                'cloud.data_overview'.tr(),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -56,25 +57,25 @@ class DataOverviewCard extends StatelessWidget {
             children: [
               _buildStatItem(
                 icon: Icons.people_rounded,
-                label: 'Customers',
+                label: 'cloud.stat_customers'.tr(),
                 count: customersCount,
                 color: Colors.blue,
               ),
               _buildStatItem(
                 icon: Icons.receipt_long_rounded,
-                label: 'Active',
+                label: 'cloud.stat_active'.tr(),
                 count: activeDebtsCount,
                 color: Colors.orange,
               ),
               _buildStatItem(
                 icon: Icons.check_circle_rounded,
-                label: 'Done',
+                label: 'cloud.stat_done'.tr(),
                 count: completedDebtsCount,
                 color: Colors.green,
               ),
               _buildStatItem(
                 icon: Icons.payments_rounded,
-                label: 'Payments',
+                label: 'cloud.stat_payments'.tr(),
                 count: paymentsCount,
                 color: Colors.purple,
               ),

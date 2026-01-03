@@ -259,6 +259,22 @@
         "debts_updated_cloud": "အကြွေး update (cloud ပိုသစ်)",
         "new_payments_cloud": "ပေးချေမှုအသစ် (cloud မှ)",
         "new_payments_local": "ပေးချေမှုအသစ် (ဤစက်မှ)",
-        "payments_updated_cloud": "ပေးချေမှု update (cloud ပိုသစ်)"
+        "payments_updated_cloud": "ပေးချေမှု update (cloud ပိုသစ်)",
+        "data_overview": "ဒေတာ အကျဉ်းချုပ်",
+        "stat_customers": "ဖောက်သည်",
+        "stat_active": "လက်ရှိ",
+        "stat_done": "ပြီးပြီ",
+        "stat_payments": "ပေးချေမှု",
+        "feature_sync_devices": "စက်များအကြား sync လုပ်ခြင်း",
+        "feature_cloud_backup": "အလိုအလျောက် cloud backup",
+        "feature_secure": "လုံခြုံပြီး encrypt ထားသည်",
+        "please_wait": "ခေတ္တစောင့်ပါ...",
+        "error_timeout": "ချိတ်ဆက်မှု အချိန်ကုန်လွန်သွားပါသည်။ အင်တာနက် စစ်ဆေးပါ။",
+        "error_auth_expired": "Session သက်တမ်းကုန်ဆုံးသွားပါပြီ။ ထပ်မံ Sign in ဝင်ပါ။",
+        "error_auth_cancelled": "Sign in ကို ပယ်ဖျက်လိုက်ပါသည်။",
+        "error_quota": "Google Drive သိုလှောင်မှု ပြည့်နေပါသည်။ နေရာအချို့ ဖျက်ပေးပါ။",
+        "error_server": "Server error ဖြစ်နေပါသည်။ နောက်မှ ပြန်ကြိုးစားပါ။",
+        "error_invalid_data": "ဒေတာ format မမှန်ကန်ပါ။ Backup ပျက်နေနိုင်ပါသည်။",
+        "error_retry": "ထပ်မံကြိုးစားနေသည်..."
     }
 }

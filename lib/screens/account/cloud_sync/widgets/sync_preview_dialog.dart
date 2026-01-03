@@ -123,10 +123,40 @@ class SyncPreviewDialog extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   if (!stats.hasChanges)
-                    _buildStatRow(
-                      icon: Icons.check_circle_rounded,
-                      text: 'cloud.no_changes'.tr(),
-                      color: Colors.green,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.green.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            color: Color(0xFF34A853),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'cloud.no_changes'.tr(),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: isDark
+                                    ? Colors.green[300]
+                                    : Colors.green[700],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     )
                   else ...[
                     // Customers
