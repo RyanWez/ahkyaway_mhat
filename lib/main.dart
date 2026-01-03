@@ -18,6 +18,8 @@ import 'services/terms_service.dart';
 import 'services/sync_settings_service.dart';
 import 'services/sync_log_service.dart';
 import 'services/sync_queue_service.dart';
+import 'services/notification_service.dart';
+import 'services/notification_settings_service.dart';
 import 'widgets/terms_sheet.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
@@ -115,6 +117,12 @@ void main() async {
   final syncLogService = SyncLogService();
   final syncQueueService = SyncQueueService();
 
+  // Initialize notification services
+  final notificationService = NotificationService();
+  final notificationSettingsService = NotificationSettingsService();
+  await notificationService.init();
+  await notificationSettingsService.init();
+
   runApp(
     EasyLocalization(
       supportedLocales: AppLocales.supportedLocales,
@@ -128,6 +136,8 @@ void main() async {
           ChangeNotifierProvider.value(value: syncSettingsService),
           ChangeNotifierProvider.value(value: syncLogService),
           ChangeNotifierProvider.value(value: syncQueueService),
+          ChangeNotifierProvider.value(value: notificationService),
+          ChangeNotifierProvider.value(value: notificationSettingsService),
         ],
         child: const MyApp(),
       ),

@@ -123,7 +123,12 @@
         "check_updates_desc": "Version အသစ် ရှိ/မရှိ စစ်ဆေးမည်",
         "haptic": "တုန်ခါမှု",
         "haptic_feedback": "တုန်ခါမှု တုံ့ပြန်ချက်",
-        "haptic_feedback_desc": "ခလုတ်နှိပ်သောအခါ တုန်ခါမှု"
+        "haptic_feedback_desc": "ခလုတ်နှိပ်သောအခါ တုန်ခါမှု",
+        "notifications": "ပြန်ဆပ်ရက် သတိပေးချက်",
+        "notifications_desc": "ပြန်ဆပ်ရက် မတိုင်ခင် သတိပေးမည်",
+        "remind_before": "ကြိုတင် သတိပေးချိန်",
+        "remind_before_desc": "ပြန်ဆပ်ရက် မတိုင်မီ ရက်အရေအတွက်",
+        "notification_permission_denied": "Notification ခွင့်ပြုချက် ပယ်ချခံရသည်"
     },
     "account": {
         "title": "အကောင့်",
