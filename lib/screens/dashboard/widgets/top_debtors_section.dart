@@ -32,7 +32,7 @@ class TopDebtorsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Responsive.init(context);
-    
+
     if (topDebtors.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -51,10 +51,10 @@ class TopDebtorsSection extends StatelessWidget {
           // Header
           Padding(
             padding: EdgeInsets.fromLTRB(
-              Responsive.w(16),
-              Responsive.h(16),
-              Responsive.w(16),
-              Responsive.h(8),
+              Responsive.w(14),
+              Responsive.h(12),
+              Responsive.w(14),
+              Responsive.h(6),
             ),
             child: Row(
               children: [

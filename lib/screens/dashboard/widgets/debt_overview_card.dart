@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../theme/app_theme.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/app_decorations.dart';
 import 'circular_progress_chart.dart';
@@ -27,36 +26,45 @@ class DebtOverviewCard extends StatelessWidget {
 
     return AppCard(
       isDark: true,
+      // Softer lavender to rich purple gradient
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [AppTheme.primaryDark, Color(0xFF8B83FF)],
+        colors: [Color(0xFF9F7AEA), Color(0xFF6B46C1)],
       ),
       radius: AppRadius.xxl,
       hasShadow: true,
-      // Custom shadow matching the gradient (AppCard default is standard shadow)
+      // Glassmorphism effect with gradient-matched glow
       boxShadow: [
         BoxShadow(
-          color: AppTheme.primaryDark.withValues(alpha: 0.4),
-          blurRadius: 20,
-          offset: const Offset(0, 10),
+          color: const Color(0xFF6B46C1).withValues(alpha: 0.5),
+          blurRadius: 24,
+          offset: const Offset(0, 12),
+        ),
+        // Inner glow effect
+        BoxShadow(
+          color: Colors.white.withValues(alpha: 0.1),
+          blurRadius: 1,
+          spreadRadius: 0,
         ),
       ],
-      padding: const EdgeInsets.all(20),
+      // Add subtle border for glass effect
+      borderColor: Colors.white.withValues(alpha: 0.15),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          // Circular Progress Chart
+          // Circular Progress Chart - slightly smaller
           CircularProgressChart(
             progress: progress.clamp(0.0, 1.0),
             centerText: '$percentage%',
             subText: 'dashboard.paid'.tr(),
-            size: 100,
-            strokeWidth: 10,
+            size: 85,
+            strokeWidth: 9,
             progressColor: const Color(0xFF00E676),
             backgroundColor: const Color(0xFFFF6B6B),
             isDark: true,
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 16),
           // Stats Column
           Expanded(
             child: Column(
@@ -68,14 +76,14 @@ class DebtOverviewCard extends StatelessWidget {
                   value: outstandingFormatted,
                   color: const Color(0xFFFF6B6B),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 // Paid
                 _buildStatRow(
                   label: 'dashboard.paid'.tr(),
                   value: paidFormatted,
                   color: const Color(0xFF00E676),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 // Total
                 _buildStatRow(
                   label: 'dashboard.total_debt'.tr(),

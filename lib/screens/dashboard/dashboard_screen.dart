@@ -9,7 +9,7 @@ import '../customer/customer_detail_screen.dart';
 import '../debt/debt_detail_screen.dart';
 
 // Import widgets
-import 'widgets/compact_stat_card.dart';
+import 'widgets/stat_pills_row.dart';
 import 'widgets/debt_overview_card.dart';
 import 'widgets/top_debtors_section.dart';
 import 'widgets/due_date_warnings_section.dart';
@@ -245,12 +245,45 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ),
           ),
-          // Compact Stats Grid
-          SliverToBoxAdapter(child: _buildCompactStatsGrid(storage, isDark)),
+          // Quick Stats Pills
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: StatPillsRow(
+                stats: [
+                  StatPillData(
+                    title: 'dashboard.customers'.tr(),
+                    value: storage.customers.length.toString(),
+                    icon: Icons.people_rounded,
+                    color: AppTheme.accentColor,
+                  ),
+                  StatPillData(
+                    title: 'dashboard.active_debts'.tr(),
+                    value: storage.activeDebtsCount.toString(),
+                    icon: Icons.receipt_long_rounded,
+                    color: AppTheme.successColor,
+                  ),
+                  StatPillData(
+                    title: 'dashboard.completed_debts'.tr(),
+                    value: storage.completedDebtsCount.toString(),
+                    icon: Icons.check_circle_rounded,
+                    color: AppTheme.successColor,
+                  ),
+                  StatPillData(
+                    title: 'dashboard.total_debts'.tr(),
+                    value: storage.debts.length.toString(),
+                    icon: Icons.analytics_rounded,
+                    color: AppTheme.primaryDark,
+                  ),
+                ],
+                isDark: isDark,
+              ),
+            ),
+          ),
           // Due Date Warnings Section (above Top Debtors)
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
               child: DueDateWarningsSection(
                 warnings: dueDateWarnings,
                 isDark: isDark,
@@ -270,7 +303,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           // Top Debtors Section
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
               child: TopDebtorsSection(
                 topDebtors: topDebtors,
                 isDark: isDark,
@@ -289,67 +322,6 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCompactStatsGrid(StorageService storage, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: CompactStatCard(
-                  title: 'dashboard.customers'.tr(),
-                  value: storage.customers.length.toString(),
-                  icon: Icons.people_rounded,
-                  color: AppTheme.accentColor,
-                  isDark: isDark,
-                  animationIndex: 0,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: CompactStatCard(
-                  title: 'dashboard.active_debts'.tr(),
-                  value: storage.activeDebtsCount.toString(),
-                  icon: Icons.receipt_long_rounded,
-                  color: AppTheme.successColor,
-                  isDark: isDark,
-                  animationIndex: 1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: CompactStatCard(
-                  title: 'dashboard.completed_debts'.tr(),
-                  value: storage.completedDebtsCount.toString(),
-                  icon: Icons.check_circle_rounded,
-                  color: AppTheme.successColor,
-                  isDark: isDark,
-                  animationIndex: 2,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: CompactStatCard(
-                  title: 'dashboard.total_debts'.tr(),
-                  value: storage.debts.length.toString(),
-                  icon: Icons.analytics_rounded,
-                  color: AppTheme.primaryDark,
-                  isDark: isDark,
-                  animationIndex: 3,
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );

@@ -272,6 +272,6 @@ class NotificationService extends ChangeNotifier {
   void _onNotificationTapped(NotificationResponse response) {
     debugPrint('NotificationService: Tapped notification ${response.id}');
     debugPrint('NotificationService: Payload: ${response.payload}');
-    // TODO: Navigate based on payload
+    // Payload handling is done by the caller (e.g., main.dart or navigation service)
   }
 }

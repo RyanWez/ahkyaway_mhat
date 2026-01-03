@@ -45,7 +45,7 @@ class DueDateWarningsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     // Initialize responsive values
     Responsive.init(context);
-    
+
     if (warnings.isEmpty) {
       return _buildEmptyState();
     }
@@ -65,10 +65,10 @@ class DueDateWarningsSection extends StatelessWidget {
           // Header
           Padding(
             padding: EdgeInsets.fromLTRB(
-              Responsive.w(16),
-              Responsive.h(16),
-              Responsive.w(16),
-              Responsive.h(8),
+              Responsive.w(14),
+              Responsive.h(12),
+              Responsive.w(14),
+              Responsive.h(6),
             ),
             child: Row(
               children: [
@@ -231,11 +231,15 @@ class _WarningTile extends StatelessWidget {
 
   String _getStatusText() {
     if (warning.isOverdue) {
-      return 'dashboard.overdue_days'.tr(namedArgs: {'days': '${-warning.daysUntilDue}'});
+      return 'dashboard.overdue_days'.tr(
+        namedArgs: {'days': '${-warning.daysUntilDue}'},
+      );
     } else if (warning.isDueToday) {
       return 'dashboard.due_today'.tr();
     } else {
-      return 'dashboard.due_in_days'.tr(namedArgs: {'days': '${warning.daysUntilDue}'});
+      return 'dashboard.due_in_days'.tr(
+        namedArgs: {'days': '${warning.daysUntilDue}'},
+      );
     }
   }
 
@@ -355,10 +359,7 @@ class _WarningTile extends StatelessWidget {
           flex: 2,
           child: Text(
             _getStatusText(),
-            style: TextStyle(
-              fontSize: Responsive.sp(11),
-              color: statusColor,
-            ),
+            style: TextStyle(fontSize: Responsive.sp(11), color: statusColor),
             overflow: TextOverflow.ellipsis,
           ),
         ),
