@@ -80,7 +80,10 @@ void showDeleteCustomerConfirmation(
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppTheme.errorColor, AppTheme.errorColor.withValues(alpha: 0.85)],
+              colors: [
+                AppTheme.errorColor,
+                AppTheme.errorColor.withValues(alpha: 0.85),
+              ],
             ),
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
@@ -102,7 +105,9 @@ void showDeleteCustomerConfirmation(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
               shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
             icon: const Icon(Icons.delete_rounded, size: 18),
             label: Text('actions.delete'.tr()),

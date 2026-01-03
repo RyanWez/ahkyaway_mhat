@@ -59,13 +59,17 @@ class StorageService extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<Customer> get customers =>
-      _isInitialized ? _customersBox.values.toList() : [];
+  List<Customer> get customers => _isInitialized
+      ? _customersBox.values.where((c) => !c.isDeleted).toList()
+      : [];
 
-  List<Debt> get debts => _isInitialized ? _debtsBox.values.toList() : [];
+  List<Debt> get debts => _isInitialized
+      ? _debtsBox.values.where((d) => !d.isDeleted).toList()
+      : [];
 
-  List<Payment> get payments =>
-      _isInitialized ? _paymentsBox.values.toList() : [];
+  List<Payment> get payments => _isInitialized
+      ? _paymentsBox.values.where((p) => !p.isDeleted).toList()
+      : [];
 
   /// Initialize storage - handles migration from legacy storage
   /// Returns true if successful, false if there were errors (check lastError)
