@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../models/debt.dart';
 import '../../../services/storage_service.dart';
+import '../../../services/notification_service.dart';
+import '../../../services/notification_settings_service.dart';
+import '../../../services/due_reminder_service.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../theme/app_theme.dart';
 
@@ -70,7 +73,10 @@ void showDeleteDebtConfirmation(
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppTheme.errorColor, AppTheme.errorColor.withValues(alpha: 0.85)],
+              colors: [
+                AppTheme.errorColor,
+                AppTheme.errorColor.withValues(alpha: 0.85),
+              ],
             ),
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
@@ -84,6 +90,14 @@ void showDeleteDebtConfirmation(
           child: ElevatedButton.icon(
             onPressed: () async {
               Navigator.pop(dialogContext);
+
+              // Cancel due date reminder notification
+              final dueReminderService = DueReminderService(
+                notificationService: context.read<NotificationService>(),
+                settingsService: context.read<NotificationSettingsService>(),
+              );
+              await dueReminderService.cancelReminder(debt.id);
+
               await storage.deleteDebt(debtId);
               if (context.mounted) {
                 parentNavigator.pop();
@@ -92,7 +106,9 @@ void showDeleteDebtConfirmation(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
               shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
             icon: const Icon(Icons.delete_rounded, size: 18),
             label: Text('actions.delete'.tr()),

@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../models/debt.dart';
 import '../../../services/storage_service.dart';
+import '../../../services/notification_service.dart';
+import '../../../services/notification_settings_service.dart';
+import '../../../services/due_reminder_service.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../utils/currency_input_formatter.dart';
@@ -22,10 +25,7 @@ void showEditDebtDialog(
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: 0.5),
-    builder: (context) => EditDebtSheet(
-      debt: debt,
-      storage: storage,
-    ),
+    builder: (context) => EditDebtSheet(debt: debt, storage: storage),
   );
 }
 
@@ -33,11 +33,7 @@ class EditDebtSheet extends StatefulWidget {
   final Debt debt;
   final StorageService storage;
 
-  const EditDebtSheet({
-    super.key,
-    required this.debt,
-    required this.storage,
-  });
+  const EditDebtSheet({super.key, required this.debt, required this.storage});
 
   @override
   State<EditDebtSheet> createState() => _EditDebtSheetState();
@@ -49,7 +45,7 @@ class _EditDebtSheetState extends State<EditDebtSheet>
   late TextEditingController _notesController;
   late AnimationController _animController;
   late Animation<double> _slideAnimation;
-  
+
   late DateTime _debtDate;
   late DateTime _dueDate;
 
@@ -57,12 +53,15 @@ class _EditDebtSheetState extends State<EditDebtSheet>
   void initState() {
     super.initState();
     _principalController = TextEditingController(
-      text: NumberFormat('#,###', 'en_US').format(widget.debt.principal.toInt()),
+      text: NumberFormat(
+        '#,###',
+        'en_US',
+      ).format(widget.debt.principal.toInt()),
     );
     _notesController = TextEditingController(text: widget.debt.notes);
     _debtDate = widget.debt.startDate;
     _dueDate = widget.debt.dueDate;
-    
+
     _animController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -81,7 +80,7 @@ class _EditDebtSheetState extends State<EditDebtSheet>
     super.dispose();
   }
 
-  void _handleSaveDebt() {
+  void _handleSaveDebt() async {
     final principal = CurrencyInputFormatter.parse(_principalController.text);
     if (principal == null || principal <= 0) {
       AppToast.showError(context, 'debt.amount_required_msg'.tr());
@@ -100,7 +99,19 @@ class _EditDebtSheetState extends State<EditDebtSheet>
     widget.debt.updatedAt = DateTime.now();
 
     widget.storage.updateDebt(widget.debt);
-    Navigator.pop(context);
+
+    // Reschedule due date reminder notification
+    final dueReminderService = DueReminderService(
+      notificationService: context.read<NotificationService>(),
+      settingsService: context.read<NotificationSettingsService>(),
+    );
+    final customer = widget.storage.getCustomer(widget.debt.customerId);
+    await dueReminderService.scheduleReminder(
+      widget.debt,
+      customerName: customer?.name,
+    );
+
+    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -128,7 +139,7 @@ class _EditDebtSheetState extends State<EditDebtSheet>
               // Handle bar
               SheetHandleBar(accentColor: AppTheme.warningColor),
               const SizedBox(height: 24),
-              
+
               // Header
               SheetHeader(
                 icon: Icons.edit_note_rounded,
@@ -137,7 +148,7 @@ class _EditDebtSheetState extends State<EditDebtSheet>
                 isDark: isDark,
               ),
               const SizedBox(height: 24),
-              
+
               // Amount field
               _buildTextField(
                 controller: _principalController,
@@ -152,7 +163,7 @@ class _EditDebtSheetState extends State<EditDebtSheet>
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // Start Date Picker
               _buildDatePicker(
                 label: 'debt.start_date'.tr(),
@@ -163,8 +174,8 @@ class _EditDebtSheetState extends State<EditDebtSheet>
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: context,
-                    initialDate: _debtDate.isAfter(DateTime.now()) 
-                        ? DateTime.now() 
+                    initialDate: _debtDate.isAfter(DateTime.now())
+                        ? DateTime.now()
                         : _debtDate,
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
@@ -174,14 +185,17 @@ class _EditDebtSheetState extends State<EditDebtSheet>
                       _debtDate = picked;
                       if (_dueDate.isBefore(picked)) {
                         _dueDate = DateTime(picked.year, picked.month + 1, 0);
-                        AppToast.showInfo(context, 'debt.due_date_adjusted'.tr());
+                        AppToast.showInfo(
+                          context,
+                          'debt.due_date_adjusted'.tr(),
+                        );
                       }
                     });
                   }
                 },
               ),
               const SizedBox(height: 12),
-              
+
               // Due Date Picker
               _buildDatePicker(
                 label: 'debt.due_date'.tr(),
@@ -203,7 +217,7 @@ class _EditDebtSheetState extends State<EditDebtSheet>
                 },
               ),
               const SizedBox(height: 16),
-              
+
               // Notes field
               _buildTextField(
                 controller: _notesController,
@@ -215,7 +229,7 @@ class _EditDebtSheetState extends State<EditDebtSheet>
                 textCapitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 28),
-              
+
               // Submit button
               SheetSubmitButton(
                 label: 'actions.save'.tr(),
@@ -304,9 +318,11 @@ class _EditDebtSheetState extends State<EditDebtSheet>
               : Colors.grey.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: showBadge 
+            color: showBadge
                 ? AppTheme.warningColor.withValues(alpha: 0.3)
-                : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.2)),
+                : (isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.grey.withValues(alpha: 0.2)),
             width: 1,
           ),
         ),
@@ -329,8 +345,10 @@ class _EditDebtSheetState extends State<EditDebtSheet>
                     DateFormat('MMM d, y').format(date),
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: showBadge ? FontWeight.w500 : FontWeight.normal,
-                      color: showBadge 
+                      fontWeight: showBadge
+                          ? FontWeight.w500
+                          : FontWeight.normal,
+                      color: showBadge
                           ? AppTheme.warningColor
                           : (isDark ? Colors.white : const Color(0xFF1A1A2E)),
                     ),
@@ -347,10 +365,7 @@ class _EditDebtSheetState extends State<EditDebtSheet>
                 ),
                 child: Text(
                   badgeText,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: AppTheme.warningColor,
-                  ),
+                  style: TextStyle(fontSize: 10, color: AppTheme.warningColor),
                 ),
               ),
           ],

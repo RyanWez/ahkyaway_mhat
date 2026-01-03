@@ -162,21 +162,44 @@ class NotificationService extends ChangeNotifier {
     final details = customDetails ?? _defaultNotificationDetails;
     final tzDateTime = tz.TZDateTime.from(scheduledDate, tz.local);
 
-    await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      tzDateTime,
-      details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      payload: payload,
-    );
-
-    debugPrint(
-      'NotificationService: Scheduled notification $id for $scheduledDate',
-    );
+    try {
+      // Try exact scheduling first (requires SCHEDULE_EXACT_ALARM on Android 12+)
+      await _plugin.zonedSchedule(
+        id,
+        title,
+        body,
+        tzDateTime,
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        payload: payload,
+      );
+      debugPrint(
+        'NotificationService: Scheduled exact notification $id for $scheduledDate',
+      );
+    } catch (e) {
+      // Fallback to inexact scheduling if exact alarm permission not granted
+      debugPrint('NotificationService: Exact alarm failed, trying inexact: $e');
+      try {
+        await _plugin.zonedSchedule(
+          id,
+          title,
+          body,
+          tzDateTime,
+          details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          payload: payload,
+        );
+        debugPrint(
+          'NotificationService: Scheduled inexact notification $id for $scheduledDate',
+        );
+      } catch (e2) {
+        debugPrint('NotificationService: Failed to schedule notification: $e2');
+      }
+    }
   }
 
   /// Cancel a specific notification
