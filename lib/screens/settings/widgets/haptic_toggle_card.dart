@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../theme/app_theme.dart';
+import '../../../widgets/app_card.dart';
 
 /// Custom animated toggle switch for haptic feedback setting
 class HapticToggleCard extends StatelessWidget {
@@ -17,89 +17,77 @@ class HapticToggleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: AppTheme.cardDecoration(isDark),
-      child: InkWell(
-        onTap: () => onChanged(!isEnabled),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Icon with animated background
-              TweenAnimationBuilder<Color?>(
-                tween: ColorTween(
-                  begin: isEnabled
-                      ? const Color(0xFF00C853).withValues(alpha: 0.15)
-                      : Colors.grey.withValues(alpha: 0.15),
-                  end: isEnabled
-                      ? const Color(0xFF00C853).withValues(alpha: 0.15)
-                      : Colors.grey.withValues(alpha: 0.15),
+    return AppCard(
+      isDark: isDark,
+      onTap: () => onChanged(!isEnabled),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          // Icon with animated background
+          TweenAnimationBuilder<Color?>(
+            tween: ColorTween(
+              begin: isEnabled
+                  ? const Color(0xFF00C853).withValues(alpha: 0.15)
+                  : Colors.grey.withValues(alpha: 0.15),
+              end: isEnabled
+                  ? const Color(0xFF00C853).withValues(alpha: 0.15)
+                  : Colors.grey.withValues(alpha: 0.15),
+            ),
+            duration: const Duration(milliseconds: 300),
+            builder: (context, color, child) {
+              return Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                duration: const Duration(milliseconds: 300),
-                builder: (context, color, child) {
-                  return Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: TweenAnimationBuilder<Color?>(
-                      tween: ColorTween(
-                        begin: isEnabled
-                            ? const Color(0xFF00C853)
-                            : Colors.grey,
-                        end: isEnabled
-                            ? const Color(0xFF00C853)
-                            : Colors.grey,
-                      ),
-                      duration: const Duration(milliseconds: 300),
-                      builder: (context, iconColor, child) {
-                        return Icon(
-                          Icons.vibration_rounded,
-                          color: iconColor,
-                          size: 22,
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(width: 14),
-              // Title and subtitle
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'settings.haptic_feedback'.tr(),
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : const Color(0xFF1A1A2E),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'settings.haptic_feedback_desc'.tr(),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? Colors.grey[500] : Colors.grey[600],
-                      ),
-                    ),
-                  ],
+                child: TweenAnimationBuilder<Color?>(
+                  tween: ColorTween(
+                    begin: isEnabled ? const Color(0xFF00C853) : Colors.grey,
+                    end: isEnabled ? const Color(0xFF00C853) : Colors.grey,
+                  ),
+                  duration: const Duration(milliseconds: 300),
+                  builder: (context, iconColor, child) {
+                    return Icon(
+                      Icons.vibration_rounded,
+                      color: iconColor,
+                      size: 22,
+                    );
+                  },
                 ),
-              ),
-              const SizedBox(width: 12),
-              // Custom animated toggle switch
-              _AnimatedToggleSwitch(
-                value: isEnabled,
-                onChanged: onChanged,
-              ),
-            ],
+              );
+            },
           ),
-        ),
+          const SizedBox(width: 14),
+          // Title and subtitle
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'settings.haptic_feedback'.tr(),
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'settings.haptic_feedback_desc'.tr(),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.grey[500] : Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Custom animated toggle switch
+          _AnimatedToggleSwitch(value: isEnabled, onChanged: onChanged),
+        ],
       ),
     );
   }
@@ -110,10 +98,7 @@ class _AnimatedToggleSwitch extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
 
-  const _AnimatedToggleSwitch({
-    required this.value,
-    required this.onChanged,
-  });
+  const _AnimatedToggleSwitch({required this.value, required this.onChanged});
 
   static const double _width = 70;
   static const double _height = 36;

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_card.dart';
+import '../../../widgets/app_decorations.dart';
 
 /// Enhanced compact stat card widget with gradient icon and glow effects
 class CompactStatCard extends StatefulWidget {
@@ -38,15 +40,17 @@ class _CompactStatCardState extends State<CompactStatCard>
       duration: Duration(milliseconds: 300 + (widget.animationIndex * 80)),
       vsync: this,
     );
-    
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-    
-    _scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-    );
-    
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.95,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+
     // Only animate once on first build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_hasAnimated) {
@@ -67,46 +71,48 @@ class _CompactStatCardState extends State<CompactStatCard>
     // Generate gradient colors based on main color
     final gradientStart = widget.color;
     final gradientEnd = HSLColor.fromColor(widget.color)
-        .withLightness((HSLColor.fromColor(widget.color).lightness + 0.15).clamp(0, 1))
+        .withLightness(
+          (HSLColor.fromColor(widget.color).lightness + 0.15).clamp(0, 1),
+        )
         .toColor();
 
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
         return Opacity(
-          opacity: _hasAnimated && !_controller.isAnimating ? 1.0 : _fadeAnimation.value,
+          opacity: _hasAnimated && !_controller.isAnimating
+              ? 1.0
+              : _fadeAnimation.value,
           child: Transform.scale(
-            scale: _hasAnimated && !_controller.isAnimating ? 1.0 : _scaleAnimation.value,
+            scale: _hasAnimated && !_controller.isAnimating
+                ? 1.0
+                : _scaleAnimation.value,
             child: child,
           ),
         );
       },
-      child: Container(
+      child: AppCard(
+        isDark: widget.isDark,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: widget.isDark ? AppTheme.darkCard : AppTheme.lightCard,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: widget.isDark
-                ? widget.color.withValues(alpha: 0.1)
-                : widget.color.withValues(alpha: 0.08),
-            width: 1,
+        backgroundColor: widget.isDark ? AppTheme.darkCard : AppTheme.lightCard,
+        radius: AppRadius.lg,
+        borderColor: widget.isDark
+            ? widget.color.withValues(alpha: 0.1)
+            : widget.color.withValues(alpha: 0.08),
+        boxShadow: [
+          // Color-matched glow (subtle)
+          BoxShadow(
+            color: widget.color.withValues(alpha: widget.isDark ? 0.12 : 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
           ),
-          boxShadow: [
-            // Color-matched glow (subtle)
-            BoxShadow(
-              color: widget.color.withValues(alpha: widget.isDark ? 0.12 : 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
-            ),
-            // Base shadow
-            BoxShadow(
-              color: Colors.black.withValues(alpha: widget.isDark ? 0.15 : 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+          // Base shadow
+          BoxShadow(
+            color: Colors.black.withValues(alpha: widget.isDark ? 0.15 : 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
         child: Row(
           children: [
             // Gradient Icon Container with glow
@@ -136,11 +142,7 @@ class _CompactStatCardState extends State<CompactStatCard>
                   end: Alignment.bottomRight,
                   colors: [gradientStart, gradientEnd],
                 ).createShader(bounds),
-                child: Icon(
-                  widget.icon,
-                  color: Colors.white,
-                  size: 22,
-                ),
+                child: Icon(widget.icon, color: Colors.white, size: 22),
               ),
             ),
             const SizedBox(width: 12),
@@ -151,7 +153,10 @@ class _CompactStatCardState extends State<CompactStatCard>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TweenAnimationBuilder<int>(
-                    tween: IntTween(begin: 0, end: int.tryParse(widget.value) ?? 0),
+                    tween: IntTween(
+                      begin: 0,
+                      end: int.tryParse(widget.value) ?? 0,
+                    ),
                     duration: const Duration(milliseconds: 800),
                     curve: Curves.easeOutCubic,
                     builder: (context, animValue, child) {
@@ -173,7 +178,9 @@ class _CompactStatCardState extends State<CompactStatCard>
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: widget.isDark ? Colors.grey[400] : Colors.grey[600],
+                      color: widget.isDark
+                          ? Colors.grey[400]
+                          : Colors.grey[600],
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

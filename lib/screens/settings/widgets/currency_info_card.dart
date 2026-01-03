@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_card.dart';
 
 /// Widget for displaying currency info in settings
 class CurrencyInfoCard extends StatelessWidget {
@@ -9,9 +10,9 @@ class CurrencyInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppCard(
+      isDark: isDark,
       padding: const EdgeInsets.all(16),
-      decoration: AppTheme.cardDecoration(isDark),
       child: Row(
         children: [
           Container(

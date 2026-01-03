@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_card.dart';
+import '../../../widgets/app_decorations.dart';
 import 'circular_progress_chart.dart';
 
 /// Enhanced widget for displaying the debt overview card with circular chart
@@ -23,23 +25,24 @@ class DebtOverviewCard extends StatelessWidget {
     final progress = totalDebt > 0 ? totalPaid / totalDebt : 0.0;
     final percentage = (progress * 100).toStringAsFixed(0);
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppTheme.primaryDark, Color(0xFF8B83FF)],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryDark.withValues(alpha: 0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+    return AppCard(
+      isDark: true,
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [AppTheme.primaryDark, Color(0xFF8B83FF)],
       ),
+      radius: AppRadius.xxl,
+      hasShadow: true,
+      // Custom shadow matching the gradient (AppCard default is standard shadow)
+      boxShadow: [
+        BoxShadow(
+          color: AppTheme.primaryDark.withValues(alpha: 0.4),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
+      padding: const EdgeInsets.all(20),
       child: Row(
         children: [
           // Circular Progress Chart

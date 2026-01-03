@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../models/payment.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_card.dart';
 
 /// A list tile widget for displaying a single payment entry
 class PaymentListTile extends StatelessWidget {
@@ -70,9 +71,9 @@ class PaymentListTile extends StatelessWidget {
         ),
         confirmDismiss: (direction) => _showDeleteConfirmation(context),
         onDismissed: onDismissed != null ? (direction) => onDismissed!() : null,
-        child: Container(
+        child: AppCard(
+          isDark: isDark,
           padding: const EdgeInsets.all(16),
-          decoration: AppTheme.cardDecoration(isDark),
           child: Row(
             children: [
               Container(

@@ -41,6 +41,9 @@ class AppCard extends StatelessWidget {
   /// Optional border color
   final Color? borderColor;
 
+  /// Optional custom box shadow (overrides hasShadow if provided)
+  final List<BoxShadow>? boxShadow;
+
   const AppCard({
     super.key,
     required this.isDark,
@@ -53,6 +56,7 @@ class AppCard extends StatelessWidget {
     this.margin,
     this.onTap,
     this.borderColor,
+    this.boxShadow,
   });
 
   @override
@@ -64,7 +68,7 @@ class AppCard extends StatelessWidget {
           : null,
       gradient: gradient,
       borderRadius: BorderRadius.circular(radius),
-      boxShadow: hasShadow ? AppShadows.light(isDark) : null,
+      boxShadow: boxShadow ?? (hasShadow ? AppShadows.light(isDark) : null),
       border: borderColor != null ? Border.all(color: borderColor!) : null,
     );
 

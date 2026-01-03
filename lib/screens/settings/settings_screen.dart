@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../providers/theme_provider.dart';
-import '../../theme/app_theme.dart';
 import '../../widgets/app_toast.dart';
+import '../../widgets/app_card.dart';
 import '../../utils/app_localization.dart';
 import '../../services/github_update_service.dart';
 
@@ -99,8 +99,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                     children: [
                       _buildSectionTitle('settings.appearance'.tr(), isDark),
                       const SizedBox(height: 16),
-                      Container(
-                        decoration: AppTheme.cardDecoration(isDark),
+                      AppCard(
+                        isDark: isDark,
+                        padding: EdgeInsets.zero,
                         child: Column(
                           children: [
                             ThemeOptionTile(
@@ -137,8 +138,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                     children: [
                       _buildSectionTitle('settings.language'.tr(), isDark),
                       const SizedBox(height: 16),
-                      Container(
-                        decoration: AppTheme.cardDecoration(isDark),
+                      AppCard(
+                        isDark: isDark,
+                        padding: EdgeInsets.zero,
                         child: Column(
                           children: [
                             LanguageOptionTile(
@@ -222,8 +224,6 @@ class _SettingsScreenState extends State<SettingsScreen>
 
                 const SizedBox(height: 32),
 
-
-
                 // About Section
                 _buildAnimatedSection(
                   index: 5,
@@ -232,8 +232,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                     children: [
                       _buildSectionTitle('settings.about'.tr(), isDark),
                       const SizedBox(height: 16),
-                      Container(
-                        decoration: AppTheme.cardDecoration(isDark),
+                      AppCard(
+                        isDark: isDark,
+                        padding: EdgeInsets.zero,
                         child: Column(
                           children: [
                             SettingsItemTile(
