@@ -10,6 +10,7 @@ import '../../../services/google_drive_service.dart';
 import '../../../services/connectivity_service.dart';
 import '../../../widgets/app_toast.dart';
 import '../../../theme/app_theme.dart';
+import '../../../services/sync_log_service.dart';
 
 import 'widgets/data_overview_card.dart';
 import 'widgets/sync_preview_dialog.dart';
@@ -140,14 +141,41 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
       // Hide loading overlay
       if (mounted) SyncLoadingOverlay.hide(context);
 
+      // Log sync result
+      final logService = Provider.of<SyncLogService>(context, listen: false);
+
       if (mounted) {
         if (result != null) {
+          await logService.logSync(
+            action: SyncAction.merge,
+            result: SyncResult.success,
+            stats: result.stats,
+          );
           AppToast.showSuccess(context, 'cloud.sync_success'.tr());
         } else {
+          await logService.logSync(
+            action: SyncAction.merge,
+            result: SyncResult.failed,
+            errorMessage: 'Sync returned null',
+          );
           AppToast.showError(context, 'cloud.sync_error'.tr());
         }
       }
     } catch (e) {
+      // Log error
+      if (mounted) {
+        try {
+          final logService = Provider.of<SyncLogService>(
+            context,
+            listen: false,
+          );
+          await logService.logSync(
+            action: SyncAction.merge,
+            result: SyncResult.failed,
+            errorMessage: e.toString(),
+          );
+        } catch (_) {}
+      }
       // Hide loading overlay on error
       if (mounted) {
         try {
