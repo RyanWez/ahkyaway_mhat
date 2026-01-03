@@ -14,6 +14,7 @@ import '../../../theme/app_theme.dart';
 import 'widgets/data_overview_card.dart';
 import 'widgets/sync_preview_dialog.dart';
 import 'widgets/sync_loading_overlay.dart';
+import 'sync_history_screen.dart';
 
 class CloudSyncScreen extends StatefulWidget {
   const CloudSyncScreen({super.key});
@@ -276,6 +277,24 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
             color: isDark ? Colors.white : const Color(0xFF1A1A2E),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.history_rounded,
+              color: isDark ? Colors.white70 : Colors.grey[700],
+            ),
+            tooltip: 'cloud.view_history'.tr(),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SyncHistoryScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Consumer<GoogleDriveService>(
         builder: (context, driveService, child) {

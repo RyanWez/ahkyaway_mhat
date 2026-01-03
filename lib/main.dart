@@ -11,6 +11,9 @@ import 'providers/theme_provider.dart';
 import 'services/google_drive_service.dart';
 import 'services/storage_service.dart';
 import 'services/terms_service.dart';
+import 'services/sync_settings_service.dart';
+import 'services/sync_log_service.dart';
+import 'services/sync_queue_service.dart';
 import 'widgets/terms_sheet.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
@@ -258,6 +261,9 @@ class _SplashWrapperState extends State<SplashWrapper>
         providers: [
           ChangeNotifierProvider.value(value: _storageService!),
           ChangeNotifierProvider(create: (_) => GoogleDriveService()..init()),
+          ChangeNotifierProvider(create: (_) => SyncSettingsService()..init()),
+          ChangeNotifierProvider(create: (_) => SyncLogService()..init()),
+          ChangeNotifierProvider(create: (_) => SyncQueueService()..init()),
         ],
         child: Consumer<ThemeProvider>(
           builder: (context, themeProvider, _) {
