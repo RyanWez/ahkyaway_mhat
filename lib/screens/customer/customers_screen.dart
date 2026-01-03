@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../services/storage_service.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/paginated_list_mixin.dart';
 
 // Import widgets
 import 'widgets/customer_card.dart';
@@ -22,7 +23,7 @@ class CustomersScreen extends StatefulWidget {
 }
 
 class _CustomersScreenState extends State<CustomersScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, PaginatedListMixin {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -48,6 +49,13 @@ class _CustomersScreenState extends State<CustomersScreen>
     _animationController.forward();
   }
 
+  void _onSearchChanged(String value) {
+    setState(() {
+      _searchQuery = value;
+    });
+    resetPagination(); // Reset to first page when search changes
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -67,196 +75,211 @@ class _CustomersScreenState extends State<CustomersScreen>
           c.phone.contains(_searchQuery);
     }).toList();
 
+    // Paginated list: only show displayCount items
+    final paginatedCustomers = filteredCustomers.take(displayCount).toList();
+    final hasMore = hasMoreItems(filteredCustomers.length);
+
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
-        slivers: [
-          // SliverAppBar with sticky search bar
-          SliverAppBar(
-            pinned: true,
-            floating: false,
-            backgroundColor: backgroundColor,
-            surfaceTintColor: Colors.transparent,
-            elevation: 0,
-            title: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Text(
-                'customer.title'.tr(),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+      body: NotificationListener<ScrollNotification>(
+        onNotification: (notification) =>
+            handleScrollNotification(notification, filteredCustomers.length),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
+            // SliverAppBar with sticky search bar
+            SliverAppBar(
+              pinned: true,
+              floating: false,
+              backgroundColor: backgroundColor,
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
+              title: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Text(
+                  'customer.title'.tr(),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                  ),
+                ),
+              ),
+              centerTitle: false,
+              actions: [
+                // Add Customer Button
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Material(
+                    color: AppTheme.primaryDark,
+                    borderRadius: BorderRadius.circular(10),
+                    child: InkWell(
+                      onTap: () => showAddCustomerDialog(context),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.add_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'actions.add'.tr(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(56),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: _onSearchChanged,
+                    decoration: InputDecoration(
+                      hintText: 'customer.search'.tr(),
+                      hintStyle: TextStyle(
+                        color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      ),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(
+                                Icons.clear_rounded,
+                                color: isDark
+                                    ? Colors.grey[500]
+                                    : Colors.grey[400],
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                                _onSearchChanged('');
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.grey[100],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-            centerTitle: false,
-            actions: [
-              // Add Customer Button
-              Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Material(
-                  color: AppTheme.primaryDark,
-                  borderRadius: BorderRadius.circular(10),
-                  child: InkWell(
-                    onTap: () => showAddCustomerDialog(context),
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.add_rounded,
-                            color: Colors.white,
-                            size: 18,
+            // Customer List or Empty State
+            if (filteredCustomers.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.people_outline_rounded,
+                          size: 64,
+                          color: isDark ? Colors.grey[700] : Colors.grey[300],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          _searchQuery.isEmpty
+                              ? 'customer.no_customers'.tr()
+                              : 'customer.no_customers'.tr(),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: isDark ? Colors.grey[500] : Colors.grey[600],
                           ),
-                          const SizedBox(width: 4),
+                        ),
+                        if (_searchQuery.isEmpty) ...[
+                          const SizedBox(height: 8),
                           Text(
-                            'actions.add'.tr(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
+                            'customer.add_first'.tr(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDark
+                                  ? Colors.grey[600]
+                                  : Colors.grey[400],
                             ),
                           ),
                         ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(56),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (value) => setState(() => _searchQuery = value),
-                  decoration: InputDecoration(
-                    hintText: 'customer.search'.tr(),
-                    hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[500] : Colors.grey[400],
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: isDark ? Colors.grey[500] : Colors.grey[400],
-                    ),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(
-                              Icons.clear_rounded,
-                              color: isDark
-                                  ? Colors.grey[500]
-                                  : Colors.grey[400],
-                            ),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() => _searchQuery = '');
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: isDark
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : Colors.grey[100],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Customer List or Empty State
-          if (filteredCustomers.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.people_outline_rounded,
-                        size: 64,
-                        color: isDark ? Colors.grey[700] : Colors.grey[300],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        _searchQuery.isEmpty
-                            ? 'customer.no_customers'.tr()
-                            : 'customer.no_customers'.tr(),
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: isDark ? Colors.grey[500] : Colors.grey[600],
-                        ),
-                      ),
-                      if (_searchQuery.isEmpty) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          'customer.add_first'.tr(),
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? Colors.grey[600] : Colors.grey[400],
-                          ),
-                        ),
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final customer = filteredCustomers[index];
-                  return TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0.0, end: 1.0),
-                    duration: Duration(
-                      milliseconds: 400 + (index * 100).clamp(0, 300),
-                    ),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, value, child) {
-                      return Transform.translate(
-                        offset: Offset(0, 20 * (1 - value)),
-                        child: Opacity(opacity: value, child: child),
-                      );
-                    },
-                    child: CustomerCard(
-                      customer: customer,
-                      storage: storage,
-                      isDark: isDark,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                CustomerDetailScreen(customerId: customer.id),
-                          ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final customer = paginatedCustomers[index];
+                    return TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      duration: Duration(
+                        milliseconds: 400 + (index * 100).clamp(0, 300),
+                      ),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, child) {
+                        return Transform.translate(
+                          offset: Offset(0, 20 * (1 - value)),
+                          child: Opacity(opacity: value, child: child),
                         );
                       },
-                    ),
-                  );
-                }, childCount: filteredCustomers.length),
+                      child: CustomerCard(
+                        customer: customer,
+                        storage: storage,
+                        isDark: isDark,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  CustomerDetailScreen(customerId: customer.id),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }, childCount: paginatedCustomers.length),
+                ),
               ),
-            ),
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
-        ],
+            // Load more indicator
+            if (hasMore && filteredCustomers.isNotEmpty)
+              SliverToBoxAdapter(
+                child: buildLoadMoreIndicator(show: isLoadingMore),
+              ),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ),
       ),
     );
   }
