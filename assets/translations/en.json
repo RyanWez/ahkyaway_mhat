@@ -285,6 +285,7 @@
     "auto_sync": "Auto-sync when online",
     "sync_on_startup": "Sync on app startup",
     "pending_changes": "Pending changes",
-    "view_history": "View History"
+    "view_history": "View History",
+    "already_synced": "Already Synced"
   }
 }

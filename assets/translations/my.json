@@ -281,6 +281,7 @@
         "auto_sync": "Online ဖြစ်တာနဲ့ Auto-sync",
         "sync_on_startup": "App ဖွင့်ရင် Sync လုပ်မည်",
         "pending_changes": "Sync မလုပ်ရသေးသော ပြောင်းလဲချက်များ",
-        "view_history": "မှတ်တမ်း ကြည့်ရန်"
+        "view_history": "မှတ်တမ်း ကြည့်ရန်",
+        "already_synced": "Sync ဖြစ်ပြီးသားပါ"
     }
 }

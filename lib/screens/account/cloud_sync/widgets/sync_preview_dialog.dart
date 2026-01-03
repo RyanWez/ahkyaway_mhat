@@ -260,9 +260,11 @@ class SyncPreviewDialog extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: onConfirm,
+                    onPressed: stats.hasChanges ? onConfirm : onCancel,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4285F4),
+                      backgroundColor: stats.hasChanges
+                          ? const Color(0xFF4285F4)
+                          : const Color(0xFF34A853),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -274,11 +276,18 @@ class SyncPreviewDialog extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.sync_rounded, size: 18),
+                        Icon(
+                          stats.hasChanges
+                              ? Icons.sync_rounded
+                              : Icons.check_circle_rounded,
+                          size: 18,
+                        ),
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            'cloud.sync_now'.tr(),
+                            stats.hasChanges
+                                ? 'cloud.sync_now'.tr()
+                                : 'cloud.already_synced'.tr(),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
