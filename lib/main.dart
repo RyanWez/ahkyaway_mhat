@@ -1,12 +1,16 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:lottie/lottie.dart';
 import 'package:dotlottie_loader/dotlottie_loader.dart';
+import 'models/customer.dart';
+import 'models/debt.dart';
+import 'models/payment.dart';
 import 'providers/theme_provider.dart';
 import 'services/google_drive_service.dart';
 import 'services/storage_service.dart';
@@ -22,6 +26,23 @@ import 'utils/app_localization.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+
+  // Initialize Hive first
+  await Hive.initFlutter();
+
+  // Register adapters
+  if (!Hive.isAdapterRegistered(0)) {
+    Hive.registerAdapter(CustomerAdapter());
+  }
+  if (!Hive.isAdapterRegistered(1)) {
+    Hive.registerAdapter(DebtAdapter());
+  }
+  if (!Hive.isAdapterRegistered(2)) {
+    Hive.registerAdapter(DebtStatusAdapter());
+  }
+  if (!Hive.isAdapterRegistered(3)) {
+    Hive.registerAdapter(PaymentAdapter());
+  }
 
   // Initialize window manager for desktop platforms
   if (!kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
@@ -87,13 +108,27 @@ void main() async {
     hapticEnabled: hapticEnabled,
   );
 
+  // Initialize core services
+  final storageService = StorageService();
+  final googleDriveService = GoogleDriveService();
+  final syncSettingsService = SyncSettingsService();
+  final syncLogService = SyncLogService();
+  final syncQueueService = SyncQueueService();
+
   runApp(
     EasyLocalization(
       supportedLocales: AppLocales.supportedLocales,
       path: AppLocales.path,
       fallbackLocale: AppLocales.fallbackLocale,
-      child: ChangeNotifierProvider.value(
-        value: themeProvider,
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: themeProvider),
+          ChangeNotifierProvider.value(value: storageService),
+          ChangeNotifierProvider.value(value: googleDriveService),
+          ChangeNotifierProvider.value(value: syncSettingsService),
+          ChangeNotifierProvider.value(value: syncLogService),
+          ChangeNotifierProvider.value(value: syncQueueService),
+        ],
         child: const MyApp(),
       ),
     ),
@@ -137,7 +172,6 @@ class _SplashWrapperState extends State<SplashWrapper>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
-  StorageService? _storageService;
   bool _isInitialized = false;
   bool _showSplash = true;
   bool _termsAccepted = false;
@@ -187,8 +221,21 @@ class _SplashWrapperState extends State<SplashWrapper>
     await Future.delayed(const Duration(milliseconds: 300));
 
     // Stage 3: Preparing data (60-90%)
-    _storageService = StorageService();
-    await _storageService!.init();
+    if (!mounted) return;
+
+    // Get services from Provider (already created in main())
+    final storageService = context.read<StorageService>();
+    final driveService = context.read<GoogleDriveService>();
+    final syncSettingsService = context.read<SyncSettingsService>();
+    final syncLogService = context.read<SyncLogService>();
+    final syncQueueService = context.read<SyncQueueService>();
+
+    await storageService.init();
+    await driveService.init();
+    await syncSettingsService.init();
+    await syncLogService.init();
+    await syncQueueService.init();
+
     await _animateProgress(0.9, 'Preparing data...');
     await Future.delayed(const Duration(milliseconds: 300));
 
@@ -256,19 +303,9 @@ class _SplashWrapperState extends State<SplashWrapper>
   @override
   Widget build(BuildContext context) {
     // Show main app after splash (only if terms accepted)
+    // Services are already provided at the app root level in main()
     if (!_showSplash && _isInitialized && _termsAccepted) {
-      // Use MultiProvider to inject services, but return HomeScreen directly
-      // The outer MaterialApp from MyApp handles theming and localization
-      return MultiProvider(
-        providers: [
-          ChangeNotifierProvider.value(value: _storageService!),
-          ChangeNotifierProvider(create: (_) => GoogleDriveService()..init()),
-          ChangeNotifierProvider(create: (_) => SyncSettingsService()..init()),
-          ChangeNotifierProvider(create: (_) => SyncLogService()..init()),
-          ChangeNotifierProvider(create: (_) => SyncQueueService()..init()),
-        ],
-        child: const HomeScreen(),
-      );
+      return const HomeScreen();
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
