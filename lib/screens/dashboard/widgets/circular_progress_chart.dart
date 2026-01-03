@@ -41,9 +41,10 @@ class _CircularProgressChartState extends State<CircularProgressChart>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    _animation = Tween<double>(begin: 0.0, end: widget.progress).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _animation = Tween<double>(
+      begin: 0.0,
+      end: widget.progress,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
     _controller.forward();
   }
 
@@ -51,12 +52,10 @@ class _CircularProgressChartState extends State<CircularProgressChart>
   void didUpdateWidget(CircularProgressChart oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.progress != widget.progress) {
-      _animation = Tween<double>(
-        begin: _animation.value,
-        end: widget.progress,
-      ).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-      );
+      _animation = Tween<double>(begin: _animation.value, end: widget.progress)
+          .animate(
+            CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+          );
       _controller.forward(from: 0);
     }
   }
@@ -146,16 +145,33 @@ class _CircularProgressPainter extends CustomPainter {
 
     canvas.drawCircle(center, radius, backgroundPaint);
 
-    // Progress arc (paid)
+    // Progress arc (paid) with smooth gradient
     if (progress > 0) {
+      // Create a smooth multi-stop gradient for better visual
+      final sweepAngle = 2 * math.pi * progress.clamp(0.0, 1.0);
+
+      // Lighter shade for gradient end
+      final lighterColor = HSLColor.fromColor(progressColor)
+          .withLightness(
+            (HSLColor.fromColor(progressColor).lightness + 0.15).clamp(
+              0.0,
+              1.0,
+            ),
+          )
+          .toColor();
+
       final progressPaint = Paint()
         ..shader = SweepGradient(
           startAngle: startAngle,
-          endAngle: startAngle + 2 * math.pi * progress,
+          endAngle: startAngle + sweepAngle,
           colors: [
             progressColor,
-            progressColor.withValues(alpha: 0.8),
+            Color.lerp(progressColor, lighterColor, 0.3)!,
+            Color.lerp(progressColor, lighterColor, 0.6)!,
+            lighterColor,
           ],
+          stops: const [0.0, 0.3, 0.7, 1.0],
+          transform: const GradientRotation(-math.pi / 2),
         ).createShader(Rect.fromCircle(center: center, radius: radius))
         ..strokeWidth = strokeWidth
         ..style = PaintingStyle.stroke
@@ -164,7 +180,7 @@ class _CircularProgressPainter extends CustomPainter {
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),
         startAngle,
-        2 * math.pi * progress.clamp(0.0, 1.0),
+        sweepAngle,
         false,
         progressPaint,
       );
