@@ -142,6 +142,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
       if (mounted) SyncLoadingOverlay.hide(context);
 
       // Log sync result
+      if (!mounted) return;
       final logService = Provider.of<SyncLogService>(context, listen: false);
 
       if (mounted) {
@@ -151,6 +152,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
             result: SyncResult.success,
             stats: result.stats,
           );
+          if (!mounted) return;
           AppToast.showSuccess(context, 'cloud.sync_success'.tr());
         } else {
           await logService.logSync(
@@ -158,6 +160,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
             result: SyncResult.failed,
             errorMessage: 'Sync returned null',
           );
+          if (!mounted) return;
           AppToast.showError(context, 'cloud.sync_error'.tr());
         }
       }
