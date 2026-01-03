@@ -257,6 +257,8 @@ class _SplashWrapperState extends State<SplashWrapper>
   Widget build(BuildContext context) {
     // Show main app after splash (only if terms accepted)
     if (!_showSplash && _isInitialized && _termsAccepted) {
+      // Use MultiProvider to inject services, but return HomeScreen directly
+      // The outer MaterialApp from MyApp handles theming and localization
       return MultiProvider(
         providers: [
           ChangeNotifierProvider.value(value: _storageService!),
@@ -265,21 +267,7 @@ class _SplashWrapperState extends State<SplashWrapper>
           ChangeNotifierProvider(create: (_) => SyncLogService()..init()),
           ChangeNotifierProvider(create: (_) => SyncQueueService()..init()),
         ],
-        child: Consumer<ThemeProvider>(
-          builder: (context, themeProvider, _) {
-            return MaterialApp(
-              title: 'AhKyaway Mhat',
-              debugShowCheckedModeBanner: false,
-              localizationsDelegates: context.localizationDelegates,
-              supportedLocales: context.supportedLocales,
-              locale: context.locale,
-              theme: AppTheme.lightTheme,
-              darkTheme: AppTheme.darkTheme,
-              themeMode: themeProvider.themeMode,
-              home: const HomeScreen(),
-            );
-          },
-        ),
+        child: const HomeScreen(),
       );
     }
 

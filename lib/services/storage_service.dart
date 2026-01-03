@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/customer.dart';
 import '../models/debt.dart';
 import '../models/payment.dart';
+import 'error_notifier.dart';
 
 /// Secure Storage Service with encryption support
 ///
@@ -38,12 +39,30 @@ class StorageService extends ChangeNotifier {
   List<Debt> _debts = [];
   List<Payment> _payments = [];
 
+  // Error state management
+  StorageError? _lastError;
+
+  /// The most recent error, if any
+  StorageError? get lastError => _lastError;
+
+  /// Whether there's an unhandled error
+  bool get hasError => _lastError != null;
+
+  /// Clear the current error
+  void clearError() {
+    _lastError = null;
+    notifyListeners();
+  }
+
   List<Customer> get customers => _customers;
   List<Debt> get debts => _debts;
   List<Payment> get payments => _payments;
 
   /// Initialize storage - handles migration from legacy storage
-  Future<void> init() async {
+  /// Returns true if successful, false if there were errors (check lastError)
+  Future<bool> init() async {
+    _lastError = null;
+
     try {
       // Check if migration is needed
       final isMigrated = await _checkMigrationStatus();
@@ -54,13 +73,30 @@ class StorageService extends ChangeNotifier {
 
       // Load data from secure storage
       await _loadFromSecureStorage();
+      notifyListeners();
+      return true;
     } catch (e) {
+      _lastError = StorageError(
+        type: StorageErrorType.initialization,
+        message: 'Failed to initialize storage: $e',
+        originalError: e,
+      );
       debugPrint('StorageService init error: $e');
-      // Attempt recovery by loading directly
-      await _loadFromSecureStorage();
-    }
 
-    notifyListeners();
+      // Attempt recovery by loading directly
+      try {
+        await _loadFromSecureStorage();
+      } catch (loadError) {
+        _lastError = StorageError(
+          type: StorageErrorType.load,
+          message: 'Failed to load data after init error',
+          originalError: loadError,
+        );
+      }
+
+      notifyListeners();
+      return false;
+    }
   }
 
   /// Check if migration has been completed

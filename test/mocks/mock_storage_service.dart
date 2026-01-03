@@ -3,6 +3,7 @@ import 'package:ahkyaway_mhat/models/customer.dart';
 import 'package:ahkyaway_mhat/models/debt.dart';
 import 'package:ahkyaway_mhat/models/payment.dart';
 import 'package:ahkyaway_mhat/services/storage_service.dart';
+import 'package:ahkyaway_mhat/services/error_notifier.dart';
 
 /// Mock implementation of StorageService for testing
 /// Uses in-memory lists instead of FlutterSecureStorage
@@ -10,6 +11,21 @@ class MockStorageService extends ChangeNotifier implements StorageService {
   List<Customer> _customers = [];
   List<Debt> _debts = [];
   List<Payment> _payments = [];
+
+  // Error state for interface compliance
+  StorageError? _lastError;
+
+  @override
+  StorageError? get lastError => _lastError;
+
+  @override
+  bool get hasError => _lastError != null;
+
+  @override
+  void clearError() {
+    _lastError = null;
+    notifyListeners();
+  }
 
   @override
   List<Customer> get customers => _customers;
@@ -21,8 +37,9 @@ class MockStorageService extends ChangeNotifier implements StorageService {
   List<Payment> get payments => _payments;
 
   @override
-  Future<void> init() async {
+  Future<bool> init() async {
     // No initialization needed for mock
+    return true;
   }
 
   // Customer operations
