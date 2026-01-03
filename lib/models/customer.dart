@@ -8,6 +8,7 @@ class Customer {
   String notes;
   final DateTime createdAt;
   DateTime updatedAt;
+  final DateTime? deletedAt; // Soft delete timestamp
 
   Customer({
     required this.id,
@@ -17,7 +18,33 @@ class Customer {
     this.notes = '',
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
   });
+
+  /// Check if this customer is deleted
+  bool get isDeleted => deletedAt != null;
+
+  /// Create a copy with updated fields
+  Customer copyWith({
+    String? name,
+    String? phone,
+    String? address,
+    String? notes,
+    DateTime? updatedAt,
+    DateTime? deletedAt,
+    bool setDeletedAt = false, // Use this to explicitly set deletedAt
+  }) {
+    return Customer(
+      id: id,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      address: address ?? this.address,
+      notes: notes ?? this.notes,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: setDeletedAt ? deletedAt : this.deletedAt,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -27,6 +54,7 @@ class Customer {
     'notes': notes,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
+    if (deletedAt != null) 'deletedAt': deletedAt!.toIso8601String(),
   };
 
   factory Customer.fromJson(Map<String, dynamic> json) => Customer(
@@ -37,6 +65,9 @@ class Customer {
     notes: json['notes'] ?? '',
     createdAt: DateTime.parse(json['createdAt']),
     updatedAt: DateTime.parse(json['updatedAt']),
+    deletedAt: json['deletedAt'] != null
+        ? DateTime.parse(json['deletedAt'])
+        : null,
   );
 
   static String encode(List<Customer> customers) =>

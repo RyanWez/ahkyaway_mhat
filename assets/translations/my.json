@@ -275,6 +275,12 @@
         "error_quota": "Google Drive သိုလှောင်မှု ပြည့်နေပါသည်။ နေရာအချို့ ဖျက်ပေးပါ။",
         "error_server": "Server error ဖြစ်နေပါသည်။ နောက်မှ ပြန်ကြိုးစားပါ။",
         "error_invalid_data": "ဒေတာ format မမှန်ကန်ပါ။ Backup ပျက်နေနိုင်ပါသည်။",
-        "error_retry": "ထပ်မံကြိုးစားနေသည်..."
+        "error_retry": "ထပ်မံကြိုးစားနေသည်...",
+        "sync_history": "Sync မှတ်တမ်း",
+        "no_sync_history": "Sync မှတ်တမ်း မရှိသေးပါ",
+        "auto_sync": "Online ဖြစ်တာနဲ့ Auto-sync",
+        "sync_on_startup": "App ဖွင့်ရင် Sync လုပ်မည်",
+        "pending_changes": "Sync မလုပ်ရသေးသော ပြောင်းလဲချက်များ",
+        "view_history": "မှတ်တမ်း ကြည့်ရန်"
     }
 }

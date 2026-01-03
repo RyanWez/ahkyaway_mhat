@@ -8,6 +8,7 @@ class Payment {
   String notes;
   final DateTime createdAt;
   DateTime updatedAt;
+  final DateTime? deletedAt; // Soft delete timestamp
 
   Payment({
     required this.id,
@@ -17,7 +18,32 @@ class Payment {
     this.notes = '',
     required this.createdAt,
     DateTime? updatedAt,
+    this.deletedAt,
   }) : updatedAt = updatedAt ?? createdAt;
+
+  /// Check if this payment is deleted
+  bool get isDeleted => deletedAt != null;
+
+  /// Create a copy with updated fields
+  Payment copyWith({
+    double? amount,
+    DateTime? paymentDate,
+    String? notes,
+    DateTime? updatedAt,
+    DateTime? deletedAt,
+    bool setDeletedAt = false,
+  }) {
+    return Payment(
+      id: id,
+      loanId: loanId,
+      amount: amount ?? this.amount,
+      paymentDate: paymentDate ?? this.paymentDate,
+      notes: notes ?? this.notes,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: setDeletedAt ? deletedAt : this.deletedAt,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -27,6 +53,7 @@ class Payment {
     'notes': notes,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
+    if (deletedAt != null) 'deletedAt': deletedAt!.toIso8601String(),
   };
 
   factory Payment.fromJson(Map<String, dynamic> json) => Payment(
@@ -40,6 +67,9 @@ class Payment {
     updatedAt: json['updatedAt'] != null
         ? DateTime.parse(json['updatedAt'])
         : DateTime.parse(json['createdAt']),
+    deletedAt: json['deletedAt'] != null
+        ? DateTime.parse(json['deletedAt'])
+        : null,
   );
 
   static String encode(List<Payment> payments) =>

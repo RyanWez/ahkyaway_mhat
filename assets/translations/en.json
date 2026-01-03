@@ -279,6 +279,12 @@
     "error_quota": "Google Drive storage is full. Please free up some space.",
     "error_server": "Server error. Please try again later.",
     "error_invalid_data": "Invalid data format. Backup may be corrupted.",
-    "error_retry": "Retrying..."
+    "error_retry": "Retrying...",
+    "sync_history": "Sync History",
+    "no_sync_history": "No sync history yet",
+    "auto_sync": "Auto-sync when online",
+    "sync_on_startup": "Sync on app startup",
+    "pending_changes": "Pending changes",
+    "view_history": "View History"
   }
 }
