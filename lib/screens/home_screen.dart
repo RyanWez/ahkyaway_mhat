@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import '../utils/responsive.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'customer/customers_screen.dart';
+import 'reports/reports_screen.dart';
 import 'settings/settings_screen.dart';
 import 'account/account_screen.dart';
 
@@ -28,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen>
   final List<Widget> _screens = const [
     DashboardScreen(),
     CustomersScreen(),
+    ReportsScreen(),
     SettingsScreen(),
     AccountScreen(),
   ];
@@ -106,7 +108,10 @@ class _HomeScreenState extends State<HomeScreen>
             controller: _pageController,
             physics: const NeverScrollableScrollPhysics(),
             onPageChanged: (index) {
-              Provider.of<ThemeProvider>(context, listen: false).selectionClick();
+              Provider.of<ThemeProvider>(
+                context,
+                listen: false,
+              ).selectionClick();
               setState(() => _currentIndex = index);
             },
             children: _screens,
@@ -157,7 +162,9 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               // Accent glow (subtle)
               BoxShadow(
-                color: AppTheme.primaryDark.withValues(alpha: isDark ? 0.2 : 0.06),
+                color: AppTheme.primaryDark.withValues(
+                  alpha: isDark ? 0.2 : 0.06,
+                ),
                 blurRadius: 40,
                 offset: const Offset(0, 5),
               ),
@@ -165,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen>
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final itemWidth = constraints.maxWidth / 4;
+              final itemWidth = constraints.maxWidth / 5;
 
               return Stack(
                 clipBehavior: Clip.none,
@@ -207,8 +214,9 @@ class _HomeScreenState extends State<HomeScreen>
                     children: [
                       _buildNavItem(0, Icons.dashboard_rounded, isDark),
                       _buildNavItem(1, Icons.people_rounded, isDark),
-                      _buildNavItem(2, Icons.settings_rounded, isDark),
-                      _buildNavItem(3, Icons.person_rounded, isDark),
+                      _buildNavItem(2, Icons.bar_chart_rounded, isDark),
+                      _buildNavItem(3, Icons.settings_rounded, isDark),
+                      _buildNavItem(4, Icons.person_rounded, isDark),
                     ],
                   ),
                 ],

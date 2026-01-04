@@ -6,6 +6,7 @@
     "nav": {
         "dashboard": "ပင်မ",
         "customers": "ဖောက်သည်",
+        "reports": "အစီရင်ခံစာ",
         "settings": "ဆက်တင်",
         "account": "အကောင့်"
     },
@@ -177,6 +178,24 @@
         "no_debts_subtitle": "အကြွေးစတင်မှတ်တမ်းတင်ပါ",
         "no_warnings_title": "All Clear!",
         "no_warnings_subtitle": "ရက်လွန် သို့မဟုတ် မကြာမီပေးရမည့် အကြွေးမရှိပါ"
+    },
+    "reports": {
+        "title": "အစီရင်ခံစာ",
+        "this_week": "ဒီအပတ်",
+        "this_month": "ဒီလ",
+        "this_year": "ဒီနှစ်",
+        "total_collections": "စုစုပေါင်း ရရှိငွေ",
+        "outstanding_balance": "ကျန်ရှိငွေ",
+        "collection_rate": "ပြန်ရရမှုနှုန်း",
+        "current_due": "ရရန်ကျန်ငွေ",
+        "overall_progress": "စုစုပေါင်း တိုးတက်မှု",
+        "payment_trends": "ပေးချေမှု လမ်းကြောင်း",
+        "last_months": "လပြီးခဲ့သော {count} လ",
+        "status_distribution": "အခြေအနေ ခွဲခြမ်းစိတ်ဖြာ",
+        "total_debts": "စုစုပေါင်း အကြွေး",
+        "active_debts": "လက်ရှိ အကြွေး",
+        "completed_debts": "ပြန်ဆပ်ပြီး အကြွေး",
+        "top_debtors": "အကြွေးအများဆုံး"
     },
     "common": {
         "close": "ပိတ်ရန်",

@@ -6,6 +6,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "customers": "Customers",
+    "reports": "Reports",
     "settings": "Settings",
     "account": "Account"
   },
@@ -181,6 +182,24 @@
     "no_debts_subtitle": "Your dashboard will show insights once you start tracking",
     "no_warnings_title": "All Clear!",
     "no_warnings_subtitle": "No overdue or upcoming debts"
+  },
+  "reports": {
+    "title": "Reports",
+    "this_week": "This Week",
+    "this_month": "This Month",
+    "this_year": "This Year",
+    "total_collections": "Total Collections",
+    "outstanding_balance": "Outstanding Balance",
+    "collection_rate": "Collection Rate",
+    "current_due": "Current Due",
+    "overall_progress": "Overall Progress",
+    "payment_trends": "Payment Trends",
+    "last_months": "Last {count} Months",
+    "status_distribution": "Status Distribution",
+    "total_debts": "Total Debts",
+    "active_debts": "Active Debts",
+    "completed_debts": "Completed Debts",
+    "top_debtors": "Top Debtors"
   },
   "common": {
     "close": "Close",
